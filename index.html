@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Publicador Dark</title>
+<style>
+  :root{
+    --fundo:#0d0f12; --caixa:#15181d; --linha:#242931;
+    --texto:#e7e9ec; --fraco:#8b939f;
+    --ok:#3fb950; --alarme:#f85149; --espera:#d29922; --marca:#ba5a18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fundo);color:var(--texto);
+    font:15px/1.55 ui-sans-serif,system-ui,"Segoe UI",sans-serif}
+  .envolta{max-width:1080px;margin:0 auto;padding:28px 20px 64px}
+  header{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
+    border-bottom:1px solid var(--linha);padding-bottom:16px;margin-bottom:26px}
+  h1{margin:0;font-size:23px;letter-spacing:-.02em}
+  h1 span{color:var(--marca)}
+  .selo{font-size:12px;color:var(--fraco)}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:.1em;
+    color:var(--fraco);margin:34px 0 12px;font-weight:600}
+  .cartoes{display:grid;gap:12px;
+    grid-template-columns:repeat(auto-fit,minmax(168px,1fr))}
+  .cartao{background:var(--caixa);border:1px solid var(--linha);
+    border-radius:9px;padding:14px 16px}
+  .numero{font-size:27px;font-weight:650;letter-spacing:-.02em}
+  .rotulo{font-size:12px;color:var(--fraco);margin-top:2px}
+  table{width:100%;border-collapse:collapse;background:var(--caixa);
+    border:1px solid var(--linha);border-radius:9px;overflow:hidden}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:.08em;
+    color:var(--fraco);text-align:left;padding:10px 14px;
+    border-bottom:1px solid var(--linha);font-weight:600}
+  td{padding:11px 14px;border-bottom:1px solid var(--linha);font-size:14px}
+  tr:last-child td{border-bottom:none}
+  .rolagem{overflow-x:auto}
+  .bolinha{display:inline-block;width:8px;height:8px;border-radius:50%;
+    margin-right:7px;vertical-align:middle}
+  .b-ok{background:var(--ok)} .b-alarme{background:var(--alarme)}
+  .b-espera{background:var(--espera)} .b-off{background:#4a515c}
+  .fita{background:rgba(248,81,73,.10);border:1px solid rgba(248,81,73,.45);
+    color:#ffb4b0;border-radius:9px;padding:13px 16px;margin-bottom:18px;font-size:14px}
+  .fraco{color:var(--fraco)}
+  .mono{font-family:ui-monospace,"Cascadia Code",Consolas,monospace;font-size:12.5px}
+  .vazio{color:var(--fraco);padding:22px 16px;background:var(--caixa);
+    border:1px solid var(--linha);border-radius:9px;font-size:14px}
+  .barra{height:5px;background:#232830;border-radius:3px;overflow:hidden;
+    margin-top:6px;width:104px}
+  .barra i{display:block;height:100%;background:var(--marca)}
+  footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--linha);
+    color:var(--fraco);font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="envolta">
+
+  <header>
+    <h1>Publicador <span>Dark</span></h1>
+    <div class="selo" id="carimbo">carregando...</div>
+  </header>
+
+  <div id="alarmes"></div>
+
+  <div class="cartoes" id="resumo"></div>
+
+  <h2>Contas</h2>
+  <div class="rolagem"><div id="contas"></div></div>
+
+  <h2>Proximas publicacoes</h2>
+  <div class="rolagem"><div id="proximas"></div></div>
+
+  <h2>Ultimas publicadas</h2>
+  <div class="rolagem"><div id="feitas"></div></div>
+
+  <footer>
+    Publica pela API oficial da Meta. Motor no GitHub Actions, a cada 5 minutos.
+    Vigia das contas de hora em hora. O painel le os arquivos do repositorio.
+  </footer>
+</div>
+
+<script>
+const ESTADOS = {
+  ok:      ["b-ok",     "no ar"],
+  alarme:  ["b-alarme", "ALARME"],
+  sem_token: ["b-espera","sem token"],
+  desconhecido: ["b-off","nao checada"]
+};
+
+async function pegar(caminho, padrao){
+  try{
+    const r = await fetch(caminho + "?t=" + Date.now());
+    if(!r.ok) throw 0;
+    return await r.json();
+  }catch(e){ return padrao; }
+}
+
+function quandoLegivel(iso){
+  if(!iso) return "-";
+  const d = new Date(iso);
+  return d.toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",
+    hour:"2-digit",minute:"2-digit"});
+}
+
+function tabela(colunas, linhas, vazio){
+  if(!linhas.length) return `<div class="vazio">${vazio}</div>`;
+  return `<table><thead><tr>${colunas.map(c=>`<th>${c}</th>`).join("")}</tr></thead>
+    <tbody>${linhas.map(l=>`<tr>${l.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}
+    </tbody></table>`;
+}
+
+(async function(){
+  const contas = await pegar("dados/contas.json", {contas:[]});
+  const agenda = await pegar("dados/agenda.json", {itens:[]});
+
+  document.getElementById("carimbo").textContent =
+    contas.atualizado_em ? "vigia rodou em " + quandoLegivel(contas.atualizado_em)
+                         : "vigia ainda nao rodou";
+
+  // Alarme primeiro. E o item numero um do painel.
+  const caidas = (contas.contas||[]).filter(c => c.status === "alarme" || c.status === "sem_token");
+  document.getElementById("alarmes").innerHTML = caidas.length
+    ? `<div class="fita"><strong>${caidas.length} conta(s) exigindo olhada:</strong>
+       ${caidas.map(c=>`${c.arroba} <span class="fraco">(${c.detalhe||c.status})</span>`).join(" &nbsp;|&nbsp; ")}</div>`
+    : "";
+
+  const itens = agenda.itens || [];
+  const agora = new Date();
+  const pendentes = itens.filter(i=>i.status==="agendado").sort((a,b)=>a.quando<b.quando?-1:1);
+  const feitas = itens.filter(i=>i.status==="publicado").sort((a,b)=>a.quando<b.quando?1:-1);
+  const erros = itens.filter(i=>i.status==="erro");
+  const hoje = itens.filter(i=>i.status==="publicado" &&
+    new Date(i.quando).toDateString()===agora.toDateString());
+
+  document.getElementById("resumo").innerHTML = [
+    [ (contas.contas||[]).filter(c=>c.status==="ok").length, "contas no ar"],
+    [ hoje.length,      "publicadas hoje"],
+    [ pendentes.length, "na fila"],
+    [ erros.length,     "com erro"]
+  ].map(([n,r])=>`<div class="cartao"><div class="numero">${n}</div>
+      <div class="rotulo">${r}</div></div>`).join("");
+
+  document.getElementById("contas").innerHTML = tabela(
+    ["Conta","Estado","Seguidores","Posts","Teto 24h","Checada"],
+    (contas.contas||[]).map(c=>{
+      const [cls,txt] = ESTADOS[c.status] || ESTADOS.desconhecido;
+      const usado = c.teto_usado ?? 0, total = c.teto_total ?? 100;
+      const pct = Math.min(100, Math.round(usado/total*100));
+      return [
+        `<strong>${c.arroba||c.id}</strong>`,
+        `<span class="bolinha ${cls}"></span>${txt}` +
+          (c.detalhe?`<div class="fraco mono">${c.detalhe}</div>`:""),
+        c.seguidores ?? "-",
+        c.posts ?? "-",
+        `${usado}/${total}<div class="barra"><i style="width:${pct}%"></i></div>`,
+        `<span class="fraco">${quandoLegivel(c.ultima_checagem)}</span>`
+      ];
+    }),
+    "Nenhuma conta cadastrada ainda. Preencha dados/contas.json."
+  );
+
+  document.getElementById("proximas").innerHTML = tabela(
+    ["Quando","Conta","Video","Legenda"],
+    pendentes.slice(0,25).map(i=>[
+      `<span class="mono">${quandoLegivel(i.quando)}</span>`,
+      i.conta,
+      `<span class="mono fraco">${i.video.replace("midia/","")}</span>`,
+      (i.legenda||"").slice(0,60) || `<span class="fraco">sem legenda</span>`
+    ]),
+    "Fila vazia. Rode agendar.py para montar a grade."
+  );
+
+  document.getElementById("feitas").innerHTML = tabela(
+    ["Quando","Conta","Video","Id da midia"],
+    feitas.slice(0,15).map(i=>[
+      `<span class="mono">${quandoLegivel(i.publicado_em||i.quando)}</span>`,
+      i.conta,
+      `<span class="mono fraco">${i.video.replace("midia/","")}</span>`,
+      `<span class="mono fraco">${i.media_id||"-"}</span>`
+    ]),
+    "Nada publicado ainda."
+  );
+})();
+</script>
+</body>
+</html>

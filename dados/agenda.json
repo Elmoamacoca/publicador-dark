@@ -1,0 +1,71 @@
+{
+  "_comentario": "Gerado por publicador/agendar.py. O motor le daqui e grava o resultado de volta.",
+  "itens": [
+    {
+      "id": "69c19a735cc6",
+      "conta": "conta1",
+      "video": "midia/97022e90-da51-43e1-ac1b-7b34a72f2d86.mp4",
+      "legenda": "legenda numero 1",
+      "quando": "2026-08-20T12:06:00+00:00",
+      "status": "agendado",
+      "media_id": null,
+      "erro": null,
+      "tentativas": 0
+    },
+    {
+      "id": "4316471f8cde",
+      "conta": "conta2",
+      "video": "midia/teste-1.mp4",
+      "legenda": "legenda numero 2",
+      "quando": "2026-08-20T12:20:00+00:00",
+      "status": "agendado",
+      "media_id": null,
+      "erro": null,
+      "tentativas": 0
+    },
+    {
+      "id": "e3486139c074",
+      "conta": "conta2",
+      "video": "midia/teste-2.mp4",
+      "legenda": "legenda numero 3",
+      "quando": "2026-08-20T15:56:00+00:00",
+      "status": "agendado",
+      "media_id": null,
+      "erro": null,
+      "tentativas": 0
+    },
+    {
+      "id": "cbe8e5eda5d4",
+      "conta": "conta2",
+      "video": "midia/teste-3.mp4",
+      "legenda": "legenda numero 4",
+      "quando": "2026-08-20T21:42:00+00:00",
+      "status": "agendado",
+      "media_id": null,
+      "erro": null,
+      "tentativas": 0
+    },
+    {
+      "id": "24e7d57b408f",
+      "conta": "conta1",
+      "video": "midia/teste-4.mp4",
+      "legenda": "legenda numero 5",
+      "quando": "2026-08-21T12:06:00+00:00",
+      "status": "agendado",
+      "media_id": null,
+      "erro": null,
+      "tentativas": 0
+    },
+    {
+      "id": "eb6558e8e75f",
+      "conta": "conta2",
+      "video": "midia/teste-5.mp4",
+      "legenda": "legenda numero 6",
+      "quando": "2026-08-21T12:22:00+00:00",
+      "status": "agendado",
+      "media_id": null,
+      "erro": null,
+      "tentativas": 0
+    }
+  ]
+}

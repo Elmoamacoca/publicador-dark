@@ -1,0 +1,43 @@
+name: publicar
+
+# Roda a cada 5 minutos, 24 horas por dia, na infraestrutura do GitHub.
+# Nao depende do PC do Gabriel estar ligado.
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publicar
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: publicar o que venceu
+        working-directory: publicador
+        env:
+          # Um segredo por conta. O nome tem que bater com o campo
+          # segredo_token de dados/contas.json.
+          IG_TOKEN_CONTA1: ${{ secrets.IG_TOKEN_CONTA1 }}
+          IG_TOKEN_CONTA2: ${{ secrets.IG_TOKEN_CONTA2 }}
+          IG_TOKEN_CONTA3: ${{ secrets.IG_TOKEN_CONTA3 }}
+        run: python publicar.py
+
+      - name: gravar o resultado de volta
+        run: |
+          git config user.name  "publicador"
+          git config user.email "publicador@users.noreply.github.com"
+          git add dados/
+          git diff --staged --quiet || git commit -m "publicacao: $(date -u +%FT%TZ)"
+          git push

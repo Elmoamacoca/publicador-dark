@@ -1,0 +1,37 @@
+{
+  "_comentario": "EXEMPLO. Troque pelas contas reais e marque ativa true. segredo_token e o NOME do segredo no GitHub, nunca o token.",
+  "atualizado_em": null,
+  "alarmes": 0,
+  "contas": [
+    {
+      "id": "conta1",
+      "arroba": "@exemplo1",
+      "ig_user_id": "000",
+      "segredo_token": "IG_TOKEN_CONTA1",
+      "criada_em": "2026-08-10",
+      "ativa": false,
+      "status": "desconhecido",
+      "detalhe": null,
+      "ultima_checagem": null,
+      "seguidores": null,
+      "posts": null,
+      "teto_usado": null,
+      "teto_total": null
+    },
+    {
+      "id": "conta2",
+      "arroba": "@exemplo2",
+      "ig_user_id": "000",
+      "segredo_token": "IG_TOKEN_CONTA2",
+      "criada_em": "2026-05-01",
+      "ativa": false,
+      "status": "desconhecido",
+      "detalhe": null,
+      "ultima_checagem": null,
+      "seguidores": null,
+      "posts": null,
+      "teto_usado": null,
+      "teto_total": null
+    }
+  ]
+}
