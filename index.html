@@ -2,185 +2,673 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Publicador Dark</title>
 <style>
-  :root{
-    --fundo:#0d0f12; --caixa:#15181d; --linha:#242931;
-    --texto:#e7e9ec; --fraco:#8b939f;
-    --ok:#3fb950; --alarme:#f85149; --espera:#d29922; --marca:#ba5a18;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--fundo);color:var(--texto);
-    font:15px/1.55 ui-sans-serif,system-ui,"Segoe UI",sans-serif}
-  .envolta{max-width:1080px;margin:0 auto;padding:28px 20px 64px}
-  header{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
-    border-bottom:1px solid var(--linha);padding-bottom:16px;margin-bottom:26px}
-  h1{margin:0;font-size:23px;letter-spacing:-.02em}
-  h1 span{color:var(--marca)}
-  .selo{font-size:12px;color:var(--fraco)}
-  h2{font-size:13px;text-transform:uppercase;letter-spacing:.1em;
-    color:var(--fraco);margin:34px 0 12px;font-weight:600}
-  .cartoes{display:grid;gap:12px;
-    grid-template-columns:repeat(auto-fit,minmax(168px,1fr))}
-  .cartao{background:var(--caixa);border:1px solid var(--linha);
-    border-radius:9px;padding:14px 16px}
-  .numero{font-size:27px;font-weight:650;letter-spacing:-.02em}
-  .rotulo{font-size:12px;color:var(--fraco);margin-top:2px}
-  table{width:100%;border-collapse:collapse;background:var(--caixa);
-    border:1px solid var(--linha);border-radius:9px;overflow:hidden}
-  th{font-size:11px;text-transform:uppercase;letter-spacing:.08em;
-    color:var(--fraco);text-align:left;padding:10px 14px;
-    border-bottom:1px solid var(--linha);font-weight:600}
-  td{padding:11px 14px;border-bottom:1px solid var(--linha);font-size:14px}
-  tr:last-child td{border-bottom:none}
-  .rolagem{overflow-x:auto}
-  .bolinha{display:inline-block;width:8px;height:8px;border-radius:50%;
-    margin-right:7px;vertical-align:middle}
-  .b-ok{background:var(--ok)} .b-alarme{background:var(--alarme)}
-  .b-espera{background:var(--espera)} .b-off{background:#4a515c}
-  .fita{background:rgba(248,81,73,.10);border:1px solid rgba(248,81,73,.45);
-    color:#ffb4b0;border-radius:9px;padding:13px 16px;margin-bottom:18px;font-size:14px}
-  .fraco{color:var(--fraco)}
-  .mono{font-family:ui-monospace,"Cascadia Code",Consolas,monospace;font-size:12.5px}
-  .vazio{color:var(--fraco);padding:22px 16px;background:var(--caixa);
-    border:1px solid var(--linha);border-radius:9px;font-size:14px}
-  .barra{height:5px;background:#232830;border-radius:3px;overflow:hidden;
-    margin-top:6px;width:104px}
-  .barra i{display:block;height:100%;background:var(--marca)}
-  footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--linha);
-    color:var(--fraco);font-size:12.5px}
+:root{
+  --fundo:#0d0f12;--painel:#14171c;--caixa:#191d23;--linha:#252b34;--linha2:#1e232a;
+  --texto:#e8eaed;--fraco:#8a929d;--apagado:#5c646f;
+  --marca:#ba5a18;--ok:#3fb950;--alarme:#f85149;--espera:#d29922;
+  --lateral:248px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--fundo);color:var(--texto);
+  font:14px/1.5 ui-sans-serif,system-ui,"Segoe UI",sans-serif;overflow:hidden}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+input,textarea,select{font:inherit;color:inherit;background:var(--fundo);
+  border:1px solid var(--linha);border-radius:7px;padding:9px 11px;width:100%}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--marca)}
+.app{display:flex;height:100vh}
+
+/* ---------- barra lateral ---------- */
+.lateral{width:var(--lateral);background:var(--painel);border-right:1px solid var(--linha);
+  display:flex;flex-direction:column;flex-shrink:0}
+.marca{padding:16px 18px;border-bottom:1px solid var(--linha);font-weight:650;
+  font-size:16px;letter-spacing:-.02em}
+.marca span{color:var(--marca)}
+.titulinho{font-size:10.5px;text-transform:uppercase;letter-spacing:.12em;
+  color:var(--apagado);padding:16px 18px 8px;font-weight:600}
+.canais{flex:1;overflow-y:auto;padding:0 10px}
+.canal{display:flex;align-items:center;gap:10px;padding:8px 8px;border-radius:8px;
+  cursor:pointer;margin-bottom:2px;position:relative}
+.canal:hover{background:var(--caixa)}
+.canal.off{opacity:.42}
+.av{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:grid;
+  place-items:center;font-size:12px;font-weight:700;color:#0d0f12}
+.canal-nome{font-size:13px;font-weight:550;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}
+.canal-sub{font-size:11px;color:var(--apagado)}
+.pto{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-left:auto}
+.p-ok{background:var(--ok)}.p-alarme{background:var(--alarme)}
+.p-espera{background:var(--espera)}.p-off{background:#3d444e}
+.btn-add{margin:10px;padding:9px;border:1px dashed var(--linha);border-radius:8px;
+  color:var(--fraco);font-size:12.5px;text-align:center}
+.btn-add:hover{border-color:var(--marca);color:var(--texto)}
+.rodape-lat{padding:12px 18px;border-top:1px solid var(--linha);font-size:11px;
+  color:var(--apagado);line-height:1.45}
+
+/* ---------- area principal ---------- */
+.principal{flex:1;display:flex;flex-direction:column;min-width:0}
+.topo{display:flex;align-items:center;gap:12px;padding:12px 18px;
+  border-bottom:1px solid var(--linha);flex-wrap:wrap}
+.nav{display:flex;align-items:center;gap:3px}
+.nav button{width:29px;height:29px;border-radius:7px;color:var(--fraco);font-size:15px}
+.nav button:hover{background:var(--caixa);color:var(--texto)}
+.periodo{font-size:15px;font-weight:600;min-width:172px;text-transform:capitalize}
+.hoje{padding:6px 12px;border:1px solid var(--linha);border-radius:7px;font-size:12.5px;
+  color:var(--fraco)}
+.hoje:hover{color:var(--texto);border-color:var(--fraco)}
+.abas{display:flex;background:var(--caixa);border-radius:8px;padding:3px;gap:2px}
+.abas button{padding:5px 13px;border-radius:6px;font-size:12.5px;color:var(--fraco)}
+.abas button.on{background:var(--linha);color:var(--texto);font-weight:550}
+.direita{margin-left:auto;display:flex;align-items:center;gap:10px}
+.btn-mestre{background:var(--marca);color:#fff;padding:8px 15px;border-radius:8px;
+  font-size:13px;font-weight:600}
+.btn-mestre:hover{filter:brightness(1.12)}
+.btn2{padding:8px 13px;border:1px solid var(--linha);border-radius:8px;font-size:12.5px;
+  color:var(--fraco)}
+.btn2:hover{color:var(--texto);border-color:var(--fraco)}
+
+.fita{margin:12px 18px 0;background:rgba(248,81,73,.10);
+  border:1px solid rgba(248,81,73,.4);color:#ffb3ae;border-radius:8px;
+  padding:11px 14px;font-size:13px}
+
+/* ---------- calendario ---------- */
+.tela{flex:1;overflow:auto;padding:14px 18px 24px}
+.grade{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--linha2);
+  border:1px solid var(--linha2);border-radius:9px;overflow:hidden}
+.cab{background:var(--painel);padding:8px 10px;font-size:11px;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--apagado);font-weight:600;text-align:center}
+.dia{background:var(--fundo);min-height:112px;padding:6px;display:flex;
+  flex-direction:column;gap:3px;cursor:pointer;transition:background .1s}
+.dia:hover{background:#111419}
+.dia.fora{opacity:.3}
+.dia.arrasta{background:rgba(186,90,24,.16);outline:1px solid var(--marca);outline-offset:-1px}
+.num{font-size:11.5px;color:var(--fraco);font-weight:600;padding:1px 3px}
+.dia.now .num{background:var(--marca);color:#fff;border-radius:50%;width:20px;height:20px;
+  display:grid;place-items:center}
+.chip{background:var(--caixa);border-left:2.5px solid var(--marca);border-radius:4px;
+  padding:3px 6px;font-size:11px;cursor:grab;display:flex;gap:5px;align-items:center;
+  overflow:hidden}
+.chip:hover{background:var(--linha)}
+.chip.publicado{opacity:.5}
+.chip.erro{border-left-color:var(--alarme);background:rgba(248,81,73,.08)}
+.chip .h{color:var(--fraco);font-variant-numeric:tabular-nums;flex-shrink:0;font-size:10.5px}
+.chip .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mais{font-size:10.5px;color:var(--apagado);padding-left:4px}
+
+/* semana e dia */
+.semana{display:grid;gap:1px;background:var(--linha2);border:1px solid var(--linha2);
+  border-radius:9px;overflow:hidden}
+.hora-lin{display:grid;grid-template-columns:56px repeat(var(--cols),1fr);gap:1px}
+.hora-rot{background:var(--painel);font-size:10.5px;color:var(--apagado);padding:5px 7px;
+  text-align:right;font-variant-numeric:tabular-nums}
+.cel{background:var(--fundo);min-height:42px;padding:3px;cursor:pointer;
+  display:flex;flex-direction:column;gap:2px}
+.cel:hover{background:#111419}
+.cel.arrasta{background:rgba(186,90,24,.16)}
+
+/* ---------- modais ---------- */
+.veu{position:fixed;inset:0;background:rgba(0,0,0,.68);display:grid;place-items:center;
+  z-index:50;padding:20px}
+.modal{background:var(--painel);border:1px solid var(--linha);border-radius:13px;
+  width:100%;max-width:860px;max-height:90vh;display:flex;flex-direction:column;
+  overflow:hidden}
+.modal.estreito{max-width:520px}
+.m-topo{display:flex;align-items:center;padding:15px 20px;border-bottom:1px solid var(--linha)}
+.m-topo h3{font-size:15px;font-weight:620}
+.m-topo button{margin-left:auto;color:var(--fraco);font-size:19px;line-height:1}
+.m-corpo{padding:18px 20px;overflow-y:auto;display:grid;gap:16px}
+.duas{display:grid;grid-template-columns:1fr 300px;gap:20px}
+@media(max-width:760px){.duas{grid-template-columns:1fr}}
+.m-pe{display:flex;gap:9px;padding:14px 20px;border-top:1px solid var(--linha);
+  justify-content:flex-end}
+label{display:block;font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--apagado);margin-bottom:6px;font-weight:600}
+.escolhas{display:flex;gap:7px;flex-wrap:wrap}
+.escolha{display:flex;align-items:center;gap:7px;padding:6px 11px 6px 6px;
+  border:1px solid var(--linha);border-radius:20px;cursor:pointer;font-size:12.5px}
+.escolha.on{border-color:var(--marca);background:rgba(186,90,24,.12)}
+.escolha .av{width:22px;height:22px;font-size:10px}
+textarea{min-height:118px;resize:vertical;line-height:1.55}
+.previa{background:var(--fundo);border:1px solid var(--linha);border-radius:10px;
+  padding:13px;font-size:12.5px}
+.previa .cabec{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.previa .quadro{aspect-ratio:9/16;max-height:230px;background:#0a0c0f;border-radius:7px;
+  display:grid;place-items:center;color:var(--apagado);font-size:11px;margin-bottom:9px;
+  overflow:hidden}
+.previa video{width:100%;height:100%;object-fit:cover}
+.dica{font-size:12px;color:var(--fraco);line-height:1.5}
+.passo{display:flex;gap:11px;align-items:flex-start;font-size:13px;line-height:1.55}
+.passo b{display:grid;place-items:center;width:21px;height:21px;border-radius:50%;
+  background:var(--caixa);color:var(--marca);font-size:11px;flex-shrink:0;margin-top:1px}
+code{background:var(--caixa);padding:1.5px 5px;border-radius:4px;
+  font:12px ui-monospace,Consolas,monospace;color:#e0b088}
+a{color:var(--marca)}
+.aviso{font-size:11.5px;color:var(--apagado);line-height:1.5}
+.vazio{padding:50px 20px;text-align:center;color:var(--apagado);font-size:13.5px}
+.carregando{padding:60px;text-align:center;color:var(--apagado)}
+.pilula{font-size:10.5px;padding:2px 7px;border-radius:11px;background:var(--caixa);
+  color:var(--fraco)}
 </style>
 </head>
 <body>
-<div class="envolta">
-
-  <header>
-    <h1>Publicador <span>Dark</span></h1>
-    <div class="selo" id="carimbo">carregando...</div>
-  </header>
-
-  <div id="alarmes"></div>
-
-  <div class="cartoes" id="resumo"></div>
-
-  <h2>Contas</h2>
-  <div class="rolagem"><div id="contas"></div></div>
-
-  <h2>Proximas publicacoes</h2>
-  <div class="rolagem"><div id="proximas"></div></div>
-
-  <h2>Ultimas publicadas</h2>
-  <div class="rolagem"><div id="feitas"></div></div>
-
-  <footer>
-    Publica pela API oficial da Meta. Motor no GitHub Actions, a cada 5 minutos.
-    Vigia das contas de hora em hora. O painel le os arquivos do repositorio.
-  </footer>
-</div>
+<div class="app" id="app"><div class="carregando">carregando...</div></div>
 
 <script>
-const ESTADOS = {
-  ok:      ["b-ok",     "no ar"],
-  alarme:  ["b-alarme", "ALARME"],
-  sem_token: ["b-espera","sem token"],
-  desconhecido: ["b-off","nao checada"]
+/* =====================================================================
+   Publicador Dark
+   Painel estatico no GitHub Pages. Le e escreve os arquivos do repositorio
+   pela API do GitHub. Quem publica de verdade e o GitHub Actions, a cada
+   5 minutos, lendo dados/agenda.json.
+   ===================================================================== */
+
+const REPO  = { dono:"Elmoamacoca", nome:"publicador-dark", ramo:"main" };
+const CORES = ["#ba5a18","#3b82f6","#8b5cf6","#059a6b","#d29922","#e0508a",
+               "#0d9488","#c2410c","#6366f1","#16a34a"];
+const DIAS  = ["dom","seg","ter","qua","qui","sex","sab"];
+const MESES = ["janeiro","fevereiro","marco","abril","maio","junho","julho",
+               "agosto","setembro","outubro","novembro","dezembro"];
+
+const S = {                       // estado da aplicacao
+  token: localStorage.getItem("pd_token") || "",
+  vista: localStorage.getItem("pd_vista") || "mes",
+  foco:  new Date(),
+  contas: [], agenda: [], midia: [],
+  sha: {}, ocultas: new Set(),
+  modal: null, salvando: false
 };
 
-async function pegar(caminho, padrao){
+/* ---------------- utilidades ---------------- */
+const $ = s => document.querySelector(s);
+const esc = t => String(t??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const iso = d => new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,16);
+const chave = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const hhmm = d => `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+const corDe = id => CORES[[...String(id)].reduce((a,c)=>a+c.charCodeAt(0),0)%CORES.length];
+const inicial = c => (c.arroba||c.id||"?").replace("@","").slice(0,2).toUpperCase();
+
+/* ---------------- acesso ao GitHub ---------------- */
+async function gh(caminho, opcoes={}){
+  const r = await fetch(`https://api.github.com/repos/${REPO.dono}/${REPO.nome}/${caminho}`,{
+    ...opcoes,
+    headers:{ Accept:"application/vnd.github+json",
+              ...(S.token?{Authorization:`Bearer ${S.token}`}:{}),
+              ...(opcoes.headers||{}) }
+  });
+  if(!r.ok) throw new Error(`${r.status} ${(await r.text()).slice(0,160)}`);
+  return r.json();
+}
+
+async function lerArquivo(caminho){
+  // Com token usa a API (traz o sha, necessario para gravar).
+  // Sem token cai para leitura publica, e o painel fica so de leitura.
+  if(S.token){
+    const d = await gh(`contents/${caminho}?ref=${REPO.ramo}`);
+    S.sha[caminho] = d.sha;
+    return JSON.parse(decodeURIComponent(escape(atob(d.content.replace(/\n/g,"")))));
+  }
+  const r = await fetch(`dados/${caminho.split("/").pop()}?t=${Date.now()}`);
+  return r.ok ? r.json() : null;
+}
+
+async function gravarArquivo(caminho, obj, mensagem){
+  const conteudo = btoa(unescape(encodeURIComponent(JSON.stringify(obj,null,2))));
+  const d = await gh(`contents/${caminho}`,{
+    method:"PUT",
+    body: JSON.stringify({ message:mensagem, content:conteudo,
+                           sha:S.sha[caminho], branch:REPO.ramo })
+  });
+  S.sha[caminho] = d.content.sha;
+}
+
+async function listarMidia(){
   try{
-    const r = await fetch(caminho + "?t=" + Date.now());
-    if(!r.ok) throw 0;
-    return await r.json();
-  }catch(e){ return padrao; }
+    const d = await gh(`contents/midia?ref=${REPO.ramo}`);
+    return d.filter(a=>/\.(mp4|mov)$/i.test(a.name)).map(a=>a.name);
+  }catch(e){ return []; }
 }
 
-function quandoLegivel(iso){
-  if(!iso) return "-";
-  const d = new Date(iso);
-  return d.toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",
-    hour:"2-digit",minute:"2-digit"});
+/* ---------------- carga ---------------- */
+async function carregar(){
+  try{
+    const [c,a] = await Promise.all([
+      lerArquivo("dados/contas.json"), lerArquivo("dados/agenda.json")
+    ]);
+    S.contas = (c&&c.contas)||[]; S.agenda = (a&&a.itens)||[];
+    S.atualizado = c&&c.atualizado_em;
+    S.midia = S.token ? await listarMidia() : [];
+  }catch(e){
+    S.erroCarga = e.message;
+  }
+  desenhar();
 }
 
-function tabela(colunas, linhas, vazio){
-  if(!linhas.length) return `<div class="vazio">${vazio}</div>`;
-  return `<table><thead><tr>${colunas.map(c=>`<th>${c}</th>`).join("")}</tr></thead>
-    <tbody>${linhas.map(l=>`<tr>${l.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}
-    </tbody></table>`;
+/* ---------------- desenho ---------------- */
+function desenhar(){
+  if(!S.token && !S.contas.length && !S.agenda.length && S.erroCarga){
+    return $("#app").innerHTML = `<div class="carregando">nao consegui ler os dados<br>
+      <span style="font-size:12px">${esc(S.erroCarga)}</span></div>`;
+  }
+  $("#app").innerHTML = lateral() + `<div class="principal">${topo()}${fita()}
+    <div class="tela" id="tela">${S.vista==="mes"?vistaMes():vistaHoras()}</div></div>`;
+  ligarEventos();
+  if(S.modal) document.body.insertAdjacentHTML("beforeend", S.modal);
+  if(S.modal) ligarModal();
 }
 
-(async function(){
-  const contas = await pegar("dados/contas.json", {contas:[]});
-  const agenda = await pegar("dados/agenda.json", {itens:[]});
+function lateral(){
+  const canais = S.contas.length ? S.contas.map(c=>{
+    const on = !S.ocultas.has(c.id);
+    const est = c.status==="ok"?"p-ok":c.status==="alarme"?"p-alarme":
+                c.status==="sem_token"?"p-espera":"p-off";
+    return `<div class="canal ${on?"":"off"}" data-canal="${esc(c.id)}">
+      <div class="av" style="background:${corDe(c.id)}">${esc(inicial(c))}</div>
+      <div style="min-width:0">
+        <div class="canal-nome">${esc(c.arroba||c.id)}</div>
+        <div class="canal-sub">${c.seguidores!=null?c.seguidores+" seg.":
+          (c.ativa?"sem dados":"inativa")}</div>
+      </div><div class="pto ${est}"></div></div>`;
+  }).join("") : `<div style="padding:14px 18px;color:var(--apagado);font-size:12.5px;
+      line-height:1.5">Nenhuma conta ainda.<br>Comece adicionando uma.</div>`;
 
-  document.getElementById("carimbo").textContent =
-    contas.atualizado_em ? "vigia rodou em " + quandoLegivel(contas.atualizado_em)
-                         : "vigia ainda nao rodou";
+  return `<aside class="lateral">
+    <div class="marca">Publicador <span>Dark</span></div>
+    <div class="titulinho">Canais</div>
+    <div class="canais">${canais}</div>
+    <button class="btn-add" id="add-conta">+ Adicionar conta</button>
+    <div class="rodape-lat">
+      Publica pela API oficial da Meta.<br>
+      Motor a cada 5 min no GitHub Actions.<br>
+      ${S.atualizado?`Vigia: ${new Date(S.atualizado).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}`:"Vigia ainda nao rodou."}
+    </div></aside>`;
+}
 
-  // Alarme primeiro. E o item numero um do painel.
-  const caidas = (contas.contas||[]).filter(c => c.status === "alarme" || c.status === "sem_token");
-  document.getElementById("alarmes").innerHTML = caidas.length
-    ? `<div class="fita"><strong>${caidas.length} conta(s) exigindo olhada:</strong>
-       ${caidas.map(c=>`${c.arroba} <span class="fraco">(${c.detalhe||c.status})</span>`).join(" &nbsp;|&nbsp; ")}</div>`
-    : "";
+function topo(){
+  const d = S.foco;
+  let rotulo;
+  if(S.vista==="mes") rotulo = `${MESES[d.getMonth()]} ${d.getFullYear()}`;
+  else if(S.vista==="semana"){
+    const i=inicioSemana(d), f=new Date(i); f.setDate(i.getDate()+6);
+    rotulo = `${i.getDate()} a ${f.getDate()} de ${MESES[f.getMonth()]}`;
+  } else rotulo = `${DIAS[d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]}`;
 
-  const itens = agenda.itens || [];
-  const agora = new Date();
-  const pendentes = itens.filter(i=>i.status==="agendado").sort((a,b)=>a.quando<b.quando?-1:1);
-  const feitas = itens.filter(i=>i.status==="publicado").sort((a,b)=>a.quando<b.quando?1:-1);
-  const erros = itens.filter(i=>i.status==="erro");
-  const hoje = itens.filter(i=>i.status==="publicado" &&
-    new Date(i.quando).toDateString()===agora.toDateString());
+  return `<div class="topo">
+    <div class="nav"><button id="ant">&#8249;</button><button id="prox">&#8250;</button></div>
+    <div class="periodo">${rotulo}</div>
+    <button class="hoje" id="hoje">Hoje</button>
+    <div class="abas">
+      ${["dia","semana","mes"].map(v=>`<button data-vista="${v}"
+        class="${S.vista===v?"on":""}">${v[0].toUpperCase()+v.slice(1)}</button>`).join("")}
+    </div>
+    <div class="direita">
+      ${S.token?`<span class="pilula">gravacao ligada</span>`:
+        `<button class="btn2" id="ligar">Ligar gravacao</button>`}
+      <button class="btn2" id="lote">Lote</button>
+      <button class="btn-mestre" id="criar">Criar post</button>
+    </div></div>`;
+}
 
-  document.getElementById("resumo").innerHTML = [
-    [ (contas.contas||[]).filter(c=>c.status==="ok").length, "contas no ar"],
-    [ hoje.length,      "publicadas hoje"],
-    [ pendentes.length, "na fila"],
-    [ erros.length,     "com erro"]
-  ].map(([n,r])=>`<div class="cartao"><div class="numero">${n}</div>
-      <div class="rotulo">${r}</div></div>`).join("");
+function fita(){
+  const caidas = S.contas.filter(c=>c.status==="alarme"||c.status==="sem_token");
+  const erros  = S.agenda.filter(i=>i.status==="erro");
+  if(!caidas.length && !erros.length) return "";
+  const partes=[];
+  if(caidas.length) partes.push(`<b>${caidas.length} conta(s) exigindo olhada:</b> `+
+    caidas.map(c=>`${esc(c.arroba||c.id)} <span style="opacity:.7">(${esc(c.detalhe||c.status)})</span>`).join(", "));
+  if(erros.length) partes.push(`<b>${erros.length} publicacao(oes) com erro.</b>`);
+  return `<div class="fita">${partes.join(" &nbsp;|&nbsp; ")}</div>`;
+}
 
-  document.getElementById("contas").innerHTML = tabela(
-    ["Conta","Estado","Seguidores","Posts","Teto 24h","Checada"],
-    (contas.contas||[]).map(c=>{
-      const [cls,txt] = ESTADOS[c.status] || ESTADOS.desconhecido;
-      const usado = c.teto_usado ?? 0, total = c.teto_total ?? 100;
-      const pct = Math.min(100, Math.round(usado/total*100));
-      return [
-        `<strong>${c.arroba||c.id}</strong>`,
-        `<span class="bolinha ${cls}"></span>${txt}` +
-          (c.detalhe?`<div class="fraco mono">${c.detalhe}</div>`:""),
-        c.seguidores ?? "-",
-        c.posts ?? "-",
-        `${usado}/${total}<div class="barra"><i style="width:${pct}%"></i></div>`,
-        `<span class="fraco">${quandoLegivel(c.ultima_checagem)}</span>`
-      ];
-    }),
-    "Nenhuma conta cadastrada ainda. Preencha dados/contas.json."
-  );
+/* ---------- vista de mes ---------- */
+function vistaMes(){
+  const d=S.foco, primeiro=new Date(d.getFullYear(),d.getMonth(),1);
+  const ini=new Date(primeiro); ini.setDate(1-primeiro.getDay());
+  const hoje=chave(new Date());
+  let html = DIAS.map(x=>`<div class="cab">${x}</div>`).join("");
 
-  document.getElementById("proximas").innerHTML = tabela(
-    ["Quando","Conta","Video","Legenda"],
-    pendentes.slice(0,25).map(i=>[
-      `<span class="mono">${quandoLegivel(i.quando)}</span>`,
-      i.conta,
-      `<span class="mono fraco">${i.video.replace("midia/","")}</span>`,
-      (i.legenda||"").slice(0,60) || `<span class="fraco">sem legenda</span>`
-    ]),
-    "Fila vazia. Rode agendar.py para montar a grade."
-  );
+  for(let i=0;i<42;i++){
+    const dia=new Date(ini); dia.setDate(ini.getDate()+i);
+    const k=chave(dia), fora=dia.getMonth()!==d.getMonth();
+    const itens=itensDoDia(k).sort((a,b)=>a.quando<b.quando?-1:1);
+    html += `<div class="dia ${fora?"fora":""} ${k===hoje?"now":""}" data-dia="${k}">
+      <div class="num">${dia.getDate()}</div>
+      ${itens.slice(0,4).map(chip).join("")}
+      ${itens.length>4?`<div class="mais">+${itens.length-4}</div>`:""}
+    </div>`;
+  }
+  return `<div class="grade">${html}</div>`;
+}
 
-  document.getElementById("feitas").innerHTML = tabela(
-    ["Quando","Conta","Video","Id da midia"],
-    feitas.slice(0,15).map(i=>[
-      `<span class="mono">${quandoLegivel(i.publicado_em||i.quando)}</span>`,
-      i.conta,
-      `<span class="mono fraco">${i.video.replace("midia/","")}</span>`,
-      `<span class="mono fraco">${i.media_id||"-"}</span>`
-    ]),
-    "Nada publicado ainda."
-  );
-})();
+/* ---------- vistas de semana e dia ---------- */
+function vistaHoras(){
+  const dias = S.vista==="semana"
+    ? Array.from({length:7},(_,i)=>{const x=inicioSemana(S.foco);x.setDate(x.getDate()+i);return x;})
+    : [S.foco];
+  const hoje=chave(new Date());
+  let cab=`<div class="hora-lin" style="--cols:${dias.length}"><div class="hora-rot"></div>`;
+  cab += dias.map(x=>`<div class="cab" ${chave(x)===hoje?'style="color:var(--marca)"':""}>
+    ${DIAS[x.getDay()]} ${x.getDate()}</div>`).join("")+`</div>`;
+
+  let corpo="";
+  for(let h=0;h<24;h++){
+    corpo += `<div class="hora-lin" style="--cols:${dias.length}">
+      <div class="hora-rot">${String(h).padStart(2,"0")}:00</div>`;
+    for(const dia of dias){
+      const k=chave(dia);
+      const itens=itensDoDia(k).filter(i=>new Date(i.quando).getHours()===h)
+                               .sort((a,b)=>a.quando<b.quando?-1:1);
+      corpo += `<div class="cel" data-dia="${k}" data-hora="${h}">${itens.map(chip).join("")}</div>`;
+    }
+    corpo += `</div>`;
+  }
+  return `<div class="semana">${cab}${corpo}</div>`;
+}
+
+function itensDoDia(k){
+  return S.agenda.filter(i=>!S.ocultas.has(i.conta) && chave(new Date(i.quando))===k);
+}
+
+function chip(i){
+  const c=S.contas.find(x=>x.id===i.conta);
+  const cls = i.status==="publicado"?"publicado":i.status==="erro"?"erro":"";
+  return `<div class="chip ${cls}" draggable="true" data-id="${esc(i.id)}"
+    style="border-left-color:${corDe(i.conta)}" title="${esc(c?c.arroba:i.conta)} | ${esc(i.legenda||"")}">
+    <span class="h">${hhmm(new Date(i.quando))}</span>
+    <span class="t">${esc(i.legenda||i.video.replace("midia/",""))}</span></div>`;
+}
+
+function inicioSemana(d){ const x=new Date(d); x.setDate(d.getDate()-d.getDay());
+  x.setHours(0,0,0,0); return x; }
+
+/* ---------------- eventos ---------------- */
+function ligarEventos(){
+  $("#ant").onclick  = ()=>andar(-1);
+  $("#prox").onclick = ()=>andar(1);
+  $("#hoje").onclick = ()=>{S.foco=new Date();desenhar()};
+  document.querySelectorAll("[data-vista]").forEach(b=>b.onclick=()=>{
+    S.vista=b.dataset.vista; localStorage.setItem("pd_vista",S.vista); desenhar();});
+  document.querySelectorAll("[data-canal]").forEach(el=>el.onclick=()=>{
+    const id=el.dataset.canal;
+    S.ocultas.has(id)?S.ocultas.delete(id):S.ocultas.add(id); desenhar();});
+
+  $("#add-conta").onclick = abrirConta;
+  $("#criar").onclick = ()=>abrirCompositor(null,null);
+  $("#lote").onclick = abrirLote;
+  if($("#ligar")) $("#ligar").onclick = abrirLigar;
+
+  // clique em espaco vazio abre o compositor ja naquela data e hora
+  document.querySelectorAll("[data-dia]").forEach(cel=>{
+    cel.onclick = e=>{
+      if(e.target.closest(".chip")) return;
+      const d=new Date(cel.dataset.dia+"T12:00:00");
+      if(cel.dataset.hora!==undefined) d.setHours(+cel.dataset.hora,0,0,0);
+      abrirCompositor(null,d);
+    };
+    cel.ondragover = e=>{e.preventDefault();cel.classList.add("arrasta")};
+    cel.ondragleave = ()=>cel.classList.remove("arrasta");
+    cel.ondrop = e=>{
+      e.preventDefault(); cel.classList.remove("arrasta");
+      mover(e.dataTransfer.getData("id"), cel.dataset.dia, cel.dataset.hora);
+    };
+  });
+  document.querySelectorAll(".chip").forEach(ch=>{
+    ch.ondragstart = e=>e.dataTransfer.setData("id",ch.dataset.id);
+    ch.onclick = e=>{e.stopPropagation();
+      abrirCompositor(S.agenda.find(i=>i.id===ch.dataset.id),null);};
+  });
+}
+
+function andar(n){
+  const d=S.foco;
+  if(S.vista==="mes") d.setMonth(d.getMonth()+n);
+  else if(S.vista==="semana") d.setDate(d.getDate()+7*n);
+  else d.setDate(d.getDate()+n);
+  desenhar();
+}
+
+async function mover(id, dia, hora){
+  const item=S.agenda.find(i=>i.id===id);
+  if(!item || item.status==="publicado") return;
+  if(!S.token) return alert("Ligue a gravacao para mover posts.");
+  const antigo=new Date(item.quando), novo=new Date(dia+"T00:00:00");
+  novo.setHours(hora!==undefined?+hora:antigo.getHours(), antigo.getMinutes(),0,0);
+  item.quando = novo.toISOString();
+  desenhar();
+  await salvarAgenda(`mover ${id}`);
+}
+
+/* ---------------- gravacao ---------------- */
+async function salvarAgenda(msg){
+  try{
+    S.salvando=true;
+    await gravarArquivo("dados/agenda.json",
+      {_comentario:"Gerado pelo painel e por publicador/agendar.py.", itens:S.agenda}, msg);
+  }catch(e){ alert("nao consegui gravar: "+e.message); }
+  finally{ S.salvando=false; }
+}
+async function salvarContas(msg){
+  try{
+    await gravarArquivo("dados/contas.json",
+      {_comentario:"segredo_token e o NOME do segredo no GitHub, nunca o token.",
+       atualizado_em:S.atualizado||null, alarmes:0, contas:S.contas}, msg);
+  }catch(e){ alert("nao consegui gravar: "+e.message); }
+}
+
+/* ---------------- modais ---------------- */
+function fechar(){ S.modal=null; document.querySelector(".veu")?.remove(); }
+function abrir(html){ S.modal=html; document.body.insertAdjacentHTML("beforeend",html); ligarModal(); }
+
+function ligarModal(){
+  document.querySelectorAll("[data-fechar]").forEach(b=>b.onclick=fechar);
+  const veu=document.querySelector(".veu");
+  if(veu) veu.onclick = e=>{ if(e.target===veu) fechar(); };
+  if(window._ligar) window._ligar();
+}
+
+/* --- ligar gravacao --- */
+function abrirLigar(){
+  abrir(`<div class="veu"><div class="modal estreito">
+    <div class="m-topo"><h3>Ligar gravacao</h3><button data-fechar>&times;</button></div>
+    <div class="m-corpo">
+      <p class="dica">O painel le os dados sozinho. Para <b>criar, mover e apagar</b> post
+      ele precisa de uma chave do GitHub com permissao de escrita no repositorio.</p>
+      <div class="passo"><b>1</b><div>Abra
+        <a href="https://github.com/settings/personal-access-tokens/new" target="_blank">
+        github.com/settings/personal-access-tokens</a></div></div>
+      <div class="passo"><b>2</b><div>Escolha so o repositorio
+        <code>publicador-dark</code></div></div>
+      <div class="passo"><b>3</b><div>Em permissoes, ligue <code>Contents</code> como
+        <code>Read and write</code></div></div>
+      <div><label>Cole a chave aqui</label>
+        <input id="tk" type="password" placeholder="github_pat_..."></div>
+      <p class="aviso">A chave fica so no seu navegador, em armazenamento local.
+      Ela nunca entra no repositorio nem aparece para mais ninguem.</p>
+    </div>
+    <div class="m-pe"><button class="btn2" data-fechar>Cancelar</button>
+      <button class="btn-mestre" id="ok">Ligar</button></div></div></div>`);
+  window._ligar=()=>{ const b=$("#ok"); if(!b) return;
+    b.onclick=async()=>{
+      const v=$("#tk").value.trim(); if(!v) return;
+      S.token=v; localStorage.setItem("pd_token",v);
+      fechar(); window._ligar=null; await carregar();
+    };};
+  window._ligar();
+}
+
+/* --- adicionar conta (o fluxo de autorizacao) --- */
+function abrirConta(){
+  const n = S.contas.length+1;
+  const segredo = `IG_TOKEN_CONTA${n}`;
+  abrir(`<div class="veu"><div class="modal">
+    <div class="m-topo"><h3>Adicionar conta</h3><button data-fechar>&times;</button></div>
+    <div class="m-corpo"><div class="duas">
+      <div style="display:grid;gap:14px">
+        <div class="passo"><b>1</b><div>Crie um aplicativo Meta <b>novo</b>, tipo Outro,
+          produto Instagram, configuracao <b>API com login do Instagram</b>.
+          <a href="https://developers.facebook.com/apps" target="_blank">abrir painel</a>
+          <div class="aviso">Nao reaproveite o aplicativo que atende cliente.
+          Isso amarraria a identidade da agencia a operacao dark.</div></div></div>
+        <div class="passo"><b>2</b><div>No aplicativo, adicione a conta como
+          <b>Testador do Instagram</b>, e aceite o convite em
+          <a href="https://www.instagram.com/accounts/manage_access/" target="_blank">
+          manage_access</a>. A conta precisa ser profissional.</div></div>
+        <div class="passo"><b>3</b><div>Gere o token e descubra o identificador com
+          <code>GET /me?fields=user_id,username</code></div></div>
+        <div class="passo"><b>4</b><div>Guarde o token como segredo
+          <code>${segredo}</code> em
+          <a href="https://github.com/${REPO.dono}/${REPO.nome}/settings/secrets/actions/new"
+          target="_blank">Secrets, Actions</a>.
+          <div class="aviso">O token do Instagram nunca passa por este painel.
+          Ele vai direto para o cofre do GitHub, que so o motor le.</div></div></div>
+      </div>
+      <div style="display:grid;gap:12px;align-content:start">
+        <div><label>Arroba</label><input id="c-arroba" placeholder="@minhapagina"></div>
+        <div><label>Identificador numerico</label><input id="c-id" placeholder="17841..."></div>
+        <div><label>Nome do segredo</label><input id="c-seg" value="${segredo}"></div>
+        <div><label>Criada em</label><input id="c-nasc" type="date"
+          value="${new Date().toISOString().slice(0,10)}">
+          <div class="aviso" style="margin-top:5px">Define a curva de aquecimento.
+          Ate 21 dias, 1 post por dia.</div></div>
+      </div>
+    </div></div>
+    <div class="m-pe"><button class="btn2" data-fechar>Cancelar</button>
+      <button class="btn-mestre" id="ok">Adicionar</button></div></div></div>`);
+  window._ligar=()=>{ const b=$("#ok"); if(!b) return;
+    b.onclick=async()=>{
+      if(!S.token) return alert("Ligue a gravacao primeiro.");
+      const arroba=$("#c-arroba").value.trim(), igid=$("#c-id").value.trim();
+      if(!arroba||!igid) return alert("Preencha arroba e identificador.");
+      S.contas.push({ id:"conta"+(S.contas.length+1),
+        arroba:arroba.startsWith("@")?arroba:"@"+arroba, ig_user_id:igid,
+        segredo_token:$("#c-seg").value.trim(), criada_em:$("#c-nasc").value,
+        ativa:true, status:"desconhecido", detalhe:null, ultima_checagem:null,
+        seguidores:null, posts:null, teto_usado:null, teto_total:null });
+      fechar(); window._ligar=null; desenhar();
+      await salvarContas(`conta ${arroba}`);
+    };};
+  window._ligar();
+}
+
+/* --- compositor --- */
+function abrirCompositor(item, quando){
+  const sel = new Set(item?[item.conta]:S.contas.filter(c=>c.ativa).map(c=>c.id).slice(0,1));
+  const dt  = item?new Date(item.quando):(quando||new Date(Date.now()+36e5));
+  const midias = S.midia.length?S.midia:(item?[item.video.replace("midia/","")]:[]);
+
+  abrir(`<div class="veu"><div class="modal">
+    <div class="m-topo"><h3>${item?"Editar post":"Criar post"}</h3>
+      <button data-fechar>&times;</button></div>
+    <div class="m-corpo"><div class="duas">
+      <div style="display:grid;gap:15px">
+        <div><label>Canais</label><div class="escolhas" id="canais">
+          ${S.contas.map(c=>`<div class="escolha ${sel.has(c.id)?"on":""}" data-c="${esc(c.id)}">
+            <div class="av" style="background:${corDe(c.id)}">${esc(inicial(c))}</div>
+            ${esc(c.arroba||c.id)}</div>`).join("")||
+            `<span class="dica">Nenhuma conta. Adicione uma primeiro.</span>`}
+        </div></div>
+        <div><label>Legenda</label>
+          <textarea id="leg" placeholder="Escreva a legenda...">${esc(item?.legenda||"")}</textarea>
+          <div class="aviso" style="margin-top:5px">Legenda repetida entre contas e sinal de
+          operacao coordenada. Escreva uma por post.</div></div>
+        <div style="display:grid;grid-template-columns:1fr 190px;gap:12px">
+          <div><label>Video</label>
+            <select id="vid">${midias.length?midias.map(m=>
+              `<option ${item&&item.video.endsWith(m)?"selected":""}>${esc(m)}</option>`).join("")
+              :`<option value="">nenhum video em midia/</option>`}</select></div>
+          <div><label>Quando</label>
+            <input id="qd" type="datetime-local" value="${iso(dt)}"></div>
+        </div>
+      </div>
+      <div><label>Previa</label><div class="previa" id="previa"></div></div>
+    </div></div>
+    <div class="m-pe">
+      ${item?`<button class="btn2" id="apagar" style="margin-right:auto;color:var(--alarme)">
+        Apagar</button>`:""}
+      <button class="btn2" data-fechar>Cancelar</button>
+      <button class="btn-mestre" id="ok">${item?"Salvar":"Agendar"}</button>
+    </div></div></div>`);
+
+  window._ligar=()=>{
+    const previa=()=>{
+      const c=S.contas.find(x=>sel.has(x.id))||{arroba:"@conta"};
+      const v=$("#vid")?.value;
+      $("#previa").innerHTML=`
+        <div class="cabec"><div class="av" style="background:${corDe(c.id||"x")}">
+          ${esc(inicial(c))}</div><b style="font-size:12.5px">${esc(c.arroba||"@conta")}</b></div>
+        <div class="quadro">${v?`<video src="midia/${encodeURIComponent(v)}" muted
+          playsinline preload="metadata"></video>`:"sem video"}</div>
+        <div style="color:var(--fraco);white-space:pre-wrap">${esc($("#leg")?.value||"sem legenda")}</div>`;
+    };
+    document.querySelectorAll("#canais [data-c]").forEach(el=>el.onclick=()=>{
+      const id=el.dataset.c;
+      sel.has(id)?sel.delete(id):sel.add(id);
+      el.classList.toggle("on"); previa();
+    });
+    $("#leg").oninput=previa; if($("#vid")) $("#vid").onchange=previa;
+    previa();
+
+    if($("#apagar")) $("#apagar").onclick=async()=>{
+      if(!confirm("Apagar este post?")) return;
+      S.agenda=S.agenda.filter(i=>i.id!==item.id);
+      fechar(); window._ligar=null; desenhar(); await salvarAgenda("apagar post");
+    };
+
+    $("#ok").onclick=async()=>{
+      if(!S.token) return alert("Ligue a gravacao primeiro.");
+      const video=$("#vid").value, quando=new Date($("#qd").value).toISOString();
+      const legenda=$("#leg").value.trim();
+      if(!video) return alert("Nao ha video em midia/.");
+      if(!sel.size) return alert("Escolha ao menos um canal.");
+
+      if(item){
+        Object.assign(item,{conta:[...sel][0],video:"midia/"+video,legenda,quando});
+      }else{
+        // Um post por canal, com desvio de minutos para nao bater no mesmo instante.
+        [...sel].forEach((cid,n)=>{
+          const q=new Date(quando); q.setMinutes(q.getMinutes()+n*7);
+          S.agenda.push({ id:Math.random().toString(36).slice(2,14), conta:cid,
+            video:"midia/"+video, legenda, quando:q.toISOString(),
+            status:"agendado", media_id:null, erro:null, tentativas:0 });
+        });
+      }
+      fechar(); window._ligar=null; desenhar();
+      await salvarAgenda(item?"editar post":"agendar post");
+    };
+  };
+  window._ligar();
+}
+
+/* --- agendamento em lote --- */
+function abrirLote(){
+  abrir(`<div class="veu"><div class="modal estreito">
+    <div class="m-topo"><h3>Agendamento em lote</h3><button data-fechar>&times;</button></div>
+    <div class="m-corpo">
+      <p class="dica">Espalha todos os videos de <code>midia/</code> pelas contas ativas.
+      Aplica desvio de horario, legenda unica e curva de aquecimento.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div><label>Comeca em</label><input id="l-ini" type="date"
+          value="${new Date(Date.now()+864e5).toISOString().slice(0,10)}"></div>
+        <div><label>Horarios por dia</label><input id="l-hor" value="09:00,13:00,19:00"></div>
+      </div>
+      <div><label>Dias da semana</label><input id="l-dias" value="seg,ter,qua,qui,sex,sab,dom"></div>
+      <p class="aviso">${S.midia.length} video(s) em midia/ e
+      ${S.contas.filter(c=>c.ativa).length} conta(s) ativa(s).
+      Cada horario informado e um post por dia, no maximo. A curva de aquecimento
+      pode reduzir isso para contas novas.</p>
+      <p class="dica">O lote roda no GitHub, pelo fluxo <b>agendar</b>. Apertar abaixo
+      abre a pagina para disparar.</p>
+    </div>
+    <div class="m-pe"><button class="btn2" data-fechar>Fechar</button>
+      <button class="btn-mestre" id="ok">Abrir disparo</button></div></div></div>`);
+  window._ligar=()=>{ const b=$("#ok"); if(!b) return;
+    b.onclick=()=>window.open(
+      `https://github.com/${REPO.dono}/${REPO.nome}/actions/workflows/agendar.yml`,"_blank");
+  };
+  window._ligar();
+}
+
+carregar();
 </script>
 </body>
 </html>

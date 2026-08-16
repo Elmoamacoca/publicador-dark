@@ -1,0 +1,54 @@
+name: agendar
+
+# Agendamento em lote. Disparado pelo botao Lote do painel, ou aqui na mao.
+# Espalha os videos de midia/ pelas contas ativas, aplicando desvio de horario,
+# legenda unica e curva de aquecimento.
+on:
+  workflow_dispatch:
+    inputs:
+      inicio:
+        description: "Data inicial, AAAA-MM-DD"
+        required: true
+      horarios:
+        description: "Horarios por dia, separados por virgula"
+        required: true
+        default: "09:00,13:00,19:00"
+      dias:
+        description: "Dias da semana"
+        required: true
+        default: "seg,ter,qua,qui,sex,sab,dom"
+      simular:
+        description: "Só mostrar, sem gravar"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  agendar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: montar a grade
+        working-directory: publicador
+        run: |
+          python agendar.py \
+            --inicio  "${{ inputs.inicio }}" \
+            --horarios "${{ inputs.horarios }}" \
+            --dias     "${{ inputs.dias }}" \
+            ${{ inputs.simular && '--simular' || '' }}
+
+      - name: gravar a agenda
+        if: ${{ !inputs.simular }}
+        run: |
+          git config user.name  "agendador"
+          git config user.email "agendador@users.noreply.github.com"
+          git add dados/
+          git diff --staged --quiet || git commit -m "lote a partir de ${{ inputs.inicio }}"
+          git push
