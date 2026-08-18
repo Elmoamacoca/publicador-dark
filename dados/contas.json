@@ -1,6 +1,6 @@
 {
   "_comentario": "EXEMPLO. Troque pelas contas reais e marque ativa true. segredo_token e o NOME do segredo no GitHub, nunca o token.",
-  "atualizado_em": "2026-08-18T22:44:05.537115+00:00",
+  "atualizado_em": "2026-08-18T23:40:17.488223+00:00",
   "alarmes": 2,
   "contas": [
     {
@@ -12,7 +12,7 @@
       "ativa": false,
       "status": "sem_token",
       "detalhe": "segredo IG_TOKEN_CONTA1 nao configurado",
-      "ultima_checagem": "2026-08-18T22:44:05.537115+00:00",
+      "ultima_checagem": "2026-08-18T23:40:17.488223+00:00",
       "seguidores": null,
       "posts": null,
       "teto_usado": null,
@@ -27,7 +27,7 @@
       "ativa": false,
       "status": "sem_token",
       "detalhe": "segredo IG_TOKEN_CONTA2 nao configurado",
-      "ultima_checagem": "2026-08-18T22:44:05.537115+00:00",
+      "ultima_checagem": "2026-08-18T23:40:17.488223+00:00",
       "seguidores": null,
       "posts": null,
       "teto_usado": null,
