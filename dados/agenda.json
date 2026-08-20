@@ -7,9 +7,9 @@
       "video": "midia/97022e90-da51-43e1-ac1b-7b34a72f2d86.mp4",
       "legenda": "legenda numero 1",
       "quando": "2026-08-20T12:06:00+00:00",
-      "status": "agendado",
+      "status": "erro",
       "media_id": null,
-      "erro": null,
+      "erro": "segredo IG_TOKEN_CONTA1 vazio no GitHub",
       "tentativas": 0
     },
     {
@@ -18,9 +18,9 @@
       "video": "midia/teste-1.mp4",
       "legenda": "legenda numero 2",
       "quando": "2026-08-20T12:20:00+00:00",
-      "status": "agendado",
+      "status": "erro",
       "media_id": null,
-      "erro": null,
+      "erro": "segredo IG_TOKEN_CONTA2 vazio no GitHub",
       "tentativas": 0
     },
     {
