@@ -29,9 +29,9 @@
       "video": "midia/teste-2.mp4",
       "legenda": "legenda numero 3",
       "quando": "2026-08-20T15:56:00+00:00",
-      "status": "agendado",
+      "status": "erro",
       "media_id": null,
-      "erro": null,
+      "erro": "segredo IG_TOKEN_CONTA2 vazio no GitHub",
       "tentativas": 0
     },
     {
