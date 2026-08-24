@@ -1,0 +1,1678 @@
+diff --git a/apps/frontend/public/favicon.ico b/apps/frontend/public/favicon.ico
+index 5b622e1..54d9835 100755
+Binary files a/apps/frontend/public/favicon.ico and b/apps/frontend/public/favicon.ico differ
+diff --git a/apps/frontend/public/favicon.png b/apps/frontend/public/favicon.png
+index 57d731f..f90cf68 100755
+Binary files a/apps/frontend/public/favicon.png and b/apps/frontend/public/favicon.png differ
+diff --git a/apps/frontend/src/app/(app)/oauth/authorize/page.tsx b/apps/frontend/src/app/(app)/oauth/authorize/page.tsx
+index 14d203d..1ea303e 100644
+--- a/apps/frontend/src/app/(app)/oauth/authorize/page.tsx
++++ b/apps/frontend/src/app/(app)/oauth/authorize/page.tsx
+@@ -179,9 +179,9 @@ export default function OAuthAuthorizePage() {
+               will be able to:
+             </div>
+             <ul className="text-[14px] list-disc list-inside space-y-[4px]">
+-              <li>Access your integrations and channels</li>
+-              <li>Create and schedule posts on your behalf</li>
+-              <li>Read your post analytics</li>
++              <li>Acessar suas integrações e canais</li>
++              <li>Criar e agendar posts em seu nome</li>
++              <li>Ler as métricas dos seus posts</li>
+             </ul>
+           </div>
+ 
+diff --git a/apps/frontend/src/components/admin/admin-errors.component.tsx b/apps/frontend/src/components/admin/admin-errors.component.tsx
+index 8daf99e..35595ff 100644
+--- a/apps/frontend/src/components/admin/admin-errors.component.tsx
++++ b/apps/frontend/src/components/admin/admin-errors.component.tsx
+@@ -61,9 +61,9 @@ const ErrorDetailsModal: FC<{ row: ErrorRow }> = ({ row }) => {
+   return (
+     <div className="rounded-[4px] border border-newTableBorder bg-newBgColorInner px-[16px] pb-[16px] relative w-full max-h-[80vh] overflow-auto">
+       <div className="sticky top-0 bg-newBgColorInner py-[16px] flex items-center justify-between gap-[12px] z-10 border-b border-newTableBorder mb-[12px]">
+-        <div className="text-[16px] font-[600]">Error Details</div>
++        <div className="text-[16px] font-[600]">Detalhes do erro</div>
+         <div className="flex gap-[8px] items-center">
+-          <Button onClick={copyAll}>Copy Debug Code</Button>
++          <Button onClick={copyAll}>Copiar código de diagnóstico</Button>
+           <button
+             className="outline-none w-[28px] h-[28px] flex items-center justify-center hover:bg-tableBorder cursor-pointer rounded"
+             type="button"
+@@ -113,7 +113,7 @@ const ErrorDetailsModal: FC<{ row: ErrorRow }> = ({ row }) => {
+           </div>
+         </div>
+         <div className="col-span-2">
+-          <div className="opacity-60">Post ID</div>
++          <div className="opacity-60">Identificador do post</div>
+           <div>{row.postId}</div>
+         </div>
+       </div>
+@@ -260,7 +260,7 @@ export const AdminErrorsComponent: FC = () => {
+             }}
+             className="bg-newBgColorInner h-[38px] border border-newTableBorder rounded-[8px] px-[10px] text-[14px] text-textColor min-w-[180px]"
+           >
+-            <option value="">All platforms</option>
++            <option value="">Todas as plataformas</option>
+             {(platforms || []).map((p) => (
+               <option key={p} value={p}>
+                 {p}
+@@ -270,7 +270,7 @@ export const AdminErrorsComponent: FC = () => {
+         </div>
+ 
+         <div className="flex flex-col gap-[6px]">
+-          <div className="text-[12px] opacity-70">Email contains</div>
++          <div className="text-[12px] opacity-70">O e-mail contém</div>
+           <div className="flex gap-[8px]">
+             <input
+               value={emailInput}
+@@ -298,7 +298,7 @@ export const AdminErrorsComponent: FC = () => {
+         </label>
+ 
+         <div className="flex flex-col gap-[6px]">
+-          <div className="text-[12px] opacity-70">Per page</div>
++          <div className="text-[12px] opacity-70">Por página</div>
+           <select
+             value={limit}
+             onChange={(e) => {
+@@ -323,15 +323,15 @@ export const AdminErrorsComponent: FC = () => {
+       {isLoading ? (
+         <LoadingComponent />
+       ) : error ? (
+-        <div className="text-red-400">Failed to load errors.</div>
++        <div className="text-red-400">Não foi possível carregar os erros.</div>
+       ) : !data || data.items.length === 0 ? (
+-        <div className="opacity-70">No errors found.</div>
++        <div className="opacity-70">Nenhum erro encontrado.</div>
+       ) : (
+         <div className="border border-newTableBorder rounded-[8px] overflow-hidden">
+           <div className="grid grid-cols-[170px_120px_220px_1fr_220px] gap-[12px] px-[12px] py-[10px] bg-newBgColorInner text-[12px] uppercase opacity-70 border-b border-newTableBorder">
+             <div>Created</div>
+             <div>Platform</div>
+-            <div>User / Org</div>
++            <div>Usuário ou organização</div>
+             <div>Message</div>
+             <div className="text-right">Actions</div>
+           </div>
+diff --git a/apps/frontend/src/components/admin/admin-stats.component.tsx b/apps/frontend/src/components/admin/admin-stats.component.tsx
+index 1b5a516..221933b 100644
+--- a/apps/frontend/src/components/admin/admin-stats.component.tsx
++++ b/apps/frontend/src/components/admin/admin-stats.component.tsx
+@@ -151,7 +151,7 @@ export const AdminStatsComponent: FC = () => {
+   return (
+     <div className="flex flex-col gap-[16px] text-textColor">
+       <div className="flex items-center justify-between">
+-        <div className="text-[20px] font-[600]">Admin Stats</div>
++        <div className="text-[20px] font-[600]">Estatísticas de administração</div>
+         {data && (
+           <div className="text-[13px] opacity-70">
+             {new Date(data.from).toLocaleDateString()} —{' '}
+@@ -226,19 +226,19 @@ export const AdminStatsComponent: FC = () => {
+       {isLoading ? (
+         <LoadingComponent />
+       ) : error || !data ? (
+-        <div className="text-red-400">Failed to load stats.</div>
++        <div className="text-red-400">Não foi possível carregar as estatísticas.</div>
+       ) : (
+         <div className="overflow-x-auto pb-[8px] scrollbar scrollbar-thumb-fifth scrollbar-track-newBgColor flex flex-col gap-[16px]">
+           <div className="flex gap-[12px]">
+             <div className="flex-1 min-w-[220px] shrink-0">
+               <SummaryCard
+-                label="Total posts published"
++                label="Total de posts publicados"
+                 value={data.posts.total}
+               />
+             </div>
+             <div className="flex-1 min-w-[220px] shrink-0">
+               <SummaryCard
+-                label="Total connected accounts"
++                label="Total de contas conectadas"
+                 value={data.connected.total}
+               />
+             </div>
+@@ -251,7 +251,7 @@ export const AdminStatsComponent: FC = () => {
+             {data.publishingChannels && (
+               <div className="flex-1 min-w-[220px] shrink-0">
+                 <SummaryCard
+-                  label="Unique channels - published (all platforms combined)"
++                  label="Canais únicos, publicados (todas as plataformas)"
+                   value={data.publishingChannels.total}
+                 />
+               </div>
+@@ -259,7 +259,7 @@ export const AdminStatsComponent: FC = () => {
+             {data.scheduledChannels && (
+               <div className="flex-1 min-w-[220px] shrink-0">
+                 <SummaryCard
+-                  label="Unique channels - scheduled (all platforms combined)"
++                  label="Canais únicos, agendados (todas as plataformas)"
+                   value={data.scheduledChannels.total}
+                 />
+               </div>
+@@ -267,7 +267,7 @@ export const AdminStatsComponent: FC = () => {
+             {data.publishingAccounts && (
+               <div className="flex-1 min-w-[220px] shrink-0">
+                 <SummaryCard
+-                  label="Unique users - published (all platforms combined)"
++                  label="Usuários únicos, publicados (todas as plataformas)"
+                   value={data.publishingAccounts.total}
+                 />
+               </div>
+@@ -275,7 +275,7 @@ export const AdminStatsComponent: FC = () => {
+             {data.scheduledAccounts && (
+               <div className="flex-1 min-w-[220px] shrink-0">
+                 <SummaryCard
+-                  label="Unique users - scheduled (all platforms combined)"
++                  label="Usuários únicos, agendados (todas as plataformas)"
+                   value={data.scheduledAccounts.total}
+                 />
+               </div>
+@@ -285,13 +285,13 @@ export const AdminStatsComponent: FC = () => {
+           <div className="flex gap-[12px] items-start">
+             <div className="flex-1 min-w-[220px] shrink-0">
+               <PerSocialTable
+-                title="Posts published per social"
++                title="Posts publicados por rede"
+                 block={data.posts}
+               />
+             </div>
+             <div className="flex-1 min-w-[220px] shrink-0">
+               <PerSocialTable
+-                title="Connected accounts per social"
++                title="Contas conectadas por rede"
+                 block={data.connected}
+               />
+             </div>
+@@ -308,7 +308,7 @@ export const AdminStatsComponent: FC = () => {
+             {data.publishingChannels && (
+               <div className="flex-1 min-w-[220px] shrink-0">
+                 <PerSocialTable
+-                  title="Unique channels - published"
++                  title="Canais únicos, publicados"
+                   block={data.publishingChannels}
+                 />
+               </div>
+@@ -316,7 +316,7 @@ export const AdminStatsComponent: FC = () => {
+             {data.scheduledChannels && (
+               <div className="flex-1 min-w-[220px] shrink-0">
+                 <PerSocialTable
+-                  title="Unique channels - scheduled"
++                  title="Canais únicos, agendados"
+                   block={data.scheduledChannels}
+                 />
+               </div>
+@@ -324,7 +324,7 @@ export const AdminStatsComponent: FC = () => {
+             {data.publishingAccounts && (
+               <div className="flex-1 min-w-[220px] shrink-0">
+                 <PerSocialTable
+-                  title="Unique users - published"
++                  title="Usuários únicos, publicados"
+                   block={data.publishingAccounts}
+                 />
+               </div>
+@@ -332,7 +332,7 @@ export const AdminStatsComponent: FC = () => {
+             {data.scheduledAccounts && (
+               <div className="flex-1 min-w-[220px] shrink-0">
+                 <PerSocialTable
+-                  title="Unique users - scheduled"
++                  title="Usuários únicos, agendados"
+                   block={data.scheduledAccounts}
+                 />
+               </div>
+diff --git a/apps/frontend/src/components/agents/agent.chat.tsx b/apps/frontend/src/components/agents/agent.chat.tsx
+index b12cdc8..657b767 100644
+--- a/apps/frontend/src/components/agents/agent.chat.tsx
++++ b/apps/frontend/src/components/agents/agent.chat.tsx
+@@ -152,7 +152,7 @@ const Message: FC<UserMessageProps> = (props) => {
+   const convertContentToImagesAndVideo = useMemo(() => {
+     return (props.message?.content || '')
+       .replace(/Video: (http.*mp4\n)/g, (match, p1) => {
+-        return `<video controls class="h-[150px] w-[150px] rounded-[8px] mb-[10px]"><source src="${p1.trim()}" type="video/mp4">Your browser does not support the video tag.</video>`;
++        return `<video controls class="h-[150px] w-[150px] rounded-[8px] mb-[10px]"><source src="${p1.trim()}" type="video/mp4">Seu navegador não suporta vídeo.</video>`;
+       })
+       .replace(/Image: (http.*\n)/g, (match, p1) => {
+         return `<img src="${p1.trim()}" class="h-[150px] w-[150px] max-w-full border border-newBgColorInner" />`;
+diff --git a/apps/frontend/src/components/analytics/analytics.component.tsx b/apps/frontend/src/components/analytics/analytics.component.tsx
+index 6ab26d2..77feb63 100644
+--- a/apps/frontend/src/components/analytics/analytics.component.tsx
++++ b/apps/frontend/src/components/analytics/analytics.component.tsx
+@@ -29,7 +29,7 @@ export const AnalyticsComponent: FC = () => {
+         <StarsTableComponent />
+       </div>
+       {/*<div className="w-[318px] bg-third mt-[-44px] p-[16px]">*/}
+-      {/*    <h2 className="text-[20px]">News Feed</h2>*/}
++      {/*    <h2 className="text-[20px]">Feed de notícias</h2>*/}
+       {/*    <div className="my-[30px] flex h-[32px]">*/}
+       {/*        <div className="flex-1 bg-forth flex justify-center items-center">*/}
+       {/*            Global*/}
+@@ -49,7 +49,7 @@ export const AnalyticsComponent: FC = () => {
+       {/*                    </div>*/}
+       {/*                    <div className="self-stretch text-neutral-400 text-xs font-normal">O atual sistema político precisa mudar para valorizar o trabalho e garantir igualdade de oportunidad</div>*/}
+       {/*                    <div className="self-stretch justify-start items-center gap-1 inline-flex">*/}
+-      {/*                        <div className="text-customColor10 text-xs font-normal">See Tweet</div>*/}
++      {/*                        <div className="text-customColor10 text-xs font-normal">Ver publicação</div>*/}
+       {/*                        <div className="w-4 h-4 relative"/>*/}
+       {/*                    </div>*/}
+       {/*                </div>*/}
+@@ -63,7 +63,7 @@ export const AnalyticsComponent: FC = () => {
+       {/*                    </div>*/}
+       {/*                    <div className="self-stretch text-neutral-400 text-xs font-normal">O atual sistema político precisa mudar para valorizar o trabalho e garantir igualdade de oportunidad</div>*/}
+       {/*                    <div className="self-stretch justify-start items-center gap-1 inline-flex">*/}
+-      {/*                        <div className="text-customColor10 text-xs font-normal">See Tweet</div>*/}
++      {/*                        <div className="text-customColor10 text-xs font-normal">Ver publicação</div>*/}
+       {/*                        <div className="w-4 h-4 relative"/>*/}
+       {/*                    </div>*/}
+       {/*                </div>*/}
+@@ -77,7 +77,7 @@ export const AnalyticsComponent: FC = () => {
+       {/*                    </div>*/}
+       {/*                    <div className="self-stretch text-neutral-400 text-xs font-normal">O atual sistema político precisa mudar para valorizar o trabalho e garantir igualdade de oportunidad</div>*/}
+       {/*                    <div className="self-stretch justify-start items-center gap-1 inline-flex">*/}
+-      {/*                        <div className="text-customColor10 text-xs font-normal">See Tweet</div>*/}
++      {/*                        <div className="text-customColor10 text-xs font-normal">Ver publicação</div>*/}
+       {/*                        <div className="w-4 h-4 relative"/>*/}
+       {/*                    </div>*/}
+       {/*                </div>*/}
+@@ -91,7 +91,7 @@ export const AnalyticsComponent: FC = () => {
+       {/*                    </div>*/}
+       {/*                    <div className="self-stretch text-neutral-400 text-xs font-normal">O atual sistema político precisa mudar para valorizar o trabalho e garantir igualdade de oportunidad</div>*/}
+       {/*                    <div className="self-stretch justify-start items-center gap-1 inline-flex">*/}
+-      {/*                        <div className="text-customColor10 text-xs font-normal">See Tweet</div>*/}
++      {/*                        <div className="text-customColor10 text-xs font-normal">Ver publicação</div>*/}
+       {/*                        <div className="w-4 h-4 relative"/>*/}
+       {/*                    </div>*/}
+       {/*                </div>*/}
+@@ -105,7 +105,7 @@ export const AnalyticsComponent: FC = () => {
+       {/*                    </div>*/}
+       {/*                    <div className="self-stretch text-neutral-400 text-xs font-normal">O atual sistema político precisa mudar para valorizar o trabalho e garantir igualdade de oportunidad</div>*/}
+       {/*                    <div className="self-stretch justify-start items-center gap-1 inline-flex">*/}
+-      {/*                        <div className="text-customColor10 text-xs font-normal">See Tweet</div>*/}
++      {/*                        <div className="text-customColor10 text-xs font-normal">Ver publicação</div>*/}
+       {/*                        <div className="w-4 h-4 relative"/>*/}
+       {/*                    </div>*/}
+       {/*                </div>*/}
+diff --git a/apps/frontend/src/components/auth/forgot-return.tsx b/apps/frontend/src/components/auth/forgot-return.tsx
+index 4b79ab2..dd94e47 100644
+--- a/apps/frontend/src/components/auth/forgot-return.tsx
++++ b/apps/frontend/src/components/auth/forgot-return.tsx
+@@ -60,14 +60,14 @@ export function ForgotReturn({ token }: { token: string }) {
+           <>
+             <div className="space-y-4 text-textColor">
+               <Input
+-                label="New Password"
++                label="Nova senha"
+                 translationKey="label_new_password"
+                 {...form.register('password')}
+                 type="password"
+                 placeholder={t('label_password', 'Password')}
+               />
+               <Input
+-                label="Repeat Password"
++                label="Repita a senha"
+                 translationKey="label_repeat_password"
+                 {...form.register('repeatPassword')}
+                 type="password"
+diff --git a/apps/frontend/src/components/auth/register.tsx b/apps/frontend/src/components/auth/register.tsx
+index 24ae862..c32219f 100644
+--- a/apps/frontend/src/components/auth/register.tsx
++++ b/apps/frontend/src/components/auth/register.tsx
+@@ -78,7 +78,7 @@ export function Register() {
+ function getHelpfulReasonForRegistrationFailure(httpCode: number) {
+   switch (httpCode) {
+     case 400:
+-      return 'Email already exists';
++      return 'Este e-mail já existe';
+     case 404:
+       return 'Your browser got a 404 when trying to contact the API, the most likely reasons for this are the NEXT_PUBLIC_BACKEND_URL is set incorrectly, or the backend is not running.';
+   }
+diff --git a/apps/frontend/src/components/autopost/autopost.tsx b/apps/frontend/src/components/autopost/autopost.tsx
+index e4f2ce1..ccbc80b 100644
+--- a/apps/frontend/src/components/autopost/autopost.tsx
++++ b/apps/frontend/src/components/autopost/autopost.tsx
+@@ -309,7 +309,7 @@ export const AddOrEditWebhook: FC<{
+               {...form.register('url')}
+             />
+             <Select
+-              label="Should we sync the current last post?"
++              label="Sincronizar o último post atual?"
+               translationKey="label_should_sync_last_post"
+               {...form.register('syncLast', {
+                 setValueAs: (value) => {
+@@ -324,7 +324,7 @@ export const AddOrEditWebhook: FC<{
+               ))}
+             </Select>
+             <Select
+-              label="When should we post it?"
++              label="Quando publicar?"
+               translationKey="label_when_post"
+               {...form.register('onSlot', {
+                 setValueAs: (value) => value === 'true' || value === true,
+@@ -337,7 +337,7 @@ export const AddOrEditWebhook: FC<{
+               ))}
+             </Select>
+             <Select
+-              label="Autogenerate content"
++              label="Gerar conteúdo automaticamente"
+               translationKey="label_autogenerate_content"
+               {...form.register('generateContent', {
+                 setValueAs: (value) => value === 'true' || value === true,
+@@ -372,7 +372,7 @@ export const AddOrEditWebhook: FC<{
+               </>
+             )}
+             <Select
+-              label="Generate Picture?"
++              label="Gerar imagem?"
+               translationKey="label_generate_picture"
+               {...form.register('addPicture', {
+                 setValueAs: (value) => value === 'true' || value === true,
+diff --git a/apps/frontend/src/components/billing/finish.trial.tsx b/apps/frontend/src/components/billing/finish.trial.tsx
+index 73ae1b7..1744bbf 100644
+--- a/apps/frontend/src/components/billing/finish.trial.tsx
++++ b/apps/frontend/src/components/billing/finish.trial.tsx
+@@ -69,8 +69,8 @@ export const FinishTrial: FC<{ close: () => void }> = (props) => {
+                       You trial has been successfully finished and you have been charged.
+                     </div>
+                     <div className="flex gap-[10px] mt-[20px]">
+-                      <Button className="flex-1" onClick={() => window.close()}>Close window</Button>
+-                      <Button className="flex-1" onClick={() => props.close()}>Close dialog</Button>
++                      <Button className="flex-1" onClick={() => window.close()}>Fechar janela</Button>
++                      <Button className="flex-1" onClick={() => props.close()}>Fechar janela</Button>
+                     </div>
+                   </div>
+                 )}
+diff --git a/apps/frontend/src/components/billing/first.billing.component.tsx b/apps/frontend/src/components/billing/first.billing.component.tsx
+index ee8d8b1..a613b35 100644
+--- a/apps/frontend/src/components/billing/first.billing.component.tsx
++++ b/apps/frontend/src/components/billing/first.billing.component.tsx
+@@ -137,7 +137,7 @@ export const FirstBillingComponent = () => {
+                 alt="YouTube"
+               />
+             </div>
+-            <div>See the power of Postiz (click here)</div>
++            <div>Veja o que o sistema faz (clique aqui)</div>
+           </div>
+         </div>
+ 
+diff --git a/apps/frontend/src/components/billing/lifetime.deal.tsx b/apps/frontend/src/components/billing/lifetime.deal.tsx
+index 0f006c6..23db5d4 100644
+--- a/apps/frontend/src/components/billing/lifetime.deal.tsx
++++ b/apps/frontend/src/components/billing/lifetime.deal.tsx
+@@ -176,7 +176,7 @@ export const LifetimeDeal = () => {
+               <Input
+                 label="Code"
+                 translationKey="label_code"
+-                placeholder="Enter your code"
++                placeholder="Digite seu código"
+                 disableForm={true}
+                 name="code"
+                 value={code}
+diff --git a/apps/frontend/src/components/developer/developer.component.tsx b/apps/frontend/src/components/developer/developer.component.tsx
+index 6541406..6377918 100644
+--- a/apps/frontend/src/components/developer/developer.component.tsx
++++ b/apps/frontend/src/components/developer/developer.component.tsx
+@@ -302,7 +302,7 @@ export const DeveloperComponent: FC = () => {
+                 className="bg-newBgColorInner border border-newBorder rounded-[8px] px-[16px] h-[44px] text-textColor outline-none"
+                 value={name}
+                 onChange={(e) => setName(e.target.value)}
+-                placeholder="My Application"
++                placeholder="Meu aplicativo"
+                 maxLength={100}
+               />
+             </div>
+@@ -314,7 +314,7 @@ export const DeveloperComponent: FC = () => {
+                 className="bg-newBgColorInner border border-newBorder rounded-[8px] p-[16px] text-textColor outline-none min-h-[80px]"
+                 value={description}
+                 onChange={(e) => setDescription(e.target.value)}
+-                placeholder="Describe what your app does"
++                placeholder="Descreva o que o seu aplicativo faz"
+                 maxLength={500}
+               />
+             </div>
+@@ -326,7 +326,7 @@ export const DeveloperComponent: FC = () => {
+                 {picturePath ? (
+                   <img
+                     src={picturePath}
+-                    alt="App picture"
++                    alt="Imagem do aplicativo"
+                     className="w-[48px] h-[48px] rounded-full object-cover"
+                   />
+                 ) : (
+@@ -426,7 +426,7 @@ export const DeveloperComponent: FC = () => {
+                 className="bg-newBgColorInner border border-newBorder rounded-[8px] px-[16px] h-[44px] text-textColor outline-none"
+                 value={name}
+                 onChange={(e) => setName(e.target.value)}
+-                placeholder="My Application"
++                placeholder="Meu aplicativo"
+                 maxLength={100}
+               />
+             </div>
+@@ -438,7 +438,7 @@ export const DeveloperComponent: FC = () => {
+                 className="bg-newBgColorInner border border-newBorder rounded-[8px] p-[16px] text-textColor outline-none min-h-[80px]"
+                 value={description}
+                 onChange={(e) => setDescription(e.target.value)}
+-                placeholder="Describe what your app does"
++                placeholder="Descreva o que o seu aplicativo faz"
+                 maxLength={500}
+               />
+             </div>
+@@ -450,7 +450,7 @@ export const DeveloperComponent: FC = () => {
+                 {picturePath ? (
+                   <img
+                     src={picturePath}
+-                    alt="App picture"
++                    alt="Imagem do aplicativo"
+                     className="w-[48px] h-[48px] rounded-full object-cover"
+                   />
+                 ) : (
+diff --git a/apps/frontend/src/components/launches/bot.picture.tsx b/apps/frontend/src/components/launches/bot.picture.tsx
+index 38cbdc1..e08a0dc 100644
+--- a/apps/frontend/src/components/launches/bot.picture.tsx
++++ b/apps/frontend/src/components/launches/bot.picture.tsx
+@@ -75,7 +75,7 @@ export const BotPicture: FC<{
+             <div className="flex items-center gap-[20px]">
+               <img
+                 src={picture}
+-                alt="Bot Picture"
++                alt="Imagem do robô"
+                 className="w-[100px] h-[100px] rounded-full"
+               />
+               <Button type="button" onClick={openMedia}>
+diff --git a/apps/frontend/src/components/launches/general.preview.component.tsx b/apps/frontend/src/components/launches/general.preview.component.tsx
+index e8bbc57..232a742 100644
+--- a/apps/frontend/src/components/launches/general.preview.component.tsx
++++ b/apps/frontend/src/components/launches/general.preview.component.tsx
+@@ -39,7 +39,7 @@ export const GeneralPreviewComponent: FC<{
+         .replace(/\[\[\[([.\s\S]*?)]]]/, (match, match1) => {
+           return `<span class="font-bold font-[arial]" style="color: #ae8afc">${match1}</span>`;
+         }) +
+-      `<mark class="bg-red-500" data-tooltip-id="tooltip" data-tooltip-content="This text will be cropped">` +
++      `<mark class="bg-red-500" data-tooltip-id="tooltip" data-tooltip-content="Este texto será cortado">` +
+       newContent.slice(end).replace(/\[\[\[([.\s\S]*?)]]]/, (match, match1) => {
+         return `<span class="font-bold font-[arial]" style="color: #ae8afc">${match1}</span>`;
+       }) +
+@@ -94,7 +94,7 @@ export const GeneralPreviewComponent: FC<{
+                 <div className="text-[15px] text-customColor26 mt-[1px] ms-[2px]">
+                   <svg
+                     viewBox="0 0 22 22"
+-                    aria-label="Verified account"
++                    aria-label="Conta verificada"
+                     role="img"
+                     className="max-w-[20px] max-h-[20px] fill-current h-[1.25em]"
+                     data-testid="icon-verified"
+diff --git a/apps/frontend/src/components/launches/helpers/date.picker.tsx b/apps/frontend/src/components/launches/helpers/date.picker.tsx
+index 585f8e9..765daef 100644
+--- a/apps/frontend/src/components/launches/helpers/date.picker.tsx
++++ b/apps/frontend/src/components/launches/helpers/date.picker.tsx
+@@ -73,7 +73,7 @@ export const DatePicker: FC<{
+           />
+           <TimeInput
+             onChange={changeDate('time')}
+-            label="Pick time"
++            label="Escolha o horário"
+             classNames={{
+               label: 'text-textColor py-[12px]',
+               input:
+diff --git a/apps/frontend/src/components/launches/helpers/linkedin.component.tsx b/apps/frontend/src/components/launches/helpers/linkedin.component.tsx
+index 73cd83d..3b27e8d 100644
+--- a/apps/frontend/src/components/launches/helpers/linkedin.component.tsx
++++ b/apps/frontend/src/components/launches/helpers/linkedin.component.tsx
+@@ -63,7 +63,7 @@ export const LinkedinCompanyPop: FC<{
+         });
+       }}
+       data-tooltip-id="tooltip"
+-      data-tooltip-content="Add a LinkedIn Company"
++      data-tooltip-content="Adicionar uma empresa do LinkedIn"
+       className="mx-[10px] cursor-pointer"
+       width="20"
+       height="20"
+diff --git a/apps/frontend/src/components/launches/helpers/media.settings.component.tsx b/apps/frontend/src/components/launches/helpers/media.settings.component.tsx
+index d64ecbe..9063702 100644
+--- a/apps/frontend/src/components/launches/helpers/media.settings.component.tsx
++++ b/apps/frontend/src/components/launches/helpers/media.settings.component.tsx
+@@ -372,7 +372,7 @@ export const MediaComponentInner: FC<{
+           type="text"
+           value={altText}
+           onChange={(e) => setAltText(e.target.value)}
+-          placeholder="Describe the image/video content..."
++          placeholder="Descreva o conteúdo da imagem ou do vídeo..."
+           className="w-full px-3 py-2 bg-fifth border border-tableBorder rounded-lg text-textColor placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-forth focus:border-transparent"
+         />
+       </div>
+@@ -390,7 +390,7 @@ export const MediaComponentInner: FC<{
+                     </span>
+                     <img
+                       src={newThumbnail || thumbnail}
+-                      alt="Current thumbnail"
++                      alt="Miniatura atual"
+                       className="max-w-full max-h-[500px] object-contain rounded-lg border border-tableBorder"
+                     />
+                   </div>
+diff --git a/apps/frontend/src/components/launches/launches.component.tsx b/apps/frontend/src/components/launches/launches.component.tsx
+index 8544a3e..babcd77 100644
+--- a/apps/frontend/src/components/launches/launches.component.tsx
++++ b/apps/frontend/src/components/launches/launches.component.tsx
+@@ -554,7 +554,7 @@ export const LaunchesComponent = () => {
+                           ? '/no-channels.svg'
+                           : '/no-channels-colors.svg'
+                       }
+-                      alt="No channels"
++                      alt="Nenhum canal"
+                       className="mx-auto min-w-[100%]"
+                     />
+                     <div className="font-[600] text-[20px]">
+diff --git a/apps/frontend/src/components/launches/polonto/polonto.picture.generation.tsx b/apps/frontend/src/components/launches/polonto/polonto.picture.generation.tsx
+index b217fca..0bf9717 100644
+--- a/apps/frontend/src/components/launches/polonto/polonto.picture.generation.tsx
++++ b/apps/frontend/src/components/launches/polonto/polonto.picture.generation.tsx
+@@ -73,7 +73,7 @@ const GenerateTab = observer(({ store }: any) => {
+         {data?.credits ? `(${data?.credits} left)` : ``}
+       </div>
+       <InputGroup
+-        placeholder="Type your image generation prompt here..."
++        placeholder="Escreva aqui o pedido para gerar a imagem..."
+         onKeyDown={(e) => {
+           if (e.key === 'Enter') {
+             handleGenerate();
+diff --git a/apps/frontend/src/components/launches/web3/providers/moltbook.provider.tsx b/apps/frontend/src/components/launches/web3/providers/moltbook.provider.tsx
+index 479b5e2..1c4fa0f 100644
+--- a/apps/frontend/src/components/launches/web3/providers/moltbook.provider.tsx
++++ b/apps/frontend/src/components/launches/web3/providers/moltbook.provider.tsx
+@@ -113,7 +113,7 @@ export const MoltbookProvider: FC<Web3ProviderInterface> = (props) => {
+               name="agentDescription"
+               disableForm={true}
+               onChange={(e) => setAgentDescription(e.target.value)}
+-              placeholder="Social media scheduler"
++              placeholder="Agendador de redes sociais"
+             />
+             <Button className="w-full" onClick={register}>
+               {t('register_agent', 'Register Agent')}
+diff --git a/apps/frontend/src/components/launches/web3/providers/wrapcaster.provider.tsx b/apps/frontend/src/components/launches/web3/providers/wrapcaster.provider.tsx
+index c3814ac..153d2e2 100644
+--- a/apps/frontend/src/components/launches/web3/providers/wrapcaster.provider.tsx
++++ b/apps/frontend/src/components/launches/web3/providers/wrapcaster.provider.tsx
+@@ -34,7 +34,7 @@ export const WrapcasterProvider: FC<Web3ProviderInterface> = (props) => {
+         </div>
+       ) : (
+         <div className="justify-center items-center py-[20px] flex-col w-[500px]">
+-          <div>Click on the bottom below to start the process</div>
++          <div>Clique no botão abaixo para começar</div>
+           <ButtonCaster login={auth} />
+         </div>
+       )}
+diff --git a/apps/frontend/src/components/layout/impersonate.tsx b/apps/frontend/src/components/layout/impersonate.tsx
+index 215a40e..3daa82e 100644
+--- a/apps/frontend/src/components/layout/impersonate.tsx
++++ b/apps/frontend/src/components/layout/impersonate.tsx
+@@ -1103,7 +1103,7 @@ export const Impersonate = () => {
+                 <div className="flex-1">
+                   <Input
+                     autoComplete="off"
+-                    placeholder="Write the user details"
++                    placeholder="Escreva os dados do usuário"
+                     name="impersonate"
+                     disableForm={true}
+                     label=""
+diff --git a/apps/frontend/src/components/layout/organization.selector.tsx b/apps/frontend/src/components/layout/organization.selector.tsx
+index 4f072f5..344aec3 100644
+--- a/apps/frontend/src/components/layout/organization.selector.tsx
++++ b/apps/frontend/src/components/layout/organization.selector.tsx
+@@ -46,7 +46,7 @@ export const OrganizationSelector: FC<{ asOpenSelect?: boolean }> = ({
+       <div className="hover:text-newTextColor">
+         <div className="group text-[12px] relative">
+           {asOpenSelect && (
+-            <div className="bg-btnPrimary !flex !relative max-w-[500px] mx-auto py-[12px] px-[12px]">Select Organization</div>
++            <div className="bg-btnPrimary !flex !relative max-w-[500px] mx-auto py-[12px] px-[12px]">Escolher organização</div>
+           )}
+           {!asOpenSelect && (
+             <div className="flex items-center gap-[6px]">
+diff --git a/apps/frontend/src/components/layout/streak.component.tsx b/apps/frontend/src/components/layout/streak.component.tsx
+index ec35b97..de11223 100644
+--- a/apps/frontend/src/components/layout/streak.component.tsx
++++ b/apps/frontend/src/components/layout/streak.component.tsx
+@@ -21,9 +21,9 @@ export const StreakComponent: FC = () => {
+ 
+   const tooltipContent = useMemo(() => {
+     if (streakDays === 1) {
+-      return 'You started your streak today! Keep posting daily to maintain it.';
++      return 'Você começou sua sequência hoje! Continue publicando todo dia para mantê-la.';
+     }
+-    return `You're on a ${streakDays} day posting streak! Keep it going!`;
++    return `Você está em uma sequência de ${streakDays} dias publicando! Continue assim!`;
+   }, [streakDays]);
+ 
+   if (!user?.streakSince || streakDays <= 0) {
+diff --git a/apps/frontend/src/components/media/media.component.tsx b/apps/frontend/src/components/media/media.component.tsx
+index 2dbbd83..8a61302 100644
+--- a/apps/frontend/src/components/media/media.component.tsx
++++ b/apps/frontend/src/components/media/media.component.tsx
+@@ -123,7 +123,7 @@ export const Pagination: FC<{
+       <li className={clsx(current === 0 && 'opacity-20 pointer-events-none')}>
+         <div
+           className="cursor-pointer inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 px-4 py-2 gap-1 ps-2.5 text-gray-400 hover:text-white border-[#1F1F1F] hover:bg-forth"
+-          aria-label="Go to previous page"
++          aria-label="Ir para a página anterior"
+           onClick={() => setPage(current - 1)}
+         >
+           <ChevronLeftIcon className="lucide lucide-chevron-left h-4 w-4" />
+@@ -159,7 +159,7 @@ export const Pagination: FC<{
+       >
+         <a
+           className="text-textColor hover:text-white group cursor-pointer inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 px-4 py-2 gap-1 pe-2.5 text-gray-400 border-[#1F1F1F] hover:bg-forth"
+-          aria-label="Go to next page"
++          aria-label="Ir para a próxima página"
+           onClick={() => setPage(current + 1)}
+         >
+           <span>{t('next', 'Next')}</span>
+diff --git a/apps/frontend/src/components/new-launch/bold.text.tsx b/apps/frontend/src/components/new-launch/bold.text.tsx
+index 76ef1d8..22f5673 100644
+--- a/apps/frontend/src/components/new-launch/bold.text.tsx
++++ b/apps/frontend/src/components/new-launch/bold.text.tsx
+@@ -82,7 +82,7 @@ export const BoldText: FC<{
+   return (
+     <div
+       data-tooltip-id="tooltip"
+-      data-tooltip-content="Bold Text"
++      data-tooltip-content="Texto em negrito"
+       onClick={mark}
+       className="select-none cursor-pointer rounded-[6px] w-[30px] h-[30px] bg-newColColor flex justify-center items-center"
+     >
+diff --git a/apps/frontend/src/components/new-launch/delay.component.tsx b/apps/frontend/src/components/new-launch/delay.component.tsx
+index bee7453..7365945 100644
+--- a/apps/frontend/src/components/new-launch/delay.component.tsx
++++ b/apps/frontend/src/components/new-launch/delay.component.tsx
+@@ -118,7 +118,7 @@ export const DelayComponent: FC<{
+                 value={customValue}
+                 onChange={(e) => setCustomValue(e.target.value)}
+                 onClick={(e) => e.stopPropagation()}
+-                placeholder="Custom min"
++                placeholder="Mínimo personalizado"
+                 className={clsx(
+                   'flex-1 w-full h-[32px] px-[8px] rounded-[4px] bg-newBgColor border text-[13px] outline-none focus:border-[#612BD3]',
+                   isCustomDelay ? 'border-[#612BD3]' : 'border-newTextColor/10'
+diff --git a/apps/frontend/src/components/new-launch/finisher/thread.finisher.tsx b/apps/frontend/src/components/new-launch/finisher/thread.finisher.tsx
+index b6e9522..c865af6 100644
+--- a/apps/frontend/src/components/new-launch/finisher/thread.finisher.tsx
++++ b/apps/frontend/src/components/new-launch/finisher/thread.finisher.tsx
+@@ -31,7 +31,7 @@ export const ThreadFinisher = () => {
+   return (
+     <div className="flex flex-col gap-[10px] border-tableBorder border p-[15px] rounded-lg mb-5">
+       <div className="flex items-center">
+-        <div className="flex-1">Add a thread finisher</div>
++        <div className="flex-1">Adicionar encerramento da sequência</div>
+         <div>
+           <Slider
+             value={slider ? 'on' : 'off'}
+diff --git a/apps/frontend/src/components/new-launch/mention.component.tsx b/apps/frontend/src/components/new-launch/mention.component.tsx
+index 12bb011..1487aa0 100644
+--- a/apps/frontend/src/components/new-launch/mention.component.tsx
++++ b/apps/frontend/src/components/new-launch/mention.component.tsx
+@@ -90,7 +90,7 @@ const MentionList: FC = (props: any) => {
+         </div>
+       ) : props?.items ? (
+         props.items.length === 0 ? (
+-          <div className="p-2 text-gray-500 text-center">No results found</div>
++          <div className="p-2 text-gray-500 text-center">Nenhum resultado encontrado</div>
+         ) : (
+           props?.items?.map((item: any, index: any) => (
+             <button
+diff --git a/apps/frontend/src/components/new-launch/providers/devto/devto.provider.tsx b/apps/frontend/src/components/new-launch/providers/devto/devto.provider.tsx
+index 42821fe..0bea42d 100644
+--- a/apps/frontend/src/components/new-launch/providers/devto/devto.provider.tsx
++++ b/apps/frontend/src/components/new-launch/providers/devto/devto.provider.tsx
+@@ -24,11 +24,11 @@ const DevtoSettings: FC = () => {
+       <Input label="Title" {...form.register('title')} />
+       <Canonical
+         date={date}
+-        label="Canonical Link"
++        label="Link canônico"
+         {...form.register('canonical')}
+       />
+       <MediaComponent
+-        label="Cover picture"
++        label="Imagem de capa"
+         description="Add a cover picture"
+         {...form.register('main_image')}
+       />
+@@ -37,7 +37,7 @@ const DevtoSettings: FC = () => {
+       </div>
+       <div>
+         <DevtoTags
+-          label="Tags (Maximum 4)"
++          label="Etiquetas (máximo 4)"
+           {...form.register('tags', {
+             value: [],
+           })}
+diff --git a/apps/frontend/src/components/new-launch/providers/devto/select.organization.tsx b/apps/frontend/src/components/new-launch/providers/devto/select.organization.tsx
+index 49cbbb8..203555c 100644
+--- a/apps/frontend/src/components/new-launch/providers/devto/select.organization.tsx
++++ b/apps/frontend/src/components/new-launch/providers/devto/select.organization.tsx
+@@ -42,7 +42,7 @@ export const SelectOrganization: FC<{
+   return (
+     <Select
+       name={name}
+-      label="Select organization"
++      label="Escolher organização"
+       onChange={onChangeInner}
+       value={currentMedia}
+     >
+diff --git a/apps/frontend/src/components/new-launch/providers/discord/discord.channel.select.tsx b/apps/frontend/src/components/new-launch/providers/discord/discord.channel.select.tsx
+index a9a8a28..acd9567 100644
+--- a/apps/frontend/src/components/new-launch/providers/discord/discord.channel.select.tsx
++++ b/apps/frontend/src/components/new-launch/providers/discord/discord.channel.select.tsx
+@@ -42,7 +42,7 @@ export const DiscordChannelSelect: FC<{
+   return (
+     <Select
+       name={name}
+-      label="Select Channel"
++      label="Escolher canal"
+       onChange={onChangeInner}
+       value={currentMedia}
+     >
+diff --git a/apps/frontend/src/components/new-launch/providers/dribbble/dribbble.teams.tsx b/apps/frontend/src/components/new-launch/providers/dribbble/dribbble.teams.tsx
+index a948b76..0a5f9ac 100644
+--- a/apps/frontend/src/components/new-launch/providers/dribbble/dribbble.teams.tsx
++++ b/apps/frontend/src/components/new-launch/providers/dribbble/dribbble.teams.tsx
+@@ -45,7 +45,7 @@ export const DribbbleTeams: FC<{
+   return (
+     <Select
+       name={name}
+-      label="Select a team"
++      label="Escolher uma equipe"
+       onChange={onChangeInner}
+       value={currentMedia}
+     >
+diff --git a/apps/frontend/src/components/new-launch/providers/facebook/facebook.preview.tsx b/apps/frontend/src/components/new-launch/providers/facebook/facebook.preview.tsx
+index bdd8a59..7aa28bb 100644
+--- a/apps/frontend/src/components/new-launch/providers/facebook/facebook.preview.tsx
++++ b/apps/frontend/src/components/new-launch/providers/facebook/facebook.preview.tsx
+@@ -112,7 +112,7 @@ export const FacebookPreview: FC<{
+         .replace(/\[\[\[([.\s\S]*?)]]]/, (match, match1) => {
+           return `<span class="font-bold font-[arial]" style="color: #ae8afc">${match1}</span>`;
+         }) +
+-      `<mark class="bg-red-500" data-tooltip-id="tooltip" data-tooltip-content="This text will be cropped">` +
++      `<mark class="bg-red-500" data-tooltip-id="tooltip" data-tooltip-content="Este texto será cortado">` +
+       newContent.slice(end).replace(/\[\[\[([.\s\S]*?)]]]/, (match, match1) => {
+         return `<span class="font-bold font-[arial]" style="color: #ae8afc">${match1}</span>`;
+       }) +
+@@ -184,7 +184,7 @@ export const FacebookPreview: FC<{
+       <div className="flex text-textLinkedin text-[12px] font-[400] items-center">
+         <div className="flex flex-1 gap-[10px] items-center">
+           <Icons />
+-          <div className="">You & 12 other</div>
++          <div className="">Você e outros 12</div>
+         </div>
+         <div className="gap-[9px] items-center flex">
+           <div>20 Comments</div>
+@@ -259,7 +259,7 @@ export const FacebookPreview: FC<{
+       {renderContent.length > 1 && (
+         <>
+           <div className="flex items-center">
+-            <div className="text-[14px] font-[700]">Most relevant</div>
++            <div className="text-[14px] font-[700]">Mais relevante</div>
+             <div>
+               <svg
+                 width="20"
+diff --git a/apps/frontend/src/components/new-launch/providers/facebook/facebook.provider.tsx b/apps/frontend/src/components/new-launch/providers/facebook/facebook.provider.tsx
+index 00b8e12..b723e30 100644
+--- a/apps/frontend/src/components/new-launch/providers/facebook/facebook.provider.tsx
++++ b/apps/frontend/src/components/new-launch/providers/facebook/facebook.provider.tsx
+@@ -52,7 +52,7 @@ export const FacebookSettings = () => {
+     <>
+       <div className="pt-[20px]">
+         <Select
+-          label="Post Type"
++          label="Tipo de post"
+           {...register('post_type', {
+             value: 'post',
+           })}
+@@ -78,7 +78,7 @@ export const FacebookSettings = () => {
+       {presetAvailable && (
+         <>
+           <Select
+-            label="Background (applies to text-only posts shorter than 130 characters)"
++            label="Fundo (vale para posts só de texto com menos de 130 caracteres)"
+             hideErrors
+             {...register('text_format_preset_id')}
+             style={
+diff --git a/apps/frontend/src/components/new-launch/providers/gmb/gmb.provider.tsx b/apps/frontend/src/components/new-launch/providers/gmb/gmb.provider.tsx
+index c63066d..841ac7d 100644
+--- a/apps/frontend/src/components/new-launch/providers/gmb/gmb.provider.tsx
++++ b/apps/frontend/src/components/new-launch/providers/gmb/gmb.provider.tsx
+@@ -69,7 +69,7 @@ const GmbSettings: FC = () => {
+   return (
+     <div className="flex flex-col gap-[10px]">
+       <Select
+-        label="Post Type"
++        label="Tipo de post"
+         {...register('topicType', {
+           value: 'STANDARD',
+         })}
+@@ -82,7 +82,7 @@ const GmbSettings: FC = () => {
+       </Select>
+ 
+       <Select
+-        label="Call to Action"
++        label="Chamada para ação"
+         {...register('callToActionType', {
+           value: 'NONE',
+         })}
+@@ -98,7 +98,7 @@ const GmbSettings: FC = () => {
+         callToActionType !== 'NONE' &&
+         callToActionType !== 'CALL' && (
+           <Input
+-            label="Call to Action URL"
++            label="Endereço da chamada para ação"
+             placeholder="https://example.com"
+             {...register('callToActionUrl')}
+           />
+@@ -106,28 +106,28 @@ const GmbSettings: FC = () => {
+ 
+       {topicType === 'EVENT' && (
+         <div className="flex flex-col gap-[10px] mt-[10px] p-[15px] border border-input rounded-[8px]">
+-          <div className="text-[14px] font-medium mb-[5px]">Event Details</div>
++          <div className="text-[14px] font-medium mb-[5px]">Detalhes do evento</div>
+           <Input
+-            label="Event Title"
+-            placeholder="Event name"
++            label="Título do evento"
++            placeholder="Nome do evento"
+             {...register('eventTitle')}
+           />
+           <div className="grid grid-cols-2 gap-[10px]">
+             <Input
+-              label="Start Date"
++              label="Data inicial"
+               type="date"
+               {...register('eventStartDate')}
+             />
+-            <Input label="End Date" type="date" {...register('eventEndDate')} />
++            <Input label="Data final" type="date" {...register('eventEndDate')} />
+           </div>
+           <div className="grid grid-cols-2 gap-[10px]">
+             <Input
+-              label="Start Time (optional)"
++              label="Horário inicial (opcional)"
+               type="time"
+               {...register('eventStartTime')}
+             />
+             <Input
+-              label="End Time (optional)"
++              label="Horário final (opcional)"
+               type="time"
+               {...register('eventEndTime')}
+             />
+@@ -137,20 +137,20 @@ const GmbSettings: FC = () => {
+ 
+       {topicType === 'OFFER' && (
+         <div className="flex flex-col gap-[10px] mt-[10px] p-[15px] border border-input rounded-[8px]">
+-          <div className="text-[14px] font-medium mb-[5px]">Offer Details</div>
++          <div className="text-[14px] font-medium mb-[5px]">Detalhes da oferta</div>
+           <Input
+-            label="Coupon Code (optional)"
++            label="Código de cupom (opcional)"
+             placeholder="SAVE20"
+             {...register('offerCouponCode')}
+           />
+           <Input
+-            label="Redeem Online URL (optional)"
++            label="Endereço de resgate online (opcional)"
+             placeholder="https://example.com/redeem"
+             {...register('offerRedeemUrl')}
+           />
+           <Input
+-            label="Terms & Conditions (optional)"
+-            placeholder="Valid until..."
++            label="Termos e condições (opcional)"
++            placeholder="Válido até..."
+             {...register('offerTerms')}
+           />
+         </div>
+diff --git a/apps/frontend/src/components/new-launch/providers/hashnode/hashnode.provider.tsx b/apps/frontend/src/components/new-launch/providers/hashnode/hashnode.provider.tsx
+index ffa62fb..c91ea8e 100644
+--- a/apps/frontend/src/components/new-launch/providers/hashnode/hashnode.provider.tsx
++++ b/apps/frontend/src/components/new-launch/providers/hashnode/hashnode.provider.tsx
+@@ -25,11 +25,11 @@ const HashnodeSettings: FC = () => {
+       <Input label="Subtitle" {...form.register('subtitle')} />
+       <Canonical
+         date={date}
+-        label="Canonical Link"
++        label="Link canônico"
+         {...form.register('canonical')}
+       />
+       <MediaComponent
+-        label="Cover picture"
++        label="Imagem de capa"
+         description="Add a cover picture"
+         {...form.register('main_image')}
+       />
+diff --git a/apps/frontend/src/components/new-launch/providers/hashnode/hashnode.publications.tsx b/apps/frontend/src/components/new-launch/providers/hashnode/hashnode.publications.tsx
+index 038cb80..2d7325a 100644
+--- a/apps/frontend/src/components/new-launch/providers/hashnode/hashnode.publications.tsx
++++ b/apps/frontend/src/components/new-launch/providers/hashnode/hashnode.publications.tsx
+@@ -42,7 +42,7 @@ export const HashnodePublications: FC<{
+   return (
+     <Select
+       name={name}
+-      label="Select publication"
++      label="Escolher publicação"
+       onChange={onChangeInner}
+       value={currentMedia}
+     >
+diff --git a/apps/frontend/src/components/new-launch/providers/instagram/instagram.collaborators.tsx b/apps/frontend/src/components/new-launch/providers/instagram/instagram.collaborators.tsx
+index d7ffc86..5d762c8 100644
+--- a/apps/frontend/src/components/new-launch/providers/instagram/instagram.collaborators.tsx
++++ b/apps/frontend/src/components/new-launch/providers/instagram/instagram.collaborators.tsx
+@@ -48,7 +48,7 @@ const InstagramCollaborators: FC<{
+   return (
+     <>
+       <Select
+-        label="Post Type"
++        label="Tipo de post"
+         {...register('post_type', {
+           value: 'post',
+         })}
+@@ -63,7 +63,7 @@ const InstagramCollaborators: FC<{
+ 
+       {postCurrentType !== 'story' && (
+         <InstagramCollaboratorsTags
+-          label="Collaborators (max 3) - accounts can't be private"
++          label="Colaboradores (máximo 3), as contas não podem ser privadas"
+           {...register('collaborators', {
+             value: [],
+           })}
+@@ -94,7 +94,7 @@ const InstagramCollaborators: FC<{
+ 
+           {isTrialReel && (
+             <Select
+-              label="Graduation Strategy"
++              label="Estratégia de evolução"
+               {...register('graduation_strategy', {
+                 value: 'MANUAL',
+               })}
+diff --git a/apps/frontend/src/components/new-launch/providers/instagram/instagram.preview.tsx b/apps/frontend/src/components/new-launch/providers/instagram/instagram.preview.tsx
+index b14cc19..0cc3b9d 100644
+--- a/apps/frontend/src/components/new-launch/providers/instagram/instagram.preview.tsx
++++ b/apps/frontend/src/components/new-launch/providers/instagram/instagram.preview.tsx
+@@ -39,7 +39,7 @@ export const InstagramPreview: FC<{
+         .replace(/\[\[\[([.\s\S]*?)]]]/, (match, match1) => {
+           return `<span class="font-bold font-[arial]" style="color: #ae8afc">${match1}</span>`;
+         }) +
+-      `<mark class="bg-red-500" data-tooltip-id="tooltip" data-tooltip-content="This text will be cropped">` +
++      `<mark class="bg-red-500" data-tooltip-id="tooltip" data-tooltip-content="Este texto será cortado">` +
+       newContent.slice(end).replace(/\[\[\[([.\s\S]*?)]]]/, (match, match1) => {
+         return `<span class="font-bold font-[arial]" style="color: #ae8afc">${match1}</span>`;
+       }) +
+diff --git a/apps/frontend/src/components/new-launch/providers/lemmy/subreddit.tsx b/apps/frontend/src/components/new-launch/providers/lemmy/subreddit.tsx
+index 0e4c170..4693682 100644
+--- a/apps/frontend/src/components/new-launch/providers/lemmy/subreddit.tsx
++++ b/apps/frontend/src/components/new-launch/providers/lemmy/subreddit.tsx
+@@ -131,7 +131,7 @@ export const Subreddit: FC<{
+           <Input
+             placeholder="Community"
+             name="search"
+-            label="Search Community"
++            label="Buscar comunidade"
+             readOnly={loading}
+             value={searchValue}
+             error={errors?.message}
+diff --git a/apps/frontend/src/components/new-launch/providers/linkedin/linkedin.preview.tsx b/apps/frontend/src/components/new-launch/providers/linkedin/linkedin.preview.tsx
+index 0f2ca95..853afb5 100644
+--- a/apps/frontend/src/components/new-launch/providers/linkedin/linkedin.preview.tsx
++++ b/apps/frontend/src/components/new-launch/providers/linkedin/linkedin.preview.tsx
+@@ -275,7 +275,7 @@ export const LinkedinPreview: FC<{
+         .replace(/\[\[\[([.\s\S]*?)]]]/, (match, match1) => {
+           return `<span class="font-bold font-[arial]" style="color: #ae8afc">${match1}</span>`;
+         }) +
+-      `<mark class="bg-red-500" data-tooltip-id="tooltip" data-tooltip-content="This text will be cropped">` +
++      `<mark class="bg-red-500" data-tooltip-id="tooltip" data-tooltip-content="Este texto será cortado">` +
+       newContent.slice(end).replace(/\[\[\[([.\s\S]*?)]]]/, (match, match1) => {
+         return `<span class="font-bold font-[arial]" style="color: #ae8afc">${match1}</span>`;
+       }) +
+diff --git a/apps/frontend/src/components/new-launch/providers/listmonk/select.list.tsx b/apps/frontend/src/components/new-launch/providers/listmonk/select.list.tsx
+index e8d76be..422aac8 100644
+--- a/apps/frontend/src/components/new-launch/providers/listmonk/select.list.tsx
++++ b/apps/frontend/src/components/new-launch/providers/listmonk/select.list.tsx
+@@ -42,7 +42,7 @@ export const SelectList: FC<{
+   return (
+     <Select
+       name={name}
+-      label="Select List"
++      label="Escolher lista"
+       onChange={onChangeInner}
+       value={currentMedia}
+     >
+diff --git a/apps/frontend/src/components/new-launch/providers/listmonk/select.templates.tsx b/apps/frontend/src/components/new-launch/providers/listmonk/select.templates.tsx
+index a24ac4b..68e8848 100644
+--- a/apps/frontend/src/components/new-launch/providers/listmonk/select.templates.tsx
++++ b/apps/frontend/src/components/new-launch/providers/listmonk/select.templates.tsx
+@@ -42,7 +42,7 @@ export const SelectTemplates: FC<{
+   return (
+     <Select
+       name={name}
+-      label="Select Template"
++      label="Escolher modelo"
+       onChange={onChangeInner}
+       value={currentMedia}
+     >
+diff --git a/apps/frontend/src/components/new-launch/providers/medium/medium.provider.tsx b/apps/frontend/src/components/new-launch/providers/medium/medium.provider.tsx
+index c35755b..e2cc349 100644
+--- a/apps/frontend/src/components/new-launch/providers/medium/medium.provider.tsx
++++ b/apps/frontend/src/components/new-launch/providers/medium/medium.provider.tsx
+@@ -22,7 +22,7 @@ const MediumSettings: FC = () => {
+       <Input label="Subtitle" {...form.register('subtitle')} />
+       <Canonical
+         date={date}
+-        label="Canonical Link"
++        label="Link canônico"
+         {...form.register('canonical')}
+       />
+       <div>
+diff --git a/apps/frontend/src/components/new-launch/providers/medium/medium.publications.tsx b/apps/frontend/src/components/new-launch/providers/medium/medium.publications.tsx
+index 12e7f85..f1dfe9d 100644
+--- a/apps/frontend/src/components/new-launch/providers/medium/medium.publications.tsx
++++ b/apps/frontend/src/components/new-launch/providers/medium/medium.publications.tsx
+@@ -43,7 +43,7 @@ export const MediumPublications: FC<{
+   return (
+     <Select
+       name={name}
+-      label="Select publication"
++      label="Escolher publicação"
+       onChange={onChangeInner}
+       value={currentMedia}
+     >
+diff --git a/apps/frontend/src/components/new-launch/providers/mewe/mewe.group.select.tsx b/apps/frontend/src/components/new-launch/providers/mewe/mewe.group.select.tsx
+index 717baaa..6e0afa4 100644
+--- a/apps/frontend/src/components/new-launch/providers/mewe/mewe.group.select.tsx
++++ b/apps/frontend/src/components/new-launch/providers/mewe/mewe.group.select.tsx
+@@ -47,7 +47,7 @@ export const MeweGroupSelect: FC<{
+   return (
+     <Select
+       name={name}
+-      label="Select Group"
++      label="Escolher grupo"
+       onChange={onChangeInner}
+       value={currentGroup}
+     >
+diff --git a/apps/frontend/src/components/new-launch/providers/mewe/mewe.provider.tsx b/apps/frontend/src/components/new-launch/providers/mewe/mewe.provider.tsx
+index fc65cb7..512fdbb 100644
+--- a/apps/frontend/src/components/new-launch/providers/mewe/mewe.provider.tsx
++++ b/apps/frontend/src/components/new-launch/providers/mewe/mewe.provider.tsx
+@@ -18,10 +18,10 @@ const MeweComponent: FC = () => {
+   return (
+     <div>
+       <Select
+-        label="Post To"
++        label="Publicar em"
+         {...form.register('postType')}
+       >
+-        <option value="timeline">My Timeline</option>
++        <option value="timeline">Minha linha do tempo</option>
+         <option value="group">Group</option>
+       </Select>
+       {postType === 'group' && (
+diff --git a/apps/frontend/src/components/new-launch/providers/pinterest/pinterest.board.tsx b/apps/frontend/src/components/new-launch/providers/pinterest/pinterest.board.tsx
+index d48570d..02e8c5e 100644
+--- a/apps/frontend/src/components/new-launch/providers/pinterest/pinterest.board.tsx
++++ b/apps/frontend/src/components/new-launch/providers/pinterest/pinterest.board.tsx
+@@ -41,12 +41,12 @@ export const PinterestBoard: FC<{
+     return null;
+   }
+   if (!orgs.length) {
+-    return 'No boards found, you have to create a board first';
++    return 'Nenhum quadro encontrado, crie um quadro primeiro';
+   }
+   return (
+     <Select
+       name={name}
+-      label="Select board"
++      label="Escolher quadro"
+       onChange={onChangeInner}
+       value={currentMedia}
+     >
+diff --git a/apps/frontend/src/components/new-launch/providers/pinterest/pinterest.preview.tsx b/apps/frontend/src/components/new-launch/providers/pinterest/pinterest.preview.tsx
+index 97d4bd9..fd158d3 100644
+--- a/apps/frontend/src/components/new-launch/providers/pinterest/pinterest.preview.tsx
++++ b/apps/frontend/src/components/new-launch/providers/pinterest/pinterest.preview.tsx
+@@ -35,7 +35,7 @@ export const PinterestPreview: FC<{
+         .replace(/\[\[\[([.\s\S]*?)]]]/, (match, match1) => {
+           return `<span class="font-bold font-[arial]" style="color: #ae8afc">${match1}</span>`;
+         }) +
+-      `<mark class="bg-red-500" data-tooltip-id="tooltip" data-tooltip-content="This text will be cropped">` +
++      `<mark class="bg-red-500" data-tooltip-id="tooltip" data-tooltip-content="Este texto será cortado">` +
+       newContent.slice(end).replace(/\[\[\[([.\s\S]*?)]]]/, (match, match1) => {
+         return `<span class="font-bold font-[arial]" style="color: #ae8afc">${match1}</span>`;
+       }) +
+diff --git a/apps/frontend/src/components/new-launch/providers/pinterest/pinterest.provider.tsx b/apps/frontend/src/components/new-launch/providers/pinterest/pinterest.provider.tsx
+index 9b9f2e8..a990003 100644
+--- a/apps/frontend/src/components/new-launch/providers/pinterest/pinterest.provider.tsx
++++ b/apps/frontend/src/components/new-launch/providers/pinterest/pinterest.provider.tsx
+@@ -19,7 +19,7 @@ const PinterestSettings: FC = () => {
+       <Input label={'Link'} {...register('link')} />
+       <PinterestBoard {...register('board')} />
+       <ColorPicker
+-        label="Select Pin Color"
++        label="Escolher cor do marcador"
+         name="dominant_color"
+         enabled={false}
+         canBeCancelled={true}
+diff --git a/apps/frontend/src/components/new-launch/providers/reddit/reddit.provider.tsx b/apps/frontend/src/components/new-launch/providers/reddit/reddit.provider.tsx
+index e09cae2..e8aebc1 100644
+--- a/apps/frontend/src/components/new-launch/providers/reddit/reddit.provider.tsx
++++ b/apps/frontend/src/components/new-launch/providers/reddit/reddit.provider.tsx
+@@ -85,7 +85,7 @@ const RedditPreview: FC = (props) => {
+     },
+   });
+   if (!settings || !settings.length) {
+-    return <>Please add at least one Subreddit from the settings</>;
++    return <>Adicione pelo menos um Subreddit nas configurações</>;
+   }
+   return (
+     <div className="flex flex-col gap-[40px] w-full">
+diff --git a/apps/frontend/src/components/new-launch/providers/reddit/subreddit.tsx b/apps/frontend/src/components/new-launch/providers/reddit/subreddit.tsx
+index c3bdd53..852bf44 100644
+--- a/apps/frontend/src/components/new-launch/providers/reddit/subreddit.tsx
++++ b/apps/frontend/src/components/new-launch/providers/reddit/subreddit.tsx
+@@ -239,7 +239,7 @@ export const Subreddit: FC<{
+           <Input
+             placeholder="/r/selfhosted"
+             name="search"
+-            label="Search Subreddit"
++            label="Buscar Subreddit"
+             readOnly={loading}
+             value={searchValue}
+             error={errors?.message}
+diff --git a/apps/frontend/src/components/new-launch/providers/skool/skool.group.select.tsx b/apps/frontend/src/components/new-launch/providers/skool/skool.group.select.tsx
+index 69dacd1..6ebeb53 100644
+--- a/apps/frontend/src/components/new-launch/providers/skool/skool.group.select.tsx
++++ b/apps/frontend/src/components/new-launch/providers/skool/skool.group.select.tsx
+@@ -42,7 +42,7 @@ export const SkoolGroupSelect: FC<{
+   return (
+     <Select
+       name={name}
+-      label="Select Group"
++      label="Escolher grupo"
+       onChange={onChangeInner}
+       value={currentGroup}
+     >
+diff --git a/apps/frontend/src/components/new-launch/providers/skool/skool.label.select.tsx b/apps/frontend/src/components/new-launch/providers/skool/skool.label.select.tsx
+index 037e523..3b7b749 100644
+--- a/apps/frontend/src/components/new-launch/providers/skool/skool.label.select.tsx
++++ b/apps/frontend/src/components/new-launch/providers/skool/skool.label.select.tsx
+@@ -50,7 +50,7 @@ export const SkoolLabelSelect: FC<{
+   return (
+     <Select
+       name={name}
+-      label="Select Label"
++      label="Escolher etiqueta"
+       onChange={onChangeInner}
+       value={currentLabel}
+     >
+diff --git a/apps/frontend/src/components/new-launch/providers/slack/slack.channel.select.tsx b/apps/frontend/src/components/new-launch/providers/slack/slack.channel.select.tsx
+index 6de498e..14bd291 100644
+--- a/apps/frontend/src/components/new-launch/providers/slack/slack.channel.select.tsx
++++ b/apps/frontend/src/components/new-launch/providers/slack/slack.channel.select.tsx
+@@ -42,7 +42,7 @@ export const SlackChannelSelect: FC<{
+   return (
+     <Select
+       name={name}
+-      label="Select Channel"
++      label="Escolher canal"
+       onChange={onChangeInner}
+       value={currentMedia}
+     >
+diff --git a/apps/frontend/src/components/new-launch/providers/tiktok/tiktok.preview.tsx b/apps/frontend/src/components/new-launch/providers/tiktok/tiktok.preview.tsx
+index e0449de..eee2b2c 100644
+--- a/apps/frontend/src/components/new-launch/providers/tiktok/tiktok.preview.tsx
++++ b/apps/frontend/src/components/new-launch/providers/tiktok/tiktok.preview.tsx
+@@ -48,7 +48,7 @@ export const TiktokPreview: FC<{
+         .replace(/\[\[\[([.\s\S]*?)]]]/, (match, match1) => {
+           return `<span class="font-bold font-[arial]" style="color: #ae8afc">${match1}</span>`;
+         }) +
+-      `<mark class="bg-red-500" data-tooltip-id="tooltip" data-tooltip-content="This text will be cropped">` +
++      `<mark class="bg-red-500" data-tooltip-id="tooltip" data-tooltip-content="Este texto será cortado">` +
+       newContent.slice(end).replace(/\[\[\[([.\s\S]*?)]]]/, (match, match1) => {
+         return `<span class="font-bold font-[arial]" style="color: #ae8afc">${match1}</span>`;
+       }) +
+diff --git a/apps/frontend/src/components/new-launch/providers/tiktok/tiktok.provider.tsx b/apps/frontend/src/components/new-launch/providers/tiktok/tiktok.provider.tsx
+index 99bb9af..16bc643 100644
+--- a/apps/frontend/src/components/new-launch/providers/tiktok/tiktok.provider.tsx
++++ b/apps/frontend/src/components/new-launch/providers/tiktok/tiktok.provider.tsx
+@@ -169,7 +169,7 @@ const TikTokSettings: FC<{
+           </option>
+         ))}
+       </Select>
+-      {isUploadMode && <div className="-mt-[23px] mb-[23px] text-red-600">After posting you fill find a notification inside your Inbox about your post (not content studio)</div>}
++      {isUploadMode && <div className="-mt-[23px] mb-[23px] text-red-600">Depois de publicar, você recebe um aviso na sua caixa de entrada sobre o post</div>}
+       <div className={clsx('flex flex-col', directPostOnly)}>
+         <Select
+           label={
+diff --git a/apps/frontend/src/components/new-launch/providers/tumblr/tumblr.provider.tsx b/apps/frontend/src/components/new-launch/providers/tumblr/tumblr.provider.tsx
+index 8e638cd..7e4eafe 100644
+--- a/apps/frontend/src/components/new-launch/providers/tumblr/tumblr.provider.tsx
++++ b/apps/frontend/src/components/new-launch/providers/tumblr/tumblr.provider.tsx
+@@ -14,8 +14,8 @@ const TumblrSettings = () => {
+   return (
+     <>
+       <Input label="Title" {...form.register('title')} />
+-      <Input label="Link URL" {...form.register('link')} />
+-      <Input label="Source URL" {...form.register('sourceUrl')} />
++      <Input label="Endereço do link" {...form.register('link')} />
++      <Input label="Endereço de origem" {...form.register('sourceUrl')} />
+       <Input label="Tags" {...form.register('tags')} />
+     </>
+   );
+diff --git a/apps/frontend/src/components/new-launch/providers/twitch/twitch.provider.tsx b/apps/frontend/src/components/new-launch/providers/twitch/twitch.provider.tsx
+index 9cce148..a55746c 100644
+--- a/apps/frontend/src/components/new-launch/providers/twitch/twitch.provider.tsx
++++ b/apps/frontend/src/components/new-launch/providers/twitch/twitch.provider.tsx
+@@ -54,7 +54,7 @@ const TwitchSettings: FC = () => {
+   return (
+     <div className="flex flex-col">
+       <Select
+-        label="Message Type"
++        label="Tipo de mensagem"
+         {...register('messageType', {
+           value: 'message',
+         })}
+@@ -67,7 +67,7 @@ const TwitchSettings: FC = () => {
+       </Select>
+       {messageType === 'announcement' && (
+         <Select
+-          label="Announcement Color"
++          label="Cor do anúncio"
+           {...register('announcementColor', {
+             value: 'primary',
+           })}
+diff --git a/apps/frontend/src/components/new-launch/providers/warpcast/subreddit.tsx b/apps/frontend/src/components/new-launch/providers/warpcast/subreddit.tsx
+index 3bcf2e0..544d8a9 100644
+--- a/apps/frontend/src/components/new-launch/providers/warpcast/subreddit.tsx
++++ b/apps/frontend/src/components/new-launch/providers/warpcast/subreddit.tsx
+@@ -115,7 +115,7 @@ export const Subreddit: FC<{
+           <Input
+             placeholder="Channel"
+             name="search"
+-            label="Search Channel"
++            label="Buscar canal"
+             readOnly={loading}
+             value={searchValue}
+             error={errors?.message}
+diff --git a/apps/frontend/src/components/new-launch/providers/whop/whop.company.select.tsx b/apps/frontend/src/components/new-launch/providers/whop/whop.company.select.tsx
+index 3dc88a3..01f3772 100644
+--- a/apps/frontend/src/components/new-launch/providers/whop/whop.company.select.tsx
++++ b/apps/frontend/src/components/new-launch/providers/whop/whop.company.select.tsx
+@@ -43,7 +43,7 @@ export const WhopCompanySelect: FC<{
+   return (
+     <Select
+       name={name}
+-      label="Select Company"
++      label="Escolher empresa"
+       onChange={onChangeInner}
+       value={currentCompany}
+     >
+diff --git a/apps/frontend/src/components/new-launch/providers/whop/whop.experience.select.tsx b/apps/frontend/src/components/new-launch/providers/whop/whop.experience.select.tsx
+index 93c0cb7..d716461 100644
+--- a/apps/frontend/src/components/new-launch/providers/whop/whop.experience.select.tsx
++++ b/apps/frontend/src/components/new-launch/providers/whop/whop.experience.select.tsx
+@@ -55,7 +55,7 @@ export const WhopExperienceSelect: FC<{
+   return (
+     <Select
+       name={name}
+-      label="Select Forum"
++      label="Escolher fórum"
+       onChange={onChangeInner}
+       value={currentExperience}
+     >
+diff --git a/apps/frontend/src/components/new-launch/providers/whop/whop.provider.tsx b/apps/frontend/src/components/new-launch/providers/whop/whop.provider.tsx
+index 222dfb4..4ca10e8 100644
+--- a/apps/frontend/src/components/new-launch/providers/whop/whop.provider.tsx
++++ b/apps/frontend/src/components/new-launch/providers/whop/whop.provider.tsx
+@@ -31,7 +31,7 @@ const WhopSettings: FC = () => {
+         {...form.register('experience')}
+         companyId={selectedCompany}
+       />
+-      <Input label="Title (optional)" {...form.register('title')} />
++      <Input label="Título (opcional)" {...form.register('title')} />
+     </div>
+   );
+ };
+diff --git a/apps/frontend/src/components/new-launch/providers/wordpress/wordpress.post.type.tsx b/apps/frontend/src/components/new-launch/providers/wordpress/wordpress.post.type.tsx
+index 53a1856..0bdbbac 100644
+--- a/apps/frontend/src/components/new-launch/providers/wordpress/wordpress.post.type.tsx
++++ b/apps/frontend/src/components/new-launch/providers/wordpress/wordpress.post.type.tsx
+@@ -42,7 +42,7 @@ export const WordpressPostType: FC<{
+   return (
+     <Select
+       name={name}
+-      label="Select type"
++      label="Escolher tipo"
+       onChange={onChangeInner}
+       value={currentMedia}
+     >
+diff --git a/apps/frontend/src/components/new-launch/providers/wordpress/wordpress.provider.tsx b/apps/frontend/src/components/new-launch/providers/wordpress/wordpress.provider.tsx
+index 7876038..e75f22f 100644
+--- a/apps/frontend/src/components/new-launch/providers/wordpress/wordpress.provider.tsx
++++ b/apps/frontend/src/components/new-launch/providers/wordpress/wordpress.provider.tsx
+@@ -36,7 +36,7 @@ const WordpressSettings: FC = () => {
+         {...form.register('tags')}
+       />
+       <MediaComponent
+-        label="Cover picture"
++        label="Imagem de capa"
+         description="Add a cover picture"
+         {...form.register('main_image')}
+       />
+diff --git a/apps/frontend/src/components/new-launch/providers/youtube/youtube.preview.tsx b/apps/frontend/src/components/new-launch/providers/youtube/youtube.preview.tsx
+index c942b46..e3e3ffc 100644
+--- a/apps/frontend/src/components/new-launch/providers/youtube/youtube.preview.tsx
++++ b/apps/frontend/src/components/new-launch/providers/youtube/youtube.preview.tsx
+@@ -37,7 +37,7 @@ export const YoutubePreview: FC<{
+         .replace(/\[\[\[([.\s\S]*?)]]]/, (match, match1) => {
+           return `<span class="font-bold font-[arial]" style="color: #ae8afc">${match1}</span>`;
+         }) +
+-      `<mark class="bg-red-500" data-tooltip-id="tooltip" data-tooltip-content="This text will be cropped">` +
++      `<mark class="bg-red-500" data-tooltip-id="tooltip" data-tooltip-content="Este texto será cortado">` +
+       newContent.slice(end).replace(/\[\[\[([.\s\S]*?)]]]/, (match, match1) => {
+         return `<span class="font-bold font-[arial]" style="color: #ae8afc">${match1}</span>`;
+       }) +
+diff --git a/apps/frontend/src/components/new-launch/providers/youtube/youtube.provider.tsx b/apps/frontend/src/components/new-launch/providers/youtube/youtube.provider.tsx
+index d3009fb..61196dd 100644
+--- a/apps/frontend/src/components/new-launch/providers/youtube/youtube.provider.tsx
++++ b/apps/frontend/src/components/new-launch/providers/youtube/youtube.provider.tsx
+@@ -55,7 +55,7 @@ const YoutubeSettings: FC = () => {
+         ))}
+       </Select>
+       <Select
+-        label="Made for kids"
++        label="Feito para crianças"
+         {...register('selfDeclaredMadeForKids', {
+           value: 'no',
+         })}
+diff --git a/apps/frontend/src/components/new-layout/logo.tsx b/apps/frontend/src/components/new-layout/logo.tsx
+index b38e603..aa1d431 100644
+--- a/apps/frontend/src/components/new-layout/logo.tsx
++++ b/apps/frontend/src/components/new-layout/logo.tsx
+@@ -1,32 +1,15 @@
+ 'use client';
+ 
++// Marca da Borusa no cabecalho. O simbolo do anel, na versao clara, que e a
++// que funciona sobre o fundo escuro do painel.
+ export const Logo = () => {
+   return (
+-    <svg
+-      xmlns="http://www.w3.org/2000/svg"
+-      width="60"
+-      height="60"
+-      viewBox="0 0 60 60"
+-      fill="none"
+-      className="mt-[8px] min-w-[60px] min-h-[60px]"
+-    >
+-      <path
+-        d="M12.8816 11.4648C12.9195 12.0781 12.9731 12.7698 13.0342 13.5594L15.2408 42.0719C15.4874 45.2588 15.6107 46.8522 16.3251 48.0214C16.9535 49.0498 17.8913 49.853 19.0042 50.3156C20.2694 50.8416 21.8629 50.7183 25.0497 50.4717L46.8877 48.7817C48.9537 48.6218 50.3501 48.5137 51.3952 48.2628C51.0447 49.0858 50.5039 49.8189 49.8121 50.3992C48.7623 51.2797 47.205 51.6389 44.0905 52.3574L22.7476 57.2805C19.633 57.9989 18.0757 58.3581 16.7463 58.0264C15.5769 57.7346 14.5299 57.0801 13.7554 56.1566C12.8749 55.1069 12.5156 53.5496 11.7972 50.435L5.36942 22.569C4.651 19.4544 4.29178 17.8972 4.62351 16.5677C4.91531 15.3983 5.56982 14.3513 6.49325 13.5768C7.54303 12.6963 9.10032 12.3371 12.2149 11.6186L12.8816 11.4648Z"
+-        fill="#612BD3"
+-      />
+-      <path
+-        d="M47.0122 2.5752C47.9217 2.57909 48.5299 2.67533 49.0386 2.88672C50.0099 3.29052 50.829 3.99206 51.3774 4.88965C51.6647 5.35982 51.8537 5.94554 51.9976 6.84375C52.1427 7.7505 52.2327 8.91127 52.3569 10.5166L54.564 39.0283C54.6882 40.6337 54.7769 41.7946 54.7729 42.7129C54.7691 43.6226 54.6729 44.2305 54.4614 44.7393C54.0576 45.7105 53.3561 46.5287 52.4585 47.0771C51.9883 47.3644 51.4027 47.5534 50.5044 47.6973C49.5977 47.8424 48.4376 47.9334 46.8325 48.0576L24.9937 49.748C23.3886 49.8723 22.2282 49.961 21.3101 49.957C20.4003 49.9531 19.7925 49.8561 19.2837 49.6445C18.3124 49.2407 17.4933 48.5402 16.9448 47.6426C16.6576 47.1724 16.4685 46.5867 16.3247 45.6885C16.1795 44.7817 16.0896 43.621 15.9653 42.0156L13.7583 13.5029C13.6341 11.8979 13.5454 10.7375 13.5493 9.81934C13.5532 8.90971 13.6494 8.30172 13.8608 7.79297C14.2646 6.82169 14.9662 6.00253 15.8638 5.4541C16.3339 5.16692 16.9197 4.97778 17.8179 4.83398C18.7246 4.68882 19.8854 4.59884 21.4907 4.47461L43.3286 2.78418C44.9336 2.65997 46.094 2.57129 47.0122 2.5752Z"
+-        stroke="#131019"
+-        strokeWidth="1.45254"
+-      />
+-      <path
+-        d="M21.5681 5.49237L43.4061 3.80233C45.0283 3.67679 46.1402 3.59211 47.007 3.59582C47.8534 3.59945 48.3108 3.69053 48.6454 3.82963C49.4173 4.15056 50.0679 4.70763 50.5037 5.421C50.6927 5.7302 50.853 6.16816 50.9868 7.00389C51.1239 7.85984 51.2113 8.97152 51.3368 10.5937L53.5434 39.1062C53.6689 40.7284 53.7536 41.8403 53.7499 42.7071C53.7463 43.5535 53.6552 44.0109 53.5161 44.3455C53.1952 45.1174 52.6381 45.7679 51.9247 46.2038C51.6155 46.3927 51.1776 46.5531 50.3418 46.6869C49.4859 46.824 48.3742 46.9114 46.752 47.0369L24.914 48.7269C23.2918 48.8525 22.1799 48.9372 21.3131 48.9335C20.4667 48.9298 20.0093 48.8387 19.6747 48.6996C18.9028 48.3787 18.2522 47.8216 17.8164 47.1083C17.6274 46.7991 17.4671 46.3611 17.3333 45.5254C17.1962 44.6694 17.1088 43.5578 16.9833 41.9356L14.7767 13.4231C14.6512 11.8009 14.5665 10.689 14.5702 9.82217C14.5738 8.97581 14.6649 8.51838 14.804 8.1838C15.1249 7.41186 15.682 6.76133 16.3954 6.32545C16.7046 6.13653 17.1425 5.97616 17.9783 5.84235C18.8342 5.70531 19.9459 5.61791 21.5681 5.49237Z"
+-        fill="white"
+-      />
+-      <path
+-        d="M31.0188 12.0956L31.2277 14.7969C31.6025 14.3332 32.0909 13.9331 32.6929 13.5967C33.2931 13.2362 34.0374 13.0217 34.9259 12.953C35.7423 12.8899 36.5227 12.9865 37.2672 13.243C38.0357 13.4976 38.723 13.9517 39.3291 14.6054C39.9574 15.2332 40.4832 16.0983 40.9067 17.2009C41.3301 18.3035 41.604 19.6592 41.7284 21.268C41.8175 22.4205 41.7985 23.5814 41.6715 24.7507C41.5685 25.9182 41.3002 26.9776 40.8665 27.929C40.4328 28.8805 39.806 29.6777 38.9861 30.3209C38.1884 30.9381 37.1532 31.2959 35.8806 31.3943C34.9681 31.4649 34.2385 31.4005 33.6917 31.2012C33.143 30.9779 32.7236 30.7084 32.4335 30.3927L33.1102 39.145L28.0238 40.8427L25.8323 12.4966L31.0188 12.0956ZM33.9095 28.3944C34.5338 28.3462 35.0463 28.1012 35.4469 27.6596C35.8457 27.194 36.1392 26.6157 36.3273 25.9248C36.5395 25.2321 36.662 24.4738 36.6949 23.6499C36.75 22.8002 36.746 21.9672 36.6829 21.1508C36.5808 19.8301 36.38 18.7949 36.0804 18.0451C35.8049 17.2934 35.4972 16.7495 35.1572 16.4135C34.8153 16.0534 34.4846 15.8374 34.165 15.7655C33.8694 15.6918 33.6376 15.6614 33.4695 15.6744C33.0373 15.7078 32.6292 15.8963 32.2451 16.2401C31.8592 16.5598 31.5934 17.0272 31.4477 17.6423L32.2246 27.6913C32.3595 27.8741 32.5665 28.0514 32.8455 28.2231C33.1226 28.3707 33.4773 28.4278 33.9095 28.3944Z"
+-        fill="#131019"
+-      />
+-    </svg>
++    <img
++      src="/borusa-marca.png"
++      alt="Borusa"
++      width={60}
++      height={60}
++      className="mt-[8px] min-w-[60px] min-h-[60px] object-contain"
++    />
+   );
+ };
+diff --git a/apps/frontend/src/components/preview/comments.components.tsx b/apps/frontend/src/components/preview/comments.components.tsx
+index e4b658b..85a5245 100644
+--- a/apps/frontend/src/components/preview/comments.components.tsx
++++ b/apps/frontend/src/components/preview/comments.components.tsx
+@@ -55,7 +55,7 @@ export const RenderComponents: FC<{
+               required: true,
+             })}
+             className="flex w-full px-3 py-2 h-[98px] text-sm ring-offset-background placeholder:text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 min-h-[80px] resize-none text-white bg-third border border-tableBorder placeholder-gray-500 focus:ring-0"
+-            placeholder="Add a comment..."
++            placeholder="Adicione um comentário..."
+             defaultValue={''}
+           />
+           <div className="flex justify-end">
+diff --git a/apps/frontend/src/components/sets/sets.tsx b/apps/frontend/src/components/sets/sets.tsx
+index 1116b55..35dc374 100644
+--- a/apps/frontend/src/components/sets/sets.tsx
++++ b/apps/frontend/src/components/sets/sets.tsx
+@@ -35,13 +35,13 @@ const SaveSetModal: FC<{
+     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+       <div>
+         <Input
+-          label="Set Name"
++          label="Nome do conjunto"
+           translationKey="label_set_name"
+           name="setName"
+           value={name}
+           disableForm={true}
+           onChange={(e) => setName(e.target.value)}
+-          placeholder="Enter a name for this set"
++          placeholder="Digite um nome para este conjunto"
+           autoFocus
+         />
+       </div>
+diff --git a/apps/frontend/src/components/settings/github.component.tsx b/apps/frontend/src/components/settings/github.component.tsx
+index 11ad6f4..5533ee5 100644
+--- a/apps/frontend/src/components/settings/github.component.tsx
++++ b/apps/frontend/src/components/settings/github.component.tsx
+@@ -108,7 +108,7 @@ const ConnectComponent: FC<{
+           onChange={(e) => setUrl(e.target.value)}
+           name="github"
+           label=""
+-          placeholder="Full GitHub URL"
++          placeholder="Endereço completo do GitHub"
+         />
+         <Button
+           className="h-[44px] mt-[7px]"
+diff --git a/apps/frontend/src/components/settings/metric.component.tsx b/apps/frontend/src/components/settings/metric.component.tsx
+index 8869c1f..e4641ba 100644
+--- a/apps/frontend/src/components/settings/metric.component.tsx
++++ b/apps/frontend/src/components/settings/metric.component.tsx
+@@ -33,7 +33,7 @@ const MetricComponent = () => {
+   };
+   return (
+     <div className="my-[16px] mt-[16px] bg-sixth border-fifth border rounded-[4px] p-[24px] flex flex-col gap-[24px]">
+-      <div className="mt-[4px]">Date Metrics</div>
++      <div className="mt-[4px]">Métricas por data</div>
+       <Select name="metric" disableForm={true} label="" onChange={changeMetric} value={currentMetric ? 'US' : 'GLOBAL'}>
+         {dateMetrics.map((metric) => (
+           <option
+@@ -45,7 +45,7 @@ const MetricComponent = () => {
+         ))}
+       </Select>
+ 
+-      {/*<div className="mt-[4px]">Current Timezone</div>*/}
++      {/*<div className="mt-[4px]">Fuso horário atual</div>*/}
+       {/*<Select*/}
+       {/*  name="timezone"*/}
+       {/*  disableForm={true}*/}
+diff --git a/apps/frontend/src/components/settings/signatures.component.tsx b/apps/frontend/src/components/settings/signatures.component.tsx
+index 6ed08fd..cb88680 100644
+--- a/apps/frontend/src/components/settings/signatures.component.tsx
++++ b/apps/frontend/src/components/settings/signatures.component.tsx
+@@ -210,7 +210,7 @@ const AddOrRemoveSignature: FC<{
+               onChange={(e) => {
+                 form.setValue('content', e.target.value);
+               }}
+-              placeholder="Write your signature..."
++              placeholder="Escreva sua assinatura..."
+               autosuggestionsConfig={{
+                 textareaPurpose: `Assist me in writing social media signature`,
+                 chatApiConfigs: {},
+@@ -219,7 +219,7 @@ const AddOrRemoveSignature: FC<{
+           </div>
+ 
+           <Select
+-            label="Auto add signature?"
++            label="Adicionar assinatura automaticamente?"
+             translationKey="label_auto_add_signature"
+             {...form.register('autoAdd', {
+               setValueAs: (value) => value === 'true',
+diff --git a/apps/frontend/src/components/signature.tsx b/apps/frontend/src/components/signature.tsx
+index fbacf23..d60855f 100644
+--- a/apps/frontend/src/components/signature.tsx
++++ b/apps/frontend/src/components/signature.tsx
+@@ -25,7 +25,7 @@ export const SignatureBox: FC<{
+       <div
+         onClick={addSignature}
+         data-tooltip-id="tooltip"
+-        data-tooltip-content="Add Signature"
++        data-tooltip-content="Adicionar assinatura"
+         className="select-none cursor-pointer rounded-[6px] w-[30px] h-[30px] bg-newColColor flex justify-center items-center"
+       >
+         <svg
+diff --git a/apps/frontend/src/components/third-parties/providers/heygen.provider.tsx b/apps/frontend/src/components/third-parties/providers/heygen.provider.tsx
+index 40112b6..ec8ce5a 100644
+--- a/apps/frontend/src/components/third-parties/providers/heygen.provider.tsx
++++ b/apps/frontend/src/components/third-parties/providers/heygen.provider.tsx
+@@ -174,7 +174,7 @@ const HeygenProviderComponent = () => {
+           onSubmit={form.handleSubmit(submit)}
+           className="w-full flex flex-col"
+         >
+-          <Select label="Aspect Ratio" {...form.register('aspect_ratio')}>
++          <Select label="Proporção" {...form.register('aspect_ratio')}>
+             <option value="">--SELECT--</option>
+             {aspectRatio.map((p) => (
+               <option key={p.key} value={p.key}>
+@@ -183,7 +183,7 @@ const HeygenProviderComponent = () => {
+             ))}
+           </Select>
+ 
+-          <Select label="Generate Captions" {...form.register('captions')}>
++          <Select label="Gerar legendas" {...form.register('captions')}>
+             <option value="">--SELECT--</option>
+             {generateCaptions.map((p) => (
+               <option key={p.key} value={p.key}>
+@@ -192,7 +192,7 @@ const HeygenProviderComponent = () => {
+             ))}
+           </Select>
+ 
+-          <div className="text-lg mb-3">Voice to generate</div>
++          <div className="text-lg mb-3">Voz a ser gerada</div>
+           {!hideVoiceGenerator && (
+             <Button onClick={generateVoice} loading={voiceLoading}>
+               Generate Voice From My Post Text
+@@ -201,7 +201,7 @@ const HeygenProviderComponent = () => {
+           <Textarea label="" {...form.register('voice')} />
+           {!!data?.length && (
+             <>
+-              <div className="text-lg my-3">Select Avatar</div>
++              <div className="text-lg my-3">Escolher avatar</div>
+               <SelectAvatarComponent
+                 avatarList={data.map((p: any) => ({
+                   avatar_id: p.avatar_id || p.id,
+@@ -226,7 +226,7 @@ const HeygenProviderComponent = () => {
+ 
+           {!!voices?.length && (
+             <>
+-              <div className="text-lg my-3">Select Voice</div>
++              <div className="text-lg my-3">Escolher voz</div>
+               <SelectVoiceComponent
+                 voiceList={voices}
+                 onChange={(id: string) => form.setValue('selectedVoice', id)}
+@@ -237,7 +237,7 @@ const HeygenProviderComponent = () => {
+             </>
+           )}
+ 
+-          <Button type="submit">Generate Video</Button>
++          <Button type="submit">Gerar vídeo</Button>
+         </form>
+       </FormProvider>
+     </div>
+diff --git a/apps/frontend/src/components/third-parties/slider.component.tsx b/apps/frontend/src/components/third-parties/slider.component.tsx
+index 6194b7a..f8b3238 100644
+--- a/apps/frontend/src/components/third-parties/slider.component.tsx
++++ b/apps/frontend/src/components/third-parties/slider.component.tsx
+@@ -31,7 +31,7 @@ export const SliderComponent: FC<{
+         <button
+           onClick={goToPrevious}
+           className="absolute top-[50%] start-[10px] -translate-y-[50%] flex items-center justify-center w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white transition-colors backdrop-blur-sm cursor-pointer"
+-          aria-label="Previous slide"
++          aria-label="Slide anterior"
+         >
+           <ChevronLeftIcon size={18} />
+         </button>
+@@ -42,7 +42,7 @@ export const SliderComponent: FC<{
+         <button
+           onClick={goToNext}
+           className="absolute top-[50%] end-[10px] -translate-y-[50%] flex items-center justify-center w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white transition-colors backdrop-blur-sm cursor-pointer"
+-          aria-label="Next slide"
++          aria-label="Próximo slide"
+         >
+           <ChevronRightIcon size={18} />
+         </button>
+diff --git a/apps/frontend/src/components/third-parties/third-party.component.tsx b/apps/frontend/src/components/third-parties/third-party.component.tsx
+index 056c378..7b8fac7 100644
+--- a/apps/frontend/src/components/third-parties/third-party.component.tsx
++++ b/apps/frontend/src/components/third-parties/third-party.component.tsx
+@@ -154,7 +154,7 @@ export const ThirdPartyComponent = () => {
+                 )}
+               >
+                 {!isLoading && !data?.length ? (
+-                  <div>No Integrations Yet</div>
++                  <div>Nenhuma integração ainda</div>
+                 ) : (
+                   data?.map((p: any) => (
+                     <div
+diff --git a/apps/frontend/src/components/third-parties/third-party.list.component.tsx b/apps/frontend/src/components/third-parties/third-party.list.component.tsx
+index 9dcaea7..853e4cc 100644
+--- a/apps/frontend/src/components/third-parties/third-party.list.component.tsx
++++ b/apps/frontend/src/components/third-parties/third-party.list.component.tsx
+@@ -81,7 +81,7 @@ export const ApiModal: FC<{
+           onSubmit={methods.handleSubmit(submit)}
+         >
+           <div className="pt-[10px]">
+-            <Input label="API Key" name="api" />
++            <Input label="Chave de API" name="api" />
+           </div>
+           <div>
+             <Button loading={loading} type="submit">
+diff --git a/apps/frontend/src/components/videos/providers/image-text-slides.provider.tsx b/apps/frontend/src/components/videos/providers/image-text-slides.provider.tsx
+index d55e420..a83a7ec 100644
+--- a/apps/frontend/src/components/videos/providers/image-text-slides.provider.tsx
++++ b/apps/frontend/src/components/videos/providers/image-text-slides.provider.tsx
+@@ -101,7 +101,7 @@ const VoiceSelector: FC = () => {
+   if (isLoading || !data?.voices?.length) {
+     return (
+       <div className="flex items-center justify-center py-4">
+-        <div className="text-sm text-gray-500">Loading voices...</div>
++        <div className="text-sm text-gray-500">Carregando vozes...</div>
+       </div>
+     );
+   }
+diff --git a/apps/frontend/src/components/videos/providers/veo3.provider.tsx b/apps/frontend/src/components/videos/providers/veo3.provider.tsx
+index 3e591b2..0888aef 100644
+--- a/apps/frontend/src/components/videos/providers/veo3.provider.tsx
++++ b/apps/frontend/src/components/videos/providers/veo3.provider.tsx
+@@ -34,7 +34,7 @@ const VEO3Settings: FC = () => {
+         })}
+         error={formState?.errors?.prompt?.message}
+       />
+-      <div className="mb-[6px]">Images (max 3)</div>
++      <div className="mb-[6px]">Imagens (máximo 3)</div>
+       <MultiMediaComponent
+         allData={[]}
+         dummy={true}
+diff --git a/libraries/react-shared-libraries/src/translation/i18n.config.ts b/libraries/react-shared-libraries/src/translation/i18n.config.ts
+index 253cae5..11670c5 100644
+--- a/libraries/react-shared-libraries/src/translation/i18n.config.ts
++++ b/libraries/react-shared-libraries/src/translation/i18n.config.ts
+@@ -7,6 +7,7 @@ export const languages = [
+   'fr',
+   'es',
+   'pt',
++  'pt-BR',
+   'de',
+   'it',
+   'ja',

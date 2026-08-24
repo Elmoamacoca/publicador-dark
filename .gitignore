@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+painel/analytics.json
+painel/dados/
+painel/midia/
+provas/saida/

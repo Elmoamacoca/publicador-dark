@@ -6,56 +6,32 @@ em varias contas, e monitora essas contas num painel.
 Publica pela **API oficial da Meta**. Nao simula clique em navegador, que e a
 categoria que toma banimento duro.
 
-## Onde as coisas rodam
+## Onde as coisas rodam (migracao em curso, ago/2026)
 
-| Peca | Onde | Quando |
+| Peca | Onde | Estado |
 | --- | --- | --- |
-| Painel | GitHub Pages | sempre no ar |
-| Motor de publicacao | GitHub Actions | a cada 5 minutos |
-| Vigia das contas | GitHub Actions | de hora em hora |
-| Arquivos de video | pasta `midia/` deste repositorio | a Meta baixa daqui |
-| Banco | arquivos em `dados/` | escritos pelo proprio motor |
+| Painel atual | `painel/` deste repositorio, rodando na VPS postador.borusa.com.br | em migracao |
+| Motor de publicacao (legado) | GitHub Actions, a cada 5 minutos | ativo ate a esteira da VPS assumir |
+| Vigia das contas (legado) | GitHub Actions, de hora em hora | ativo ate a esteira da VPS assumir |
+| Painel antigo | `legado/painel-antigo.html` (era servido pelo GitHub Pages) | aposentado |
+| Remendo Borusa do Postiz | `postiz-borusa/` (patch + logos + traducao pt-BR) | copia de seguranca |
 
-Custo: zero. Nao depende do PC ligado.
+Este repositorio e REPOSITORIO E DEPLOY, nao runtime: o destino e todo o
+funcionamento rodar na VPS, e o GitHub guardar versoes e disparar a subida.
 
-## Como conectar uma conta
+## O painel (`painel/`)
 
-1. Crie **um aplicativo Meta novo**, separado de qualquer outro que voce use para
-   cliente. Tipo "Outro", produto Instagram, configuracao "API com login do Instagram".
-2. No painel do aplicativo, adicione a conta como **Testador do Instagram**.
-3. Aceite o convite em `instagram.com/accounts/manage_access/`.
-4. Gere o token e descubra o identificador numerico:
-   `GET https://graph.instagram.com/v23.0/me?fields=user_id,username&access_token=SEU_TOKEN`
-5. Guarde o token em **Settings, Secrets and variables, Actions**, com o nome
-   `IG_TOKEN_CONTA1`.
-6. Preencha a linha em `dados/contas.json` e marque `"ativa": true`.
+- `servidor.py`: servidor HTTP do painel (rotas de dados + arquivos estaticos).
+- `midia.py`: fontes de video (Google Drive por API ou pasta de disco) + livro-caixa SQLite.
+- `index.html`: a interface completa.
+- Estado que NAO entra no git (fica na maquina que roda): `painel/dados/` (livro.db,
+  config.json), `painel/analytics.json`, `painel/midia/` (capas e videos baixados).
+- Dependencia Python: `painel/requirements.txt`.
 
-Nao existe revisao de aplicativo nem verificacao de empresa nesse caminho. O acesso
-padrao da Meta ja vale para contas que tem funcao no aplicativo.
+## Motor legado (`publicador/` + `dados/` + `midia/`)
 
-## Como agendar um lote
-
-Jogue os MP4 em `midia/`, coloque as legendas em `dados/legendas.json` e rode:
-
-```
-cd publicador
-python agendar.py --inicio 2026-08-20 --horarios 09:00,13:00,19:00 --simular
-python agendar.py --inicio 2026-08-20 --horarios 09:00,13:00,19:00
-```
-
-Cada horario informado e um post por dia, igual ao Speed Push. A diferenca esta nas
-tres regras que ele nao tem.
-
-## As tres regras que o agendador aplica sozinho
-
-1. **Horario desencontrado.** Cada item recebe um desvio sorteado de ate 22 minutos,
-   entao duas contas nunca postam no mesmo minuto.
-2. **Legenda unica.** Legenda usada sai da lista e nao volta.
-3. **Curva de aquecimento.** Conta com ate 21 dias recebe no maximo um post por dia.
-   Sobe para dois na oitava semana e para tres depois disso.
-
-## Limites que valem lembrar
-
-- Teto da Meta: cem publicacoes por conta a cada 24 horas. O painel mostra o consumo.
-- O gargalo real nao e esse. Conta saudavel sustenta de duas a tres por dia.
-- Dez a cem videos por dia e alvo da **rede inteira**, nao de uma conta.
+Pipeline do GitHub Actions que publica o que venceu em `dados/agenda.json` usando os
+tokens guardados nos Secrets do Actions (IG_TOKEN_CONTA1..3). Os videos de `midia/`
+sao servidos a Meta pelo endereco raw do GitHub, por isso o repositorio e publico.
+Quando a esteira da VPS assumir, este pipeline sera desligado e o repositorio pode
+virar privado.
