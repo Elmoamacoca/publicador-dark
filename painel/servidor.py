@@ -448,6 +448,19 @@ class SemCache(http.server.SimpleHTTPRequestHandler):
             return self.responder({"erro": "esse caminho nao se serve"}, 404)
         return super().do_GET()
 
+    def do_HEAD(self):
+        # HEAD tem as mesmas trancas do GET: sem isso ele confirmaria a existencia
+        # (e o tamanho) de qualquer arquivo, logado ou nao.
+        if not self.sessao_ok():
+            self.send_response(401)
+            self.end_headers()
+            return
+        rota = urllib.parse.urlparse(self.path).path.strip("/")
+        if rota.split("/")[0] == "dados" or rota.endswith(".py"):
+            self.send_error(404)
+            return
+        return super().do_HEAD()
+
     def list_directory(self, path):
         # Listar pasta e' vitrine de coisa que ninguem pediu para expor.
         self.send_error(404)

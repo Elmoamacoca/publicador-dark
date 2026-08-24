@@ -15,8 +15,9 @@ cd /opt/publicador/app
 git pull --ff-only
 docker compose -f deploy/docker-compose.yml build
 docker compose -f deploy/docker-compose.yml up -d --wait
-# o Caddy nao rele o Caddyfile montado sozinho: recarrega de leve a cada subida
-docker compose -f deploy/docker-compose.yml exec caddy caddy reload --config /etc/caddy/Caddyfile
+# Caddyfile e bind de ARQUIVO: o git pull troca o inode e o container fica preso
+# na versao velha. Recriar o caddy e barato (os certificados moram no volume).
+docker compose -f deploy/docker-compose.yml up -d --force-recreate caddy
 docker compose -f deploy/docker-compose.yml ps
 echo "agora rode o portao de provas a partir do PC:"
 echo "  python provas/prova.py --url https://postador.borusa.com.br --usuario ... --senha-arquivo ..."
