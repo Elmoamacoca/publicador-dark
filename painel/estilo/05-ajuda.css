@@ -1,0 +1,68 @@
+/* GERADO PELO CORTE DO ARQUIVO UNICO (fase 2). A ORDEM DOS ARQUIVOS E LEI:
+   eles se concatenam na ordem numerica e reproduzem o estilo original. */
+/* ================================================================ AJUDA
+   Duas colunas: o indice a esquerda, que gruda ao rolar, e o texto a direita. O indice
+   e' curto de proposito, uma pagina por aba, porque manual com arvore funda vira lugar
+   onde a resposta se esconde. */
+#pag-ajuda .ajuda{display:grid;grid-template-columns:238px minmax(0,1fr);gap:30px;
+                  align-items:start}
+#pag-ajuda .ajuda-indice{position:sticky;top:26px;display:flex;flex-direction:column;
+                         gap:2px}
+#pag-ajuda .ai-grupo{font-size:10.5px;font-weight:800;letter-spacing:.08em;
+                     text-transform:uppercase;color:var(--soft);padding:16px 10px 6px}
+#pag-ajuda .ai{display:block;width:100%;text-align:left;background:none;border:0;
+               font:inherit;font-size:13.5px;color:var(--muted);cursor:pointer;
+               padding:9px 12px;border-radius:var(--r-md);line-height:1.35}
+#pag-ajuda .ai:hover{background:var(--paper-2);color:var(--ink)}
+#pag-ajuda .ai.ativo{background:var(--accent-tint);color:var(--link);font-weight:700}
+/* A pagina filha entra recuada e com um fio, para se ler como parte da de cima. */
+#pag-ajuda .ai.filho{margin-left:12px;padding-left:14px;font-size:13px;
+                     border-left:1px solid var(--rule-solid)}
+#pag-ajuda .ai.filho.ativo{border-left-color:var(--accent)}
+
+#pag-ajuda .doc{display:none}
+#pag-ajuda .doc.ativo{display:block;max-width:760px}
+#pag-ajuda .doc-cab{display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+                    margin-bottom:6px}
+#pag-ajuda .doc h2{font-size:20px}
+#pag-ajuda .doc h3{font-size:15px;font-weight:800;letter-spacing:-.1px;
+                   margin:30px 0 8px}
+#pag-ajuda .doc h3:first-of-type{margin-top:24px}
+#pag-ajuda .doc p{font-size:14.5px;line-height:1.62;margin:0 0 12px}
+#pag-ajuda .doc p.abre{font-size:15.5px;color:var(--muted);margin-bottom:20px}
+#pag-ajuda .doc ol,#pag-ajuda .doc ul{margin:0 0 14px;padding-left:22px}
+#pag-ajuda .doc li{font-size:14.5px;line-height:1.62;margin-bottom:7px}
+#pag-ajuda .doc b{font-weight:700}
+#pag-ajuda .doc code{font-size:13px;background:var(--paper-2);padding:2px 6px;
+                     border-radius:6px}
+/* O quadro de aviso. Vale para o que morde: limite medido, trava, decisao em aberto. */
+#pag-ajuda .nota{border:1px solid var(--rule-solid);border-left:3px solid var(--accent);
+                 background:var(--branco);border-radius:var(--r-md);
+                 padding:14px 16px;margin:0 0 16px}
+#pag-ajuda .nota.aviso{border-left-color:var(--ambar)}
+#pag-ajuda .nota.aberta{border-left-color:var(--vermelho)}
+#pag-ajuda .nota p:last-child{margin-bottom:0}
+#pag-ajuda .nota-rot{display:block;font-size:10.5px;font-weight:800;letter-spacing:.08em;
+                     text-transform:uppercase;color:var(--soft);margin-bottom:6px}
+/* A linha do tempo do carregamento: horario a esquerda, o que acontece a direita.
+   NAO se chama `.hora` porque esse nome ja existe no painel, valendo 48 pixels de
+   largura na fita do dia. Herdar aquilo espremia o texto em uma palavra por linha. */
+#pag-ajuda .passo{display:grid;grid-template-columns:132px minmax(0,1fr);gap:16px;
+                 padding:12px 0;border-top:1px solid var(--rule-solid)}
+#pag-ajuda .passo:last-of-type{border-bottom:1px solid var(--rule-solid)}
+#pag-ajuda .passo b{font-size:13.5px}
+#pag-ajuda .passo p{margin:0;font-size:14px}
+#pag-ajuda .doc-estado{display:inline-flex;align-items:center;gap:7px;font-size:11px;
+                       font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+                       padding:5px 11px;border-radius:999px;background:var(--paper-2);
+                       color:var(--muted);border:1px solid var(--rule-solid)}
+#pag-ajuda .doc-estado i{width:7px;height:7px;border-radius:50%;background:var(--soft)}
+#pag-ajuda .doc-estado.viva{background:var(--accent-tint);color:var(--link);
+                            border-color:transparent}
+#pag-ajuda .doc-estado.viva i{background:var(--verde)}
+@media(max-width:980px){
+  #pag-ajuda .ajuda{grid-template-columns:minmax(0,1fr)}
+  #pag-ajuda .ajuda-indice{position:static}
+}
+
+

@@ -1,0 +1,61 @@
+/* GERADO PELO CORTE DO ARQUIVO UNICO (fase 2). A ORDEM DOS ARQUIVOS E LEI:
+   eles se concatenam na ordem numerica e reproduzem o estilo original. */
+/* ================================================================ ABA PAINEL
+   O molde e' o do Social Tracker (aba Analytics): cartao com titulo, fileira de
+   numeros por cima, desenho embaixo e a frase de leitura no rodape.
+   ATENCAO ao nome das classes: `.chave` ja' e' o interruptor de tema do rodape, de
+   34 por 19 pixels. Usar aquele nome aqui esmagava os numeros dentro do interruptor. */
+.cartao{background:var(--branco);border:1px solid var(--rule-solid);
+  border-radius:var(--r-md);padding:18px 20px;display:flex;flex-direction:column}
+.cartao .topo{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.cartao .topo h3{font-size:16px;font-weight:800;letter-spacing:-.3px;color:var(--ink)}
+.cartao .selo{font-size:11.5px;font-weight:600;color:var(--muted);
+  background:var(--paper-2);padding:4px 10px;border-radius:999px}
+.cartao .topo .dir{margin-left:auto;display:flex;gap:8px}
+
+.kpis{display:flex;gap:0;border-bottom:1px solid var(--rule-solid);margin-bottom:16px;
+  flex-wrap:wrap}
+.kpi{padding:0 22px 11px 0;margin-right:22px;position:relative}
+.kpi .rot{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.kpi .rot i{width:8px;height:8px;border-radius:3px;flex:0 0 auto}
+.kpi .val{font-size:21px;font-weight:700;letter-spacing:-.7px;margin-top:7px;
+  font-variant-numeric:tabular-nums;color:var(--ink)}
+.kpi.forte::after{content:"";position:absolute;left:0;right:22px;bottom:-1px;height:2px;
+  background:var(--accent);border-radius:2px}
+.kpi.mau .val{color:var(--vermelho)}
+
+.pn-nota{font-size:12px;color:var(--muted);margin-top:14px}
+.pn-grade{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;
+  align-items:stretch}
+@media(max-width:1000px){.pn-grade{grid-template-columns:1fr}}
+.pn-desenho{flex:1;min-height:0}
+.pn-desenho svg{width:100%;display:block}
+.pn-dias{display:flex;margin-top:8px}
+.pn-dias span{flex:1;text-align:center;font-size:11.5px;color:var(--muted)}
+.pn-dias span.hoje{color:var(--ink);font-weight:700}
+
+.pend{display:flex;align-items:center;gap:12px;padding:13px 0;
+  border-top:1px solid color-mix(in srgb,var(--rule-solid) 45%,transparent)}
+.pend:first-child{border-top:0}
+.pend .sinal{width:30px;height:30px;border-radius:9px;flex:0 0 auto;display:flex;
+  align-items:center;justify-content:center;
+  background:color-mix(in srgb,var(--vermelho) 12%,transparent);color:var(--vermelho)}
+.pend.morno .sinal{background:color-mix(in srgb,var(--ambar) 14%,transparent);
+  color:var(--ambar)}
+.pend .sinal svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
+.pend .texto{min-width:0;flex:1}
+.pend .texto b{display:block;font-size:13.5px;font-weight:600;color:var(--ink)}
+.pend .texto span{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
+.pend .dir{flex:0 0 auto}
+.pn-calmo{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:9px;padding:34px 16px;text-align:center;flex:1}
+.pn-calmo .marca{width:42px;height:42px;border-radius:999px;display:flex;
+  align-items:center;justify-content:center;color:var(--verde);
+  background:color-mix(in srgb,var(--verde) 13%,transparent)}
+.pn-calmo .marca svg{width:20px;height:20px;fill:none;stroke:currentColor;
+  stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.pn-calmo b{font-size:14.5px;font-weight:700;color:var(--ink)}
+.pn-calmo span{font-size:12.5px;color:var(--muted);max-width:360px}
+

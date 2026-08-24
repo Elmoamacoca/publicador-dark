@@ -1,0 +1,88 @@
+/* GERADO PELO CORTE DO ARQUIVO UNICO (fase 2). A ORDEM DOS ARQUIVOS E LEI:
+   eles se concatenam na ordem numerica e reproduzem o estilo original. */
+/* ================================================================ MENU, colado
+   Fixo na borda, do topo ao rodape. Sem margem, sem canto e sem sombra: encostado
+   na lateral, o que separa ele do conteudo e' uma linha, nao um vao. */
+/* AS DUAS LARGURAS SAO ESCRITAS EM PIXEL, e nao por variavel, de proposito.
+   Com `width:var(--menu)` a largura simplesmente nao mudava: o resto do estado aberto
+   aplicava (rotulo, direcao do item, interruptor), mas o menu continuava com 76. O
+   Chrome nao inicia a transicao quando o valor da propriedade animada vem de uma
+   variavel que mudou, e o elemento fica pintando o valor velho sem nenhuma animacao em
+   curso. Medido: com a transicao desligada na mao, a largura pulava para 236 na hora.
+   Em pixel literal a transicao roda. A duplicacao aqui e' o preco, e e' barato. */
+.menu{position:fixed;inset:0 auto 0 0;width:76px;z-index:30;
+      display:flex;flex-direction:column;
+      background:var(--branco);border-right:1px solid var(--rule-solid);
+      transition:width .22s cubic-bezier(.4,0,.2,1)}
+:root[data-menu="aberto"] .menu{width:236px}
+
+.menu-marca{display:flex;align-items:center;gap:10px;padding:16px 0;
+            justify-content:center;min-height:64px}
+.menu-marca img{width:28px;height:28px;object-fit:contain;flex:none}
+.marca-escura{display:none}
+:root[data-theme="dark"] .marca-clara{display:none}
+:root[data-theme="dark"] .marca-escura{display:block}
+.menu-nome{display:none;font-size:15px;font-weight:800;letter-spacing:-.3px;
+           white-space:nowrap}
+:root[data-menu="aberto"] .menu-marca{justify-content:flex-start;padding:16px 18px}
+:root[data-menu="aberto"] .menu-nome{display:block}
+
+/* O botao de recolher. Fica na borda direita do menu, na altura da marca, meio para
+   fora: assim ele pertence ao menu e nao rouba linha da lista. */
+.menu-botao{position:absolute;top:26px;right:-11px;width:22px;height:22px;
+            border-radius:999px;border:1px solid var(--rule-solid);
+            background:var(--branco);color:var(--muted);cursor:pointer;
+            display:grid;place-items:center;padding:0;z-index:2}
+.menu-botao:hover{color:var(--ink);border-color:var(--soft)}
+.menu-botao svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.2;
+                transition:transform .22s ease}
+:root[data-menu="aberto"] .menu-botao svg{transform:rotate(180deg)}
+
+.menu-rolo{flex:1;display:flex;flex-direction:column;gap:6px;padding:6px 8px;
+           overflow-y:auto}
+.menu-pe{display:flex;flex-direction:column;gap:6px;padding:8px;
+         border-top:1px solid var(--rule-solid)}
+
+/* O item: no molde do Postiz, icone em cima e rotulo miudo embaixo, tudo centrado.
+   Aberto, ele deita: icone a esquerda e rotulo do lado, em corpo de leitura. */
+.mi{display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:4px;width:100%;min-height:54px;padding:8px 4px;border:0;border-radius:10px;
+    background:none;font:inherit;color:var(--muted);cursor:pointer;
+    transition:background-color .16s ease,color .16s ease}
+.mi:hover{background:var(--paper-2);color:var(--ink)}
+.mi.ativo{background:var(--accent-tint);color:var(--link);font-weight:700}
+.mi-ic{width:21px;height:21px;flex:none;fill:none;stroke:currentColor;
+       stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.mi-rot{font-size:10px;font-weight:600;line-height:1.1;text-align:center}
+.mi-selo{position:absolute;top:6px;right:8px;min-width:16px;height:16px;padding:0 4px;
+         border-radius:999px;font-size:9.5px;font-weight:800;display:grid;
+         place-items:center;background:var(--accent-tint);color:var(--link)}
+.mi-selo.alerta{background:color-mix(in srgb,var(--vermelho) 16%,transparent);
+                color:var(--vermelho)}
+.mi{position:relative}
+:root[data-menu="aberto"] .mi{flex-direction:row;justify-content:flex-start;
+  gap:12px;padding:11px 14px;min-height:0}
+:root[data-menu="aberto"] .mi-rot{font-size:13.5px;text-align:left;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+:root[data-menu="aberto"] .mi-selo{position:static;margin-left:auto;height:20px;
+  min-width:20px;font-size:10.5px}
+
+/* Rodape: so a troca de tema. Fechado, e' o icone sozinho; aberto, ganha o rotulo e o
+   interruptor inteiro. */
+.pe-linha{display:flex;align-items:center;justify-content:center;gap:8px;
+          padding:6px 4px}
+:root[data-menu="aberto"] .pe-linha{justify-content:flex-start;padding:6px 12px}
+.pe-rot{display:none;font-size:11.5px;font-weight:600;color:var(--muted);
+        white-space:nowrap}
+:root[data-menu="aberto"] .pe-rot{display:block}
+.chave{width:34px;height:19px;flex:none;border:0;border-radius:999px;
+       background:var(--rule-solid);cursor:pointer;padding:2px;display:none;
+       align-items:center;transition:background .2s}
+.chave[aria-checked="true"]{background:var(--ink)}
+.chave i{width:15px;height:15px;border-radius:999px;background:var(--branco);
+         box-shadow:0 1px 2px rgba(14,14,14,.25);transition:transform .2s;display:block}
+.chave[aria-checked="true"] i{transform:translateX(15px)}
+:root[data-menu="aberto"] .chave{display:inline-flex;margin-left:auto}
+.tema-icone{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;
+            color:var(--muted)}
+

@@ -1,0 +1,256 @@
+/* GERADO PELO CORTE DO ARQUIVO UNICO (fase 2). A ORDEM DOS ARQUIVOS E LEI:
+   eles se concatenam na ordem numerica e reproduzem o estilo original. */
+/* ============================================================ CONTEUDO, tela cheia
+   Sem largura maxima e sem centralizar: a tabela do publicador quer todas as colunas
+   ao mesmo tempo, e sobrar borda dos dois lados so encurta linha. */
+.palco{margin-left:76px;min-height:100vh;padding:26px 28px 60px;
+       transition:margin-left .22s cubic-bezier(.4,0,.2,1)}
+:root[data-menu="aberto"] .palco{margin-left:236px}
+.pagina{display:none}
+.pagina.ativa{display:block}
+@keyframes entra{from{opacity:0;transform:translateY(16px);filter:blur(5px)}
+                 to{opacity:1;transform:none;filter:none}}
+.pagina.ativa > *{animation:entra .44s cubic-bezier(.22,1,.36,1) both}
+.pagina.ativa > *:nth-child(2){animation-delay:.07s}
+.pagina.ativa > *:nth-child(3){animation-delay:.14s}
+.pagina.ativa > *:nth-child(n+4){animation-delay:.21s}
+@media(prefers-reduced-motion:reduce){
+  .pagina.ativa > *{animation:none}
+  .menu,.palco{transition:none}}
+
+.cab{display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap;margin-bottom:22px}
+.cab h1{margin-bottom:3px}
+.cab .dir{margin-left:auto;display:flex;align-items:center;gap:10px}
+.secao{margin-top:30px}
+.secao-cab{margin-bottom:14px}
+.secao-cab h2{margin-bottom:3px}
+
+/* ------------------------------------------------------------------ StatCard */
+.scards{display:grid;gap:14px;grid-template-columns:repeat(4,1fr)}
+@media(max-width:1000px){.scards{grid-template-columns:repeat(2,1fr)}}
+.scard{display:flex;flex-direction:column;gap:5px;border-radius:12px;padding:16px 18px;
+       border:1px solid var(--rule-solid);background:var(--branco)}
+.scard .valor{display:flex;align-items:baseline;gap:4px}
+.scard .valor h3{font-size:29px;font-weight:700;letter-spacing:-1.2px;line-height:1;
+                 font-variant-numeric:tabular-nums}
+.scard .valor span{font-size:15px;font-weight:600;color:var(--muted)}
+.scard .tit{font-size:13px;color:var(--muted)}
+.scard .mud{margin-top:9px;display:flex;align-items:center;gap:7px}
+.scard .mud i{display:flex;align-items:center;justify-content:center;border-radius:999px;
+              padding:4px}
+.scard .mud i svg{width:11px;height:11px;stroke-width:2.5;fill:none;stroke:currentColor}
+.scard .mud.sobe i{color:var(--verde);
+                   background:color-mix(in srgb,var(--verde) 20%,transparent)}
+.scard .mud.desce i{color:var(--vermelho);
+                    background:color-mix(in srgb,var(--vermelho) 20%,transparent)}
+.scard .mud p{font-size:12px;color:var(--muted)}
+.scard .mud b{font-weight:700}
+.scard .mud.sobe b{color:var(--verde)} .scard .mud.desce b{color:var(--vermelho)}
+
+/* ------------------------------------------------------------------ caixa */
+.caixa{background:var(--branco);border:1px solid var(--rule-solid);
+       border-radius:var(--r-md);padding:18px 20px}
+.caixa.solta{padding:0}
+.caixa-topo{display:flex;align-items:center;gap:10px;padding:14px 20px;
+            border-bottom:1px solid var(--rule-solid);flex-wrap:wrap}
+.caixa-topo h3{margin:0}
+.caixa-topo .dir{margin-left:auto;display:flex;align-items:center;gap:8px}
+.duas{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:16px;
+      align-items:start}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+@media(max-width:1100px){.duas,.g2{grid-template-columns:minmax(0,1fr)}}
+
+/* ------------------------------------------------------------------ filtros */
+.filtros{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.chip{background:var(--branco);border:1px solid var(--rule-solid);border-radius:999px;
+      padding:6px 13px;font:inherit;font-size:12.5px;cursor:pointer;color:var(--muted)}
+.chip:hover{border-color:var(--soft);color:var(--ink)}
+.chip.on{background:var(--ink);color:var(--paper);border-color:var(--ink);font-weight:600}
+.rot-filtro{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+            color:color-mix(in srgb,var(--muted) 60%,transparent)}
+input[type=search]{background:var(--branco);border:1px solid var(--rule-solid);
+  border-radius:var(--r-filtro);padding:0 14px;height:var(--h-filtro);font:inherit;
+  font-size:13.5px;color:var(--ink);min-width:240px}
+.sep{width:1px;height:22px;background:var(--rule-solid)}
+
+/* ------------------------------------------------------------------ botao */
+.bt{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:38px;
+    padding:0 16px;border-radius:999px;border:1px solid var(--rule-solid);
+    background:var(--branco);color:var(--ink);font:inherit;font-size:13.5px;
+    font-weight:600;cursor:pointer;transition:.15s}
+.bt:hover{border-color:var(--soft)}
+.bt.forte{background:var(--accent);border-color:var(--accent);color:#fff}
+.bt.forte:hover{background:color-mix(in srgb,var(--accent) 88%,#000)}
+.bt.mini{height:30px;padding:0 12px;font-size:12.5px}
+
+/* ------------------------------------------------------------------- FlowButton
+   Copiado do Social Tracker, onde ele e' o botao de acao da casa. A mecanica e' a do
+   componente aprovado: duas setas absolutas, uma entrando pela esquerda e a outra
+   saindo pela direita, o texto deslizando 9 pixels, e um circulo que cresce do meio e
+   engole o botao. O canto sai de 100 e fecha em 12.
+
+   O SELO SEGUE A COR DO TEXTO, e nao vem colorido. E' decisao ja tomada la: com o selo
+   em degrade, no tema escuro ele ficava quase branco sobre fundo branco quando o
+   circulo enchia o botao. Cor herdada resolve nos dois temas e nos dois estados. */
+.btn{--desl:9px;position:relative;display:inline-flex;align-items:center;gap:4px;
+     overflow:hidden;border-radius:100px;background:transparent;padding:8px 22px;
+     border:1.5px solid color-mix(in srgb,var(--ink) 40%,transparent);
+     font:inherit;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer;
+     text-decoration:none;
+     transition:border-color .6s cubic-bezier(.23,1,.32,1),
+                color .6s cubic-bezier(.23,1,.32,1),
+                border-radius .6s cubic-bezier(.23,1,.32,1)}
+.btn:hover{border-color:transparent;color:var(--paper);border-radius:12px}
+.btn:active{transform:scale(.95)}
+.btn .seta{position:absolute;width:14px;height:14px;stroke:var(--ink);fill:none;z-index:9;
+           stroke-width:2;stroke-linecap:round;stroke-linejoin:round;
+           transition:left .8s cubic-bezier(.34,1.56,.64,1),
+                      right .8s cubic-bezier(.34,1.56,.64,1),
+                      stroke .8s cubic-bezier(.34,1.56,.64,1)}
+.btn .seta-esq{left:-25%}
+.btn .seta-dir{right:11px}
+.btn:hover .seta-esq{left:11px;stroke:var(--paper)}
+.btn:hover .seta-dir{right:-25%;stroke:var(--paper)}
+.btn .txt{position:relative;z-index:1;white-space:nowrap;display:inline-flex;
+          align-items:center;gap:8px;
+          transform:translateX(calc(-1 * var(--desl)));
+          transition:transform .8s ease-out}
+.btn:hover .txt{transform:translateX(var(--desl))}
+.btn .circ{position:absolute;top:50%;left:50%;width:16px;height:16px;
+           transform:translate(-50%,-50%);background:var(--ink);border-radius:50%;
+           opacity:0;transition:all .8s cubic-bezier(.19,1,.22,1)}
+/* O preenchimento cresce COM o botao, e nao ate um tamanho fixo: assim nenhum botao
+   fica largo demais para o proprio circulo e sobra canto cru. */
+.btn:hover .circ{width:calc(100% + 80px);height:calc(100% + 180px);opacity:1}
+.btn.brasa{border-color:color-mix(in srgb,var(--accent) 40%,transparent);
+           color:var(--accent)}
+.btn.brasa .seta{stroke:var(--accent)}
+.btn.brasa .circ{background:var(--accent)}
+/* Branco fixo, e nao `--paper`: o circulo e' o mesmo verde nos dois temas. */
+.btn.brasa:hover{color:#FFFFFF}
+.btn.brasa:hover .seta{stroke:#FFFFFF}
+.ig-selo{width:15px;height:15px;flex:0 0 15px;color:inherit}
+/* A tinta compartilhada ocupa zero e CONTINUA SENDO DESENHADA. `display:none` a
+   apagaria, e e' isso que quebra o selo do Instagram. */
+.tinta{position:absolute;width:0;height:0;overflow:hidden}
+
+/* ------------------------------------------------------------------------- pino
+   O estado e' uma pastilha com ponto dentro, e nao uma palavra solta: no meio de uma
+   linha de tabela, texto cru le-se como texto qualquer e nao como marcador. A palavra
+   fica junto da cor de proposito, porque cor sozinha nao serve para quem nao
+   distingue verde de vermelho. */
+.pino{display:inline-flex;align-items:center;gap:7px;font-size:13px;line-height:1;
+      color:var(--ink);white-space:nowrap;padding:7px 12px 7px 10px;border-radius:99px;
+      border:1px solid var(--rule-solid);background:var(--paper-2)}
+.pino::before{content:"";width:7px;height:7px;border-radius:99px;flex-shrink:0;
+              background:var(--muted)}
+.pino.ok::before{background:var(--verde)}
+.pino.off::before{background:var(--soft)}
+.pino.off{color:var(--muted)}
+.pino.ruim::before{background:var(--vermelho)}
+.pino.ruim{color:var(--vermelho);
+           border-color:color-mix(in srgb,var(--vermelho) 35%,transparent)}
+
+/* ------------------------------------------------------------------ tabela
+   A BARRA DE ROLAGEM DE LADO NAO E' DESENHADA, mesma regra do resto da casa: em vez de
+   deixar bonita, tirar. Rolar de lado continua funcionando com a roda e com o toque; o
+   que sai e' so o desenho dela, que aparecia e sumia conforme a largura da tabela e
+   ficava piscando embaixo da ultima linha. */
+.rolagem{overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none}
+.rolagem::-webkit-scrollbar{width:0;height:0;display:none}
+table{width:100%;border-collapse:collapse}
+/* O TITULO DE COLUNA PODE QUEBRAR EM DUAS LINHAS. Com `nowrap` era ele quem ditava a
+   largura da tabela: "Conexão com o Instagram" sozinho pedia 190 pixels de coluna para
+   um conteudo que cabe em 90, e a soma disso estourava a caixa e obrigava a rolar de
+   lado. Quebrando, a coluna passa a ter a largura do dado, que e' o certo. */
+th{text-align:left;font-size:12px;color:var(--soft);font-weight:700;padding:14px 10px;
+   border-bottom:1px solid var(--rule-solid);text-transform:uppercase;
+   letter-spacing:.05em;line-height:1.35;background:var(--branco);vertical-align:bottom}
+th.n,td.n{text-align:right;font-variant-numeric:tabular-nums}
+/* O TAMANHO DA LINHA E' O DA TABELA DE OPERACAO, e nao o de uma tabela de leitura.
+   Comecou em 13,5 de letra, retrato de 28 e folga de 12: o Gabriel disse duas vezes que
+   mal dava para ler. Agora sao 15 de letra, retrato de 52 e folga de 20, o que poe a
+   linha perto de 92 pixels. A folga LATERAL fica menor que a de cima de proposito: e'
+   ela que soma oito vezes na largura e faz a tabela estourar a caixa. */
+td{padding:20px 10px;font-size:15px;
+   border-bottom:1px solid color-mix(in srgb,var(--rule-solid) 55%,transparent)}
+/* O NUMERO E' O DADO, entao ele vem maior que o texto ao lado e com digito de largura
+   fixa: as colunas de publicacoes, programadas e erros sao para bater o olho. */
+td.n{font-size:18px;font-weight:600}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:color-mix(in srgb,var(--paper-2) 55%,transparent)}
+.perfil{display:flex;align-items:center;gap:13px}
+.perfil .nome{font-size:15.5px;font-weight:700}
+.perfil .pp{font-size:13px}
+.av{width:52px;height:52px;border-radius:50%;flex:none;display:grid;place-items:center;
+    font-size:16px;font-weight:800;color:#fff;background:var(--soft)}
+/* O retrato de verdade precisa de recorte: foto do Instagram nao vem quadrada sempre, e
+   sem `cover` ela entra achatada dentro do circulo. A borda separa retrato escuro do
+   fundo escuro. */
+img.av{object-fit:cover;border:1px solid var(--rule-solid);background:var(--paper-2)}
+.nome{font-weight:600}
+
+.tag{display:inline-flex;align-items:center;font-size:11.5px;padding:3px 10px;
+     border-radius:999px;font-weight:700;white-space:nowrap;
+     background:var(--paper-2);color:var(--muted)}
+.tag.ok{background:var(--accent-tint);color:var(--link)}
+.tag.aviso{background:color-mix(in srgb,var(--ambar) 14%,transparent);color:var(--ambar)}
+.tag.ruim{background:color-mix(in srgb,var(--vermelho) 13%,transparent);
+          color:var(--vermelho)}
+.tag.frio{background:color-mix(in srgb,var(--chart-2) 13%,transparent);
+          color:var(--chart-2)}
+
+.barra{height:9px;background:var(--paper-2);border-radius:999px;overflow:hidden}
+.barra i{display:block;height:100%;background:var(--verde);border-radius:999px}
+.barra i.meio{background:var(--ambar)}
+.uso{display:flex;align-items:center;gap:10px}
+.uso .pct{font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums;
+          white-space:nowrap}
+
+.linhas{display:flex;flex-direction:column}
+.linha{display:flex;align-items:center;gap:12px;padding:13px 20px;
+       border-top:1px solid color-mix(in srgb,var(--rule-solid) 45%,transparent)}
+.linha:first-child{border-top:0}
+.linha .nome{font-size:13.5px;font-weight:600}
+.linha .desc{font-size:12.5px;color:var(--muted);margin-top:2px}
+.linha .dir{margin-left:auto;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.hora{font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums;
+      width:48px;flex:none}
+.mini-video{width:32px;height:40px;border-radius:5px;flex:none;background:var(--paper-2);
+            border:1px solid var(--rule-solid);display:grid;place-items:center;
+            font-size:9px;color:var(--soft);font-weight:700}
+.corte{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+
+.pares{display:flex;flex-direction:column}
+.par{display:flex;justify-content:space-between;gap:14px;padding:11px 0;
+     border-top:1px solid color-mix(in srgb,var(--rule-solid) 45%,transparent);
+     font-size:13.5px}
+.par:first-child{border-top:0}
+.par > span{color:var(--muted)}
+.par > b{font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+
+.fita{display:flex;gap:3px;align-items:flex-end;height:44px}
+.fita i{flex:1;height:100%;border-radius:3px;background:var(--verde)}
+.fita i.fila{background:var(--paper-2);border:1px solid var(--rule-solid)}
+.fita i.ruim{background:var(--vermelho)}
+.fita-pe{display:flex;justify-content:space-between;margin-top:9px;font-size:11.5px;
+         color:var(--soft)}
+.legenda{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;font-size:12px;
+         color:var(--muted)}
+.legenda span{display:inline-flex;align-items:center;gap:7px}
+.ponto{width:9px;height:9px;border-radius:3px;display:inline-block}
+
+.rascunho{display:inline-flex;font-size:11px;font-weight:700;letter-spacing:.06em;
+          text-transform:uppercase;color:var(--ambar);
+          background:color-mix(in srgb,var(--ambar) 12%,transparent);
+          border:1px solid color-mix(in srgb,var(--ambar) 30%,transparent);
+          padding:3px 10px;border-radius:999px}
+.vazio{padding:44px 20px;text-align:center;color:var(--soft);font-size:13px}
+
+@media(max-width:720px){
+  .menu{width:60px}
+  :root[data-menu="aberto"] .menu{width:206px}
+  .palco{margin-left:60px;padding:18px 16px 50px}
+  :root[data-menu="aberto"] .palco{margin-left:206px}
+  .mi-rot{font-size:9px}
+}

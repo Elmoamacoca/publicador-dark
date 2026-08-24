@@ -1,0 +1,380 @@
+/* GERADO PELO CORTE DO ARQUIVO UNICO (fase 2). A ORDEM DOS ARQUIVOS E LEI:
+   eles se concatenam na ordem numerica e reproduzem o estilo original. */
+/* ================================================================ FILTROS DA CASA
+   Os tres controles do Social Tracker, recortados de la' e trazidos inteiros: a busca com
+   sugestao, o menu de um valor e o balao de varias etiquetas.
+
+   VEM SEM ESCOPO de proposito. Eles nao sao de uma aba: sao peca da casa, e a proxima
+   tela que precisar de filtro usa os mesmos, sem recortar nada de novo.
+
+   A LINHA E' UMA SO'. As tres pecas nasceram em bibliotecas diferentes, cada uma com a
+   sua altura e o seu canto, e era isso que fazia a faixa parecer torta. Aqui todas
+   obedecem `--h-filtro` e `--r-filtro`, que sao da tela e nao das bibliotecas. */
+/* ------------------------------------------------------ busca (Autocomplete, HeroUI)
+   O arquivo que veio era só um reexport da biblioteca, sem implementação. Isto segue a
+   anatomia pública do componente: campo com ícone, botão de limpar e a lista de
+   sugestões abrindo por baixo, navegável pelas setas e pelo Enter. */
+.ac{position:relative;max-width:560px}
+.ac-campo{display:flex;align-items:center;gap:10px;height:var(--h-filtro);padding:0 12px;
+          border:1px solid var(--rule-solid);border-radius:var(--r-filtro);
+          background:var(--branco);transition:border-color .18s, box-shadow .18s}
+.ac-campo:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-tint)}
+.ac-lupa{width:17px;height:17px;flex:0 0 17px;color:var(--soft)}
+.ac-campo input{flex:1;min-width:0;border:0;outline:0;background:none;font:inherit;
+                font-size:14px;color:var(--ink);padding:0}
+.ac-campo input::placeholder{color:var(--soft)}
+.ac-limpar{border:0;background:none;padding:4px;border-radius:999px;cursor:pointer;
+           color:var(--soft);display:flex;line-height:0}
+.ac-limpar:hover{background:var(--paper-2);color:var(--ink)}
+/* `display:flex` acima vence o atributo `hidden`, então o botão de limpar aparecia com
+   o campo vazio, oferecendo apagar o que não existe. Esta linha devolve o esconder. */
+.ac-limpar[hidden]{display:none}
+.ac-limpar svg{width:14px;height:14px}
+.ac-lista{position:absolute;top:calc(100% + 8px);left:0;right:0;z-index:35;
+          background:var(--branco);border:1px solid var(--rule-solid);
+          border-radius:var(--r-balao);
+          box-shadow:var(--sombra-balao);padding:6px;
+          display:none;flex-direction:column;gap:2px;max-height:340px;overflow-y:auto}
+.ac-lista.aberta{display:flex}
+.ac-lista button{display:flex;align-items:center;gap:11px;width:100%;border:0;
+                 background:none;border-radius:var(--r-item);padding:9px 10px;
+                 cursor:pointer;
+                 font:inherit;text-align:left}
+.ac-lista button:hover,.ac-lista button.marcado{background:var(--paper-2)}
+/* O retrato da sugestão. A foto guardada é quadrada, então `object-fit:cover` é o que
+   impede o rosto de esticar dentro do círculo. Sem foto, o mesmo seletor vale para o
+   `span` da inicial: é a mesma caixa, com ou sem imagem. */
+.ac-ini{width:38px;height:38px;flex:0 0 38px;border-radius:999px;display:flex;
+        align-items:center;justify-content:center;background:var(--accent-tint);
+        color:var(--accent);font-weight:800;text-transform:uppercase;font-size:15px;
+        object-fit:cover;overflow:hidden}
+img.ac-ini{background:var(--paper-2)}
+.ac-nome{flex:1;min-width:0;font-size:14px;font-weight:700;color:var(--ink);
+         display:flex;flex-direction:column;gap:3px}
+/* As etiquetas ainda são texto simples: o componente de etiqueta está em escolha, e
+   até ele chegar nada é inventado aqui. Quando entrar, só este seletor muda. */
+.ac-tags{display:flex;flex-wrap:wrap;gap:5px}
+.ac-tags .vazia{font-size:11.5px;font-weight:500;color:var(--rule-solid)}
+.ac-seg{display:flex;flex-direction:column;align-items:flex-end;gap:1px;text-align:right;
+        font-size:10.5px;color:var(--soft);text-transform:lowercase;letter-spacing:.2px}
+.ac-seg b{font-size:13.5px;font-weight:700;color:var(--ink);
+          font-variant-numeric:tabular-nums}
+.ac-nada{padding:14px 12px;font-size:13.5px;color:var(--soft)}
+/* --------------------------------------------------------------------- filtro (Select)
+   shadcn/ui, versão Base UI, escolhido pelo Gabriel em 12/08 para o nicho. Como no
+   Badge, a aparência não mora no arquivo do componente: sai das classes `cn-select-*`
+   da folha de estilo. Cada medida abaixo veio de lá:
+
+     gatilho   h-9 altura 36, rounded-md canto 6, py-2 pr-2 pl-2.5, gap-1.5, text-sm 14
+               borda de 1, fundo transparente, sombra fina, ícone de 16
+     foco      borda na cor de destaque mais anel de 3
+     lista     min-w-36 largura mínima 144, canto 6, sombra média, anel de 1
+               afastada 4 do gatilho (sideOffset), fundo translúcido com desfoque
+     grupo     p-1 respiro de 4 em volta dos itens
+     item      py-1.5 pr-8 pl-2, canto 4, text-sm 14, realce a 10% do texto
+     marca     16 por 16, encostada a 8 da direita
+     rótulo    text-xs 12, cor apagada, px-2 py-1.5
+
+   O fundo translúcido e a ausência de animação de abertura vêm da classe
+   `cn-menu-translucent`, que o próprio componente aplica na lista e que desliga a
+   animação de propósito. O desfoque, no original, mora numa camada atrás da lista; aqui
+   ele está na própria lista, porque o resultado na tela é o mesmo com uma camada a menos. *//* A linha termina onde terminam os cartões de baixo. Os três controles somavam 964 de
+   1292 e a faixa morria no meio da seção, com um vazio à direita que não explicava nada.
+   Agora os dois filtros têm largura fixa e o campo de busca come toda a sobra, então a
+   borda direita dele é a mesma dos cartões, em qualquer largura de tela.
+
+   O teto de 560 do campo sai de propósito aqui dentro: ele existia para o campo não
+   virar uma faixa solitária de ponta a ponta, e deixou de fazer sentido quando ele
+   passou a dividir a linha com dois vizinhos. */
+.filtros{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.filtros .ac{flex:1 1 320px;max-width:none}
+.filtros .sel,.filtros .autocomplete{flex:0 0 var(--l-filtro)}
+.filtros .sel-gatilho,.filtros .autocomplete__trigger{width:100%}
+.sel{position:relative}
+.sel-gatilho{display:flex;align-items:center;justify-content:space-between;
+             gap:6px;white-space:nowrap;height:var(--h-filtro);min-width:var(--l-filtro);
+             padding:0 10px 0 14px;
+             border:1px solid var(--rule-solid);border-radius:var(--r-filtro);
+             background:var(--branco);
+             font:inherit;font-size:14px;line-height:20px;color:var(--ink);cursor:pointer;
+             box-shadow:0 1px 2px 0 rgba(14,14,14,.05);
+             transition:color .15s, box-shadow .15s, border-color .15s}
+.sel-gatilho:focus-visible{outline:0;border-color:var(--accent);
+                           box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 50%, transparent)}
+.sel-gatilho[aria-expanded="true"]{border-color:var(--accent)}
+.sel-valor{display:flex;flex:1;text-align:left}
+.sel-valor[data-vazio="true"]{color:var(--muted)}
+.sel-seta{width:16px;height:16px;flex:0 0 16px;color:var(--muted);pointer-events:none}
+/* No original a lista é uma camada solta, presa ao gatilho e com a largura dele. Aqui
+   ela cresce quando o texto pede: `min-width:100%` garante que nunca fique mais estreita
+   que o gatilho, e `max-content` deixa passar disso quando um nicho tem nome comprido.
+   Manter a largura travada cortaria o nome, e nome de nicho cortado não serve. */
+.sel-lista{position:absolute;top:calc(100% + 4px);left:0;z-index:50;display:none;
+           width:max-content;min-width:max(144px, 100%);
+           max-height:320px;overflow-y:auto;overflow-x:hidden;
+           border-radius:var(--r-balao);
+           background:var(--branco);border:1px solid var(--rule-solid);
+           box-shadow:var(--sombra-balao)}
+.sel-lista.aberta{display:block}
+.sel-grupo{padding:4px}
+.sel-rotulo{padding:6px 8px;font-size:12px;color:var(--muted)}
+.sel-item{position:relative;display:flex;width:100%;align-items:center;gap:8px;
+          padding:6px 32px 6px 10px;border:0;background:none;
+          border-radius:var(--r-item);
+          font:inherit;font-size:14px;line-height:20px;color:var(--ink);
+          text-align:left;cursor:default}
+.sel-item:hover,.sel-item.marcado{background:color-mix(in srgb, var(--ink) 10%, transparent)}
+.sel-item-texto{display:flex;flex:1 0 auto;gap:8px;white-space:nowrap}
+.sel-marca{position:absolute;right:8px;display:flex;width:16px;height:16px;
+           align-items:center;justify-content:center;pointer-events:none}
+.sel-marca svg{width:16px;height:16px}
+/* ------------------------------------------------- filtro de etiqueta (Autocomplete)
+   HeroUI, escolhido pelo Gabriel em 12/08. O arquivo que ele mandou é um reexport: ele
+   importa `@heroui/styles/css` e devolve o componente, sem uma linha de aparência. Fui
+   buscar essa folha no pacote publicado (`@heroui/styles@3.2.4`) e tirei cada medida de
+   `autocomplete.css`, `list-box.css` e `list-box-item.css`, com os valores dos apelidos
+   resolvidos no `heroui.min.css` (raio base 8, espaço base 4):
+
+     gatilho    min-h-9 altura mínima 36, rounded-field canto 12, px-3 py-2, text-sm 14
+                sombra de campo em três camadas, recuo 28 no fim por causa da seta
+     seta       16 por 16, encostada a 8 do fim, gira meia volta quando abre
+     limpar     20 por 20, canto 12, ícone de 14, some quando não há o que limpar,
+                encolhe para 0,93 no clique
+     lista      canto 24 (o `min` entre 32 e o raio triplo), respiro 8 no topo,
+                entrada de 250 com desvanecer, escala 95 e deslize de 4
+     rolagem    teto de 320 de altura, respiro 6 em volta, 4 entre itens
+     item       min-h-9 altura mínima 36, canto 16, py-1.5, px-2.5 (o valor que a
+                própria lista impõe por cima do item), gap-3, recuo 28 quando marcado
+     marca      16 por 16 a 8 do fim, com o certo de 10 dentro
+
+   Três desvios, todos declarados. A borda do campo no HeroUI nasce com espessura zero, e
+   aqui ela tem 1, para não destoar do campo de busca e do filtro de nicho que estão na
+   mesma linha. A lista, no original, tem a largura travada no gatilho; aqui ela tem um
+   piso de 240, senão o campo de busca de dentro dela nasceria espremido. E as etiquetas
+   escolhidas aparecem no gatilho com o Badge que já foi aprovado, e não com o Chip do
+   HeroUI: dois formatos de pastilha na mesma tela seria repetir a mesma ideia de dois
+   jeitos. */
+.autocomplete{position:relative;display:flex;flex-direction:column;gap:4px}
+.autocomplete__trigger{position:relative;isolation:isolate;display:flex;
+  min-height:var(--h-filtro);min-width:var(--l-filtro);align-items:center;gap:6px;
+  flex-wrap:wrap;
+  border-radius:var(--r-filtro);border:1px solid var(--rule-solid);background:var(--branco);
+  padding:6px 14px;font:inherit;font-size:14px;color:var(--ink);text-align:start;
+  box-shadow:0 2px 4px 0 rgba(14,14,14,.04), 0 1px 2px 0 rgba(14,14,14,.06),
+             0 0 1px 0 rgba(14,14,14,.06);
+  outline:0;user-select:none;cursor:pointer;
+  transition:background-color .15s ease, border-color .15s ease, box-shadow .15s ease}
+.autocomplete__trigger:has(.autocomplete__indicator){padding-inline-end:28px}
+@media (hover:hover){
+.autocomplete__trigger:hover:not(:has(.autocomplete__clear-button:hover)){background:var(--paper-2)}
+}
+.autocomplete__trigger:focus-visible{border-color:var(--accent);
+  box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 50%, transparent)}
+.autocomplete__trigger[aria-expanded="true"]{border-color:var(--accent)}
+.autocomplete__value{display:flex;flex:1;flex-wrap:wrap;gap:5px;align-items:center;
+                     text-align:start;color:currentColor}
+.autocomplete__value[data-placeholder="true"]{color:var(--muted)}
+.autocomplete__indicator{position:absolute;top:0;bottom:0;inset-inline-end:8px;
+  margin:auto 0;display:flex;width:16px;height:16px;flex-shrink:0;align-items:center;
+  justify-content:center;color:var(--muted);transition:transform .15s}
+.autocomplete__indicator[data-open="true"]{transform:rotate(180deg)}
+.autocomplete__clear-button{position:relative;display:inline-flex;width:20px;height:20px;
+  flex-shrink:0;align-self:center;align-items:center;justify-content:center;
+  border:0;border-radius:12px;padding:1px;background:transparent;color:var(--muted);
+  cursor:pointer;user-select:none;transform-origin:center;
+  transition:opacity .15s ease}
+.autocomplete__clear-button svg{width:14px;height:14px}
+.autocomplete__clear-button[data-empty="true"]{pointer-events:none;opacity:0}
+@media (hover:hover){
+.autocomplete__clear-button:hover{background:var(--paper-2)}
+}
+.autocomplete__clear-button:active{transform:scale(.93)}
+/* Ancorada pelo FIM do gatilho, e não pelo começo. No HeroUI quem posiciona é uma peça
+   que mede a janela e vira a lista de lado sozinha quando falta espaço. Página estática
+   não tem essa peça, e com a lista presa pelo começo ela furava a lateral direita em
+   tela de 900 e criava barra de rolagem horizontal. Presa pelo fim, ela cresce para o
+   lado de dentro, onde sempre há espaço, porque este é o último controle da linha. */
+.autocomplete__popover{position:absolute;top:calc(100% + 4px);right:0;z-index:50;
+  display:none;flex-direction:column;width:100%;min-width:240px;
+  overflow:hidden;overscroll-behavior:contain;background:var(--branco);
+  padding:8px 0 0;font-size:14px;border-radius:var(--r-balao);outline:0;
+  border:1px solid var(--rule-solid);box-shadow:var(--sombra-balao)}
+.autocomplete__popover.aberta{display:flex;
+  animation:etqEntra .25s cubic-bezier(.32,.72,0,1)}
+.autocomplete__busca{flex-shrink:0;padding:4px 12px;outline:0}
+.autocomplete__busca input{width:100%;border:0;outline:0;background:none;font:inherit;
+  font-size:14px;color:var(--ink);padding:6px 0}
+.autocomplete__busca input::placeholder{color:var(--soft)}
+.list-box{position:relative;width:100%;max-height:320px;overflow-y:auto;padding:6px;
+          outline:0}
+.list-box > * + *{margin-top:4px}
+.list-box-item{position:relative;display:flex;min-height:36px;width:100%;
+  align-items:center;justify-content:flex-start;gap:12px;border:0;background:none;
+  border-radius:var(--r-item);padding:6px 10px;font:inherit;font-size:14px;
+  color:var(--ink);
+  text-align:left;outline:0;cursor:pointer;user-select:none;
+  transition:transform .25s cubic-bezier(.165,.84,.44,1), box-shadow .15s}
+.list-box-item:has(.list-box-item__indicator){padding-inline-end:28px}
+@media (hover:hover){
+.list-box-item:hover{background:var(--paper-2)}
+}
+.list-box-item:active{transform:scale(.98)}
+.list-box-item.marcado{background:var(--paper-2)}
+.list-box-item__indicator{position:absolute;top:50%;inset-inline-end:8px;display:flex;
+  width:16px;height:16px;transform:translateY(-50%);align-items:center;
+  justify-content:center;color:var(--ink)}
+.list-box-item__indicator svg{width:10px;height:10px}
+.list-box-vazia{padding:10px;text-align:center;font-size:14px;color:var(--soft)}
+@media (max-width:720px){
+.filtros{align-items:stretch}
+.filtros .ac,.filtros .sel,.filtros .autocomplete{flex:1 1 100%;width:100%}
+.sel-gatilho,.autocomplete__trigger{width:100%}
+.autocomplete__popover{left:0;right:0;min-width:0}
+}
+/* ------------------------------------------------------------------- etiqueta (Badge)
+   O componente escolhido pelo Gabriel em 12/08: shadcn/ui, versão Base UI. Ele não traz
+   a aparência no arquivo do componente, e sim numa folha de estilo à parte, na classe
+   `.cn-badge`. É de lá que sai cada medida abaixo, traduzida uma a uma:
+
+     h-5            altura 20        gap-1        espaço 4 entre o ícone e o texto
+     rounded-4xl    canto 32         px-2 py-0.5  respiro 8 nos lados, 2 em cima
+     text-xs        corpo 12         font-medium  peso 500
+     border         borda de 1, transparente por padrão
+     [&>svg]:size-3 ícone de 12 dentro da etiqueta
+
+   O que ficou de fora, e por quê: o recuo extra quando há ícone (`has-data-[icon]`) e os
+   estados de passar o mouse, que no original só valem quando a etiqueta é um link. Aqui
+   ela é rótulo, não é clicável, então esses dois nunca disparariam.
+
+   A variante em uso é a `outline`. Entre as seis do componente, é a única que sobrevive
+   em qualquer fundo: a linha da sugestão ganha preenchimento quando o mouse passa, e uma
+   etiqueta preenchida de cinza sumiria dentro dele. Trocar por `secondary` ou `default`
+   é mudar uma palavra na classe. */
+.badge{display:inline-flex;width:fit-content;flex:0 0 auto;align-items:center;
+       justify-content:center;overflow:hidden;white-space:nowrap;height:20px;gap:4px;
+       border-radius:32px;border:1px solid transparent;padding:2px 8px;
+       font-size:12px;line-height:16px;font-weight:500;transition:all .15s}
+.badge > svg{width:12px;height:12px;pointer-events:none}
+/* ------------------------------------------------------------------ A ETIQUETA
+   Peça única, usada em toda tela que mostra etiqueta: busca do painel, cartão de
+   insight, tabela de Contas e página de perfil. Escrever a pastilha na mão em cada
+   lugar é onde uma etiqueta vira quatro etiquetas diferentes.
+
+   A COR SAI DO PRÓPRIO NOME, e não de uma lista escrita à mão. O nome vira um número,
+   o número vira um tom, e o mesmo nome dá sempre o mesmo tom: "referencia" é sempre
+   daquela cor, em qualquer tela, sem ninguém precisar cadastrar cor nenhuma. Etiqueta
+   nova nasce com a dela.
+
+   Só o TOM viaja na marcação (`--etq-h`). Quanto ele é claro ou escuro é decisão do
+   tema, e por isso a mesma etiqueta funciona nos dois sem uma segunda regra.
+
+   ADULTO NÃO É UM TOM QUALQUER. Etiqueta com "modelo" no nome quer dizer produtora de
+   conteúdo adulto. Isso muda a leitura de tudo o que vem depois, então ela tem tom
+   fixo e desenho próprio: cor sorteada pelo nome deixaria a distinção mais importante
+   parecendo mais uma cor entre as outras. */
+.badge-etq{--etq-h:210;
+  padding-left:6px;
+  border-color:hsl(var(--etq-h) 42% 84%);
+  background:hsl(var(--etq-h) 72% 96.5%);
+  color:hsl(var(--etq-h) 48% 33%);}
+.badge-etq > svg{fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;
+                 stroke-linejoin:round;opacity:.9}
+.badge-etq.adulto{--etq-h:344}
+:root[data-theme="dark"] .badge-etq{border-color:hsl(var(--etq-h) 26% 30%);
+  background:hsl(var(--etq-h) 30% 15%);
+  color:hsl(var(--etq-h) 62% 76%);}
+/* A BASE DE CADA CONTROLE É O QUE DECIDE SE A LINHA QUEBRA. Em 190 a soma dos quatro
+   mais o navegador de dia e a ordenação passava de 1248 por 17 pixels, e a ordenação caía
+   sozinha para a segunda linha, com meia linha vazia à esquerda. Em 150 a conta fecha e
+   eles crescem depois para 185 cada, ocupando a linha inteira. */
+.ins-filtros .autocomplete,.ins-filtros .sel{flex:1 1 150px;min-width:0}
+.ins-filtros .autocomplete__trigger,.ins-filtros .sel-gatilho{padding-left:11px;
+                                                              padding-right:11px}
+/* E o texto desce um ponto, de 14 para 13, que é a mesma medida que os controles dentro
+   dos títulos de categoria já usam. Um ponto de corpo resolve o que faltava sem encurtar
+   nenhuma palavra, e `nowrap` garante que a linha nunca mais se parta em duas alturas. */
+.ins-filtros .autocomplete__value,.ins-filtros .sel-valor{font-size:13px;
+                                                          white-space:nowrap}
+/* O GATILHO NASCEU COM LARGURA MÍNIMA DE 240, para a linha de dois controles do painel.
+   Aqui são quatro na mesma linha e a caixa de cada um encolhe para 217; o gatilho, preso
+   nos 240, transbordava 23 pixels da própria caixa e, sendo branco e posicionado, pintava
+   por cima do "o" de "ordenar" ao lado. Soltar a mínima faz ele caber onde está. */
+.ins-filtros .autocomplete__trigger,.ins-filtros .sel-gatilho{min-width:0}
+.ins-ordenar .sel{flex:0 0 auto}
+@media(max-width:900px){
+.ins-ordenar .sel{flex:1 1 auto}
+}
+.sinal-cab.modelo .badge{margin-top:4px}
+.sinal.modelo .sinal-cab .badge{font-size:11px;height:19px}
+/* Os controles da categoria sao menores que os da linha de filtros da home: ali eles sao
+   a pergunta principal da secao, aqui sao ajuste de uma lista que ja' esta' na tela. */
+.cat-cab .sel{flex:0 0 auto}
+.cat-cab .sel-gatilho{height:32px;border-radius:9px;padding:0 12px;font-size:12.5px}
+.cat-cab .sel-valor{font-size:12.5px}
+/* A escolha múltipla entra na linha do título na mesma medida do Select daqui, e não na
+   medida da faixa de filtros: dois controles irmãos com alturas diferentes lado a lado
+   é o tipo de coisa que faz um painel parecer montado por duas pessoas. */
+.cat-cab .autocomplete{flex:0 0 auto}
+.cat-cab .autocomplete__trigger{min-height:32px;min-width:0;border-radius:9px;
+                                padding:0 10px;font-size:12.5px}
+.cat-cab .autocomplete__value{font-size:12.5px;white-space:nowrap}
+.cat-cab .autocomplete__value .badge{height:18px;font-size:11px}
+.pag .sel{flex:0 0 auto}
+.pag .sel-gatilho{height:30px;border-radius:8px;padding:0 10px;font-size:12.5px}
+/* ESTA LISTA ABRE PARA CIMA, e é o único lugar do sistema onde isso vale.
+   A barra de páginas é a última coisa do bloco, então a lista aberta para baixo saía do
+   bloco e entrava no de baixo. Onde ela passava da borda, o bloco seguinte pintava por
+   cima dela: metade da lista aparecia sólida e a outra metade transparente, com a opção
+   "48" atrás do título de baixo e sem receber clique. Não é z-index -- cada bloco tem
+   `transform` da animação de entrada, e isso o torna uma camada própria, onde altura de
+   empilhamento de dentro não alcança o irmão de fora. Abrindo para cima, a lista fica
+   dentro do bloco e a questão deixa de existir. */
+.pag .sel-lista{top:auto;bottom:calc(100% + 4px)}
+/* A linha de filtros da seção, no mesmo desenho da linha de busca, só que sem o campo
+   de texto: aqui a pergunta não é "qual perfil", é "qual recorte". */
+.secao-filtros{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.secao-filtros .sel,.secao-filtros .autocomplete{flex:0 0 var(--l-filtro)}
+.secao-filtros .sel-gatilho,.secao-filtros .autocomplete__trigger{width:100%}
+.secao-filtros .conta{margin-left:auto;font-size:12px;color:var(--muted)}
+@media (max-width:1080px){
+.secao-filtros .sel,.secao-filtros .autocomplete{flex:1 1 200px}
+.secao-filtros .conta{margin-left:0;flex:1 1 100%}
+}
+@media (max-width:560px){
+.secao-filtros .sel,.secao-filtros .autocomplete{flex:1 1 100%}
+}
+/* Dentro da caixa de importação os componentes do sistema precisam ocupar a linha
+   inteira: soltos, eles nascem com a largura do texto do rótulo e ficam três dedos de
+   largura ao lado de um campo de sete centímetros. */
+.imp-caixa .sel,.imp-caixa .autocomplete{width:100%}
+.imp-caixa .sel-gatilho,.imp-caixa .autocomplete__trigger{width:100%}
+.pf-gal-cab .sel-gatilho{height:30px;border-radius:8px;padding:0 10px;font-size:12.5px}
+@keyframes etqEntra{from{opacity:0;transform:scale(.95) translateY(-4px)}
+                    to{opacity:1;transform:none}}
+
+
+/* A LINHA DE FILTROS DO CALENDARIO. Três controles de larguras diferentes na mesma
+   linha, e camada acima do que vem embaixo: o balão abre para fora da linha e, sem
+   isso, ele nascia atrás do calendário. */
+#pag-calendario .filtros{display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+                         margin-bottom:14px;position:relative;z-index:30}
+#pag-calendario .filtros .ac{flex:0 0 var(--l-filtro)}
+/* O nome da conta, embaixo do arroba. Peso normal, para o arroba continuar
+   sendo o que se le' primeiro. */
+/* O distintivo vazado, do Social Tracker. So' a variante faltava no recorte: a
+   base `.badge` veio, e sem esta linha a etiqueta escolhida aparecia como texto
+   solto dentro do gatilho. */
+.badge-outline{border-color:var(--rule-solid);color:var(--ink)}
+#pag-calendario .ac-tags .vazia{color:var(--soft)}
+#pag-calendario .ac-conta-nome{font-size:12.5px;font-weight:500;
+                               color:var(--muted);overflow:hidden;
+                               text-overflow:ellipsis;white-space:nowrap}
+#pag-calendario .filtros .sel,#pag-calendario .filtros .autocomplete{flex:0 0 210px}
+#pag-calendario .filtros .sel-gatilho,
+#pag-calendario .filtros .autocomplete__trigger{width:100%}
+@media(max-width:900px){
+  #pag-calendario .filtros .ac,#pag-calendario .filtros .sel,
+  #pag-calendario .filtros .autocomplete{flex:1 1 100%}
+}
+
+

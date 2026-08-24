@@ -1,0 +1,104 @@
+/* GERADO PELO CORTE DO ARQUIVO UNICO (fase 2). A ORDEM DOS ARQUIVOS E LEI:
+   eles se concatenam na ordem numerica e reproduzem o estilo original. */
+/* ============================================================ PROGRAMAR SAIDAS
+   Pagina de caminho, fora do menu. O desenho e' uma escada: cada passo e' um cartao
+   com numero, e o de baixo so' faz sentido depois do de cima. */
+.pg-topo{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.pg-voltar{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;
+  color:var(--muted);background:none;border:0;cursor:pointer;padding:6px 2px}
+.pg-voltar:hover{color:var(--ink)}
+.pg-voltar svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.2;
+  stroke-linecap:round;stroke-linejoin:round}
+.passos{display:flex;flex-direction:column;gap:14px;max-width:980px}
+.passo-cx{background:var(--branco);border:1px solid var(--rule-solid);
+  border-radius:var(--r-md);padding:18px 20px}
+.passo-cab{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.passo-num{width:26px;height:26px;border-radius:999px;flex:0 0 auto;display:flex;
+  align-items:center;justify-content:center;font-size:12.5px;font-weight:800;
+  background:var(--ink);color:var(--branco)}
+.passo-cx.mudo .passo-num{background:var(--paper-2);color:var(--soft)}
+.passo-cab h3{font-size:15px;font-weight:800;letter-spacing:-.2px}
+.passo-cab .pp{margin-left:auto}
+.escolhas{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.escolha{display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:12px;
+  border:1px solid var(--rule-solid);background:var(--paper);cursor:pointer;
+  text-align:left;color:var(--ink);font:inherit}
+.escolha:hover{border-color:var(--rule-forte)}
+.escolha.on{border-color:var(--accent);
+  background:color-mix(in srgb,var(--accent) 7%,var(--branco))}
+.escolha img,.escolha .ini{width:32px;height:32px;border-radius:999px;flex:0 0 auto;
+  object-fit:cover;display:flex;align-items:center;justify-content:center;
+  background:var(--paper-2);color:var(--muted);font-size:12px;font-weight:800}
+.escolha .quem{min-width:0}
+.escolha .quem b{display:block;font-size:13px;font-weight:600;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
+.escolha .quem span{display:block;font-size:11.5px;color:var(--muted);margin-top:1px}
+.escolha .marca{margin-left:auto;width:18px;height:18px;border-radius:6px;flex:0 0 auto;
+  border:1px solid var(--rule-solid);display:flex;align-items:center;
+  justify-content:center;color:transparent}
+.escolha.on .marca{background:var(--accent);border-color:var(--accent);color:#fff}
+.escolha .marca svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:3;
+  stroke-linecap:round;stroke-linejoin:round}
+.campos{display:flex;gap:22px;flex-wrap:wrap}
+.campo{display:flex;flex-direction:column;gap:7px}
+.campo label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted)}
+.campo input,.campo select{height:var(--h-filtro);border-radius:var(--r-filtro);
+  border:1px solid var(--rule-solid);background:var(--branco);color:var(--ink);
+  font:inherit;font-size:14px;padding:0 12px;min-width:120px}
+.campo input:focus,.campo select:focus{outline:2px solid
+  color-mix(in srgb,var(--accent) 45%,transparent);outline-offset:1px}
+.semana-dias{display:flex;gap:6px}
+.dia-bt{width:40px;height:36px;border-radius:10px;border:1px solid var(--rule-solid);
+  background:var(--branco);color:var(--muted);font:inherit;font-size:12.5px;
+  font-weight:700;cursor:pointer}
+.dia-bt.on{background:var(--ink);color:var(--branco);border-color:var(--ink)}
+.conta-final{display:flex;gap:26px;flex-wrap:wrap;margin-bottom:14px}
+.conta-final div b{display:block;font-size:24px;font-weight:700;letter-spacing:-.8px;
+  font-variant-numeric:tabular-nums;color:var(--ink)}
+.conta-final div span{display:block;font-size:12px;color:var(--muted);margin-top:3px}
+.vazio-passo{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:12px;
+  background:color-mix(in srgb,var(--ambar) 9%,var(--paper));
+  border:1px solid color-mix(in srgb,var(--ambar) 30%,transparent)}
+.vazio-passo p{font-size:13px;color:var(--ink);flex:1}
+.vazio-passo .dir{flex:0 0 auto}
+
+/* A fileira de abas do motor nao aparece no Painel: quem diz o que e' desenhado e' a
+   propria tela, e a fileira de cima ja' e' a de KPI. */
+.pn-sem-abas .grafico-abas{display:none}
+/* O desenho ja' mora dentro do cartao do Painel: a moldura propria dele viraria
+   cartao dentro de cartao. */
+.pn-sem-abas .pf-nm{border:0;padding:0;background:none}
+.pn-sem-abas .pf-nm-cab{margin:0;min-height:0}
+.pn-sem-abas .pf-nm-nota{margin-top:12px}
+/* O desenho do Painel e' mais baixo que o do perfil: aqui ele divide a tela com a
+   fileira de KPI, a barra de periodo e o cartao de pendencia. */
+.pn-sem-abas .pf-nm .grafico-tela{flex:0 0 auto;min-height:0;height:230px}
+.pn-sem-abas .pf-nm,.pn-sem-abas .grafico{flex:0 0 auto;min-height:0}
+.cartao > .tela-tracker .pf-per{margin:0 0 14px}
+.pn-cx{background:var(--branco);border:1px solid var(--rule-solid);
+  border-radius:var(--r-md);padding:18px 20px;display:flex;flex-direction:column}
+.pn-cx .pf-per{margin:0 0 14px}
+
+/* A fileira de KPI do Painel e' FILTRO, e nao rotulo: clicar nela troca quais contas
+   o desenho mostra. Por isso ela e' botao, e botao precisa de cor dita na mao. */
+.kpi{background:none;border:0;font:inherit;color:var(--ink);cursor:pointer;text-align:left}
+.kpi:hover .rot{color:var(--ink)}
+.kpi[disabled]{cursor:default;opacity:.55}
+.kpi[disabled]:hover .rot{color:var(--muted)}
+.pn-cab-cartao{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.pn-cab-cartao h3{font-size:16px;font-weight:800;letter-spacing:-.3px}
+.pn-cab-cartao .pf-per{margin:0}
+.pn-cab-cartao .dir{margin-left:auto;display:flex;align-items:center;gap:10px}
+
+/* O botao de programar, no menu e no cabecalho do Painel. O desenho e' o FlowButton da
+   casa; aqui ele so' aprende a viver na regua estreita do menu. */
+.menu-acao{padding:8px 12px 18px}
+.menu-acao .btn{width:100%;justify-content:center;padding:9px 16px;font-size:12.5px}
+.ag-selo{width:16px;height:16px;flex:0 0 auto;color:currentColor}
+:root[data-menu="fechado"] .menu-acao{padding:8px 8px 18px}
+:root[data-menu="fechado"] .menu-acao .btn{padding:9px 0;--desl:0px}
+:root[data-menu="fechado"] .menu-acao .btn .ag-rot{display:none}
+:root[data-menu="fechado"] .menu-acao .btn .seta{display:none}
+.cab .btn .ag-selo{width:15px;height:15px}
+

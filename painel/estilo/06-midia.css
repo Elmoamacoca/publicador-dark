@@ -1,0 +1,63 @@
+/* GERADO PELO CORTE DO ARQUIVO UNICO (fase 2). A ORDEM DOS ARQUIVOS E LEI:
+   eles se concatenam na ordem numerica e reproduzem o estilo original. */
+/* ================================================================ MIDIA
+   O navegador de pastas e a prateleira. Tudo aqui e' lista de linha alta, e nao grade de
+   miniatura: o que se escolhe e' pasta, e pasta nao tem capa. */
+#pag-midia .mid-topo{display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+                     padding:12px 16px;border-bottom:1px solid var(--rule-solid)}
+#pag-midia .trilha{display:flex;align-items:center;gap:2px;flex-wrap:wrap;min-width:0}
+#pag-midia .trilha button{background:none;border:0;font:inherit;font-size:13.5px;
+                          color:var(--muted);cursor:pointer;padding:5px 8px;
+                          border-radius:8px;white-space:nowrap}
+#pag-midia .trilha button:hover{background:var(--paper-2);color:var(--ink)}
+#pag-midia .trilha button:last-child{color:var(--ink);font-weight:700}
+#pag-midia .trilha i{color:var(--soft);font-style:normal;font-size:12px}
+/* O icone diz que a linha e' lugar, e nao titulo: com um nivel so', o nome da
+   pasta ma~e sozinho ali em cima parecia cabecalho da caixa. */
+#pag-midia .trilha-ic{display:inline-flex;color:var(--soft);margin-right:4px}
+#pag-midia .trilha-ic svg{width:16px;height:16px;fill:none;stroke:currentColor;
+                          stroke-width:1.8;stroke-linecap:round;
+                          stroke-linejoin:round}
+#pag-midia .mid-busca{margin-left:auto;flex:none}
+#pag-midia .mid-busca input{height:36px;width:220px;border-radius:999px;
+                            border:1px solid var(--rule-solid);background:var(--paper);
+                            color:var(--ink);font:inherit;font-size:13px;padding:0 14px}
+#pag-midia .mid-busca input:focus{outline:2px solid var(--accent);outline-offset:1px}
+
+#pag-midia .mid-linha{display:flex;align-items:center;gap:14px;padding:14px 18px;
+                      border-bottom:1px solid var(--rule-solid)}
+#pag-midia .mid-linha:last-child{border-bottom:0}
+#pag-midia .mid-linha:hover{background:var(--paper-2)}
+/* O icone de pasta muda de cor quando ela ja' esta' na prateleira: e' o sinal que se le
+   sem ler, passando o olho pela coluna. */
+#pag-midia .mid-ic{width:38px;height:38px;flex:none;border-radius:10px;display:grid;
+                   place-items:center;background:var(--paper-2);color:var(--soft)}
+#pag-midia .mid-linha.ligada .mid-ic{background:var(--accent-tint);color:var(--link)}
+#pag-midia .mid-ic svg{width:19px;height:19px;fill:none;stroke:currentColor;
+                       stroke-width:1.8;stroke-linecap:round;stroke-linejoin="round"}
+/* COR EXPLICITA, e nao por herança. Um `<button>` nasce com a cor padrao do
+   navegador e `font:inherit` nao muda isso: traz a fonte e deixa a cor para tras.
+   No tema claro ninguem percebe, porque o padrao ja' e' quase preto. No escuro o
+   nome da pasta virava preto no preto. */
+#pag-midia .mid-nome{min-width:0;flex:1;color:var(--ink)}
+#pag-midia .mid-nome b{display:block;font-size:14.5px;font-weight:600;
+                       overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#pag-midia .mid-nome span{font-size:12.5px;color:var(--muted)}
+#pag-midia .mid-linha .dir{margin-left:auto;display:flex;align-items:center;gap:10px;
+                           flex:none}
+#pag-midia .mid-vazio{padding:38px 20px;text-align:center;color:var(--soft);
+                      font-size:13px}
+#pag-midia .mid-conta{font-size:12.5px;color:var(--muted);white-space:nowrap}
+/* O aviso de fonte. Aparece so' quando a origem nao esta de pe, e diz o que falta. */
+#pag-midia .mid-aviso{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;
+                      border:1px solid var(--rule-solid);border-left:3px solid var(--ambar);
+                      border-radius:var(--r-md);background:var(--branco);
+                      margin-bottom:18px;font-size:13.5px}
+#pag-midia .mid-fonte{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;
+                      font-weight:600;color:var(--muted);background:var(--paper-2);
+                      border:1px solid var(--rule-solid);border-radius:999px;
+                      padding:6px 12px}
+#pag-midia .mid-fonte i{width:7px;height:7px;border-radius:50%;background:var(--verde)}
+#pag-midia .mid-fonte.parada i{background:var(--ambar)}
+
+

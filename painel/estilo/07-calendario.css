@@ -1,0 +1,164 @@
+/* GERADO PELO CORTE DO ARQUIVO UNICO (fase 2). A ORDEM DOS ARQUIVOS E LEI:
+   eles se concatenam na ordem numerica e reproduzem o estilo original. */
+/* ================================================================ CALENDARIO
+   Traduzido do ReUI Event Calendar. As medidas do original: cabecalho de dia com 12px e
+   peso 500, altura de 28 e respiro 6 por 8; grade com fio de 1 pixel entre celulas; ficha
+   de 12px com canto pequeno. O que muda e' a paleta, que e' a da casa. */
+#pag-calendario .cal-barra{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+                           padding:10px 12px;border-bottom:1px solid var(--rule-solid)}
+#pag-calendario .cal-titulo{font-size:15px;font-weight:700;margin-left:6px}
+#pag-calendario .cal-seta{width:30px;height:30px;flex:none;display:grid;place-items:center;
+                          border:1px solid var(--rule-solid);background:var(--branco);
+                          border-radius:8px;cursor:pointer;color:var(--muted)}
+#pag-calendario .cal-seta:hover{color:var(--ink);border-color:var(--soft)}
+#pag-calendario .cal-seta svg{width:15px;height:15px;fill:none;stroke:currentColor;
+                              stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+/* O seletor de visao: pilula unica com o aceso preenchido, como no original. */
+#pag-calendario .cal-visoes{display:inline-flex;gap:2px;padding:3px;border-radius:10px;
+                            background:var(--paper-2)}
+#pag-calendario .cal-v{border:0;background:none;font:inherit;font-size:12.5px;
+                       font-weight:600;color:var(--muted);padding:6px 12px;
+                       border-radius:8px;cursor:pointer}
+#pag-calendario .cal-v:hover{color:var(--ink)}
+#pag-calendario .cal-v.ativo{background:var(--branco);color:var(--ink);
+                             box-shadow:0 1px 2px rgba(14,14,14,.06)}
+#pag-calendario .cal-barra .dir{margin-left:auto;display:flex;align-items:center;gap:10px}
+#pag-calendario .cal-legenda{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+#pag-calendario .cal-leg{display:inline-flex;align-items:center;gap:6px;font-size:12px;
+                         color:var(--muted)}
+#pag-calendario .cal-leg i{width:8px;height:8px;border-radius:50%}
+
+/* ------------------------------------------------------------------ visao de mes */
+#pag-calendario .cal-cab{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));
+                         border-bottom:1px solid var(--rule-solid)}
+#pag-calendario .cal-cab span{font-size:12px;font-weight:500;color:var(--muted);
+                              padding:6px 8px;text-transform:capitalize}
+#pag-calendario .cal-mes{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+#pag-calendario .cal-dia{min-height:104px;border-right:1px solid var(--rule-solid);
+                         border-bottom:1px solid var(--rule-solid);padding:6px 6px 26px;
+                         position:relative;display:flex;flex-direction:column;gap:3px;
+                         min-width:0}
+#pag-calendario .cal-dia:nth-child(7n){border-right:0}
+#pag-calendario .cal-mes > .cal-dia:nth-last-child(-n+7){border-bottom:0}
+#pag-calendario .cal-num{position:absolute;right:7px;bottom:6px;font-size:12px;
+                         color:var(--muted);font-variant-numeric:tabular-nums}
+#pag-calendario .cal-dia.fora{background:var(--paper)}
+#pag-calendario .cal-dia.fora .cal-num{color:var(--soft)}
+/* Hoje vira circulo cheio, igual ao original. E' o unico ponto escuro da grade, entao o
+   olho acha a data de hoje sem procurar. */
+#pag-calendario .cal-dia.hoje .cal-num{background:var(--ink);color:var(--paper);
+                                       width:20px;height:20px;border-radius:50%;
+                                       display:grid;place-items:center;right:5px;
+                                       bottom:4px;font-weight:600}
+#pag-calendario .cal-dia:hover{background:var(--paper-2)}
+
+/* A ficha do post. Ponto de cor, titulo cortado, hora a direita. */
+#pag-calendario .cal-ev{display:flex;align-items:center;gap:6px;padding:3px 6px;
+                        border-radius:6px;font-size:12px;line-height:1.3;cursor:default;
+                        background:var(--ev-fundo);min-width:0}
+#pag-calendario .cal-ev i{width:6px;height:6px;border-radius:50%;flex:none;
+                          background:var(--ev-cor)}
+#pag-calendario .cal-ev b{font-weight:600;overflow:hidden;text-overflow:ellipsis;
+                          white-space:nowrap;min-width:0;flex:1}
+#pag-calendario .cal-ev span{color:var(--muted);font-variant-numeric:tabular-nums;
+                             flex:none;font-size:11.5px}
+#pag-calendario .cal-ev.saiu{opacity:.55}
+#pag-calendario .cal-ev.falhou{background:color-mix(in srgb,var(--vermelho) 14%,transparent)}
+#pag-calendario .cal-ev.falhou i{background:var(--vermelho)}
+#pag-calendario .cal-mais{font-size:11.5px;color:var(--muted);padding:1px 6px;
+                          background:none;border:0;font-family:inherit;cursor:pointer;
+                          text-align:left}
+#pag-calendario .cal-mais:hover{color:var(--ink)}
+
+/* ---------------------------------------------------------------- visao de semana */
+#pag-calendario .cal-semana{display:grid;grid-template-columns:56px repeat(7,minmax(0,1fr));
+                            max-height:640px;overflow:auto;scrollbar-width:none;
+                            padding-top:9px}
+#pag-calendario .cal-semana::-webkit-scrollbar{width:0;height:0;display:none}
+#pag-calendario .cal-hora{font-size:11px;color:var(--soft);text-align:right;
+                          padding:0 8px 0 0;height:44px;position:relative;top:-7px;
+                          font-variant-numeric:tabular-nums}
+#pag-calendario .cal-col{border-left:1px solid var(--rule-solid);position:relative}
+#pag-calendario .cal-fio{height:44px;border-bottom:1px solid var(--rule-solid)}
+/* A saida e' ponto no tempo, e nao bloco com duracao: altura fixa, posicao pela hora. */
+#pag-calendario .cal-marca{position:absolute;left:3px;right:3px;height:22px;
+                           border-radius:6px;background:var(--ev-fundo);display:flex;
+                           align-items:center;gap:5px;padding:0 6px;font-size:11.5px;
+                           overflow:hidden}
+#pag-calendario .cal-marca i{width:5px;height:5px;border-radius:50%;flex:none;
+                             background:var(--ev-cor)}
+#pag-calendario .cal-marca b{font-weight:600;overflow:hidden;text-overflow:ellipsis;
+                             white-space:nowrap;flex:1;min-width:0}
+#pag-calendario .cal-marca span{color:var(--muted);font-size:11px;flex:none;
+                                font-variant-numeric:tabular-nums}
+#pag-calendario .cal-diacab{display:grid;grid-template-columns:56px repeat(7,minmax(0,1fr));
+                            border-bottom:1px solid var(--rule-solid)}
+#pag-calendario .cal-diacab div{padding:8px;font-size:12px;color:var(--muted);
+                                text-align:center}
+#pag-calendario .cal-diacab div b{display:block;font-size:15px;color:var(--ink);
+                                  font-weight:700}
+#pag-calendario .cal-diacab div.hoje b{color:var(--link)}
+
+/* ------------------------------------------------------------------ visao de lista */
+#pag-calendario .cal-lista-dia{display:grid;grid-template-columns:132px minmax(0,1fr);
+                               gap:16px;padding:14px 18px;
+                               border-bottom:1px solid var(--rule-solid)}
+#pag-calendario .cal-lista-dia:last-child{border-bottom:0}
+#pag-calendario .cal-lista-dia > b{font-size:13px}
+#pag-calendario .cal-lista-dia > b span{display:block;font-size:12px;color:var(--muted);
+                                        font-weight:400}
+#pag-calendario .cal-item{display:flex;align-items:center;gap:10px;padding:7px 0;
+                          font-size:13.5px;min-width:0}
+#pag-calendario .cal-item .h{font-variant-numeric:tabular-nums;color:var(--muted);
+                             font-size:12.5px;width:46px;flex:none}
+#pag-calendario .cal-item i{width:8px;height:8px;border-radius:50%;flex:none;
+                            background:var(--ev-cor)}
+#pag-calendario .cal-item b{font-weight:600;overflow:hidden;text-overflow:ellipsis;
+                            white-space:nowrap;min-width:0}
+#pag-calendario .cal-item .q{color:var(--muted);font-size:12.5px;flex:none}
+#pag-calendario .cal-vazio{padding:60px 20px;text-align:center;color:var(--soft);
+                           font-size:13px}
+@media(max-width:900px){
+  #pag-calendario .cal-semana,#pag-calendario .cal-diacab{grid-template-columns:44px repeat(7,minmax(0,1fr))}
+}
+
+
+/* ---------------------------------------------------- mercado e etiqueta em Contas
+   Celula que vira campo ao clicar. Sem botao de editar, sem tela separada: a tabela e' o
+   formulario. Com duas contas isso e' o mais rapido, e com trinta continua sendo. */
+#pag-contas .campo{border:1px dashed transparent;border-radius:8px;padding:4px 7px;
+                   margin:-4px -7px;cursor:text;font-size:13.5px;color:var(--ink);
+                   min-height:26px;display:inline-flex;align-items:center;gap:6px}
+#pag-contas .campo:hover{border-color:var(--rule-solid);background:var(--paper-2)}
+#pag-contas .campo.vazio{color:var(--soft);font-size:13px}
+#pag-contas .campo input{border:0;background:none;font:inherit;color:var(--ink);
+                         outline:none;width:120px;padding:0}
+#pag-contas .etqs{display:flex;flex-wrap:wrap;gap:5px;align-items:center;max-width:210px}
+#pag-contas .etq{display:inline-flex;align-items:center;gap:5px;font-size:12px;
+                 font-weight:600;background:var(--accent-tint);color:var(--link);
+                 border-radius:999px;padding:4px 9px}
+#pag-contas .etq button{border:0;background:none;color:inherit;cursor:pointer;padding:0;
+                        font:inherit;opacity:.6;line-height:1}
+#pag-contas .etq button:hover{opacity:1}
+#pag-contas .etq-mais{border:1px dashed var(--rule-solid);background:none;color:var(--soft);
+                      border-radius:999px;padding:4px 10px;font:inherit;font-size:12px;
+                      cursor:pointer}
+#pag-contas .etq-mais:hover{border-color:var(--soft);color:var(--ink)}
+
+/* ------------------------------------------------- o mês inteiro dentro da tela
+   A grade recebe a altura que sobra e divide entre as seis linhas. Sem isso ela crescia
+   por conteudo e empurrava a pagina para a rolagem, que e' justamente o que o Gabriel
+   nao quer no mes. */
+#pag-calendario .cal-mes{grid-template-rows:repeat(6,minmax(0,1fr))}
+#pag-calendario .cal-dia{min-height:0;overflow:hidden}
+/* O pulso de "hoje". Duas piscadas curtas e acabou: animacao longa em tela de trabalho
+   vira distracao. */
+@keyframes calPulso{
+  0%,100%{background:transparent}
+  25%,75%{background:var(--accent-tint)}
+}
+#pag-calendario .cal-dia.pulsa{animation:calPulso .9s ease-in-out 1}
+@media(prefers-reduced-motion:reduce){#pag-calendario .cal-dia.pulsa{animation:none;
+  background:var(--accent-tint)}}
+
+

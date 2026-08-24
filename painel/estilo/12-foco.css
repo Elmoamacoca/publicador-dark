@@ -1,0 +1,141 @@
+/* GERADO PELO CORTE DO ARQUIVO UNICO (fase 2). A ORDEM DOS ARQUIVOS E LEI:
+   eles se concatenam na ordem numerica e reproduzem o estilo original. */
+/* ============================================================ MODO FOCO
+   A tela de programar toma a janela inteira: o menu sai e o palco perde a margem. */
+:root[data-tela="foco"] .menu{display:none}
+:root[data-tela="foco"] .palco{margin-left:0;padding:0}
+.fc{min-height:100vh;display:flex;flex-direction:column}
+.fc-topo{display:flex;align-items:center;gap:14px;padding:22px 28px}
+.fc-sair{display:inline-flex;align-items:center;gap:8px;font:inherit;font-size:13px;
+  font-weight:600;color:var(--muted);background:none;border:0;cursor:pointer;padding:6px 2px}
+.fc-sair:hover{color:var(--ink)}
+.fc-sair svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.2;
+  stroke-linecap:round;stroke-linejoin:round}
+.fc-passos{margin-left:auto;display:flex;align-items:center;gap:7px}
+.fc-bola{width:7px;height:7px;border-radius:999px;background:var(--rule-solid)}
+.fc-bola.on{background:var(--accent);width:20px}
+.fc-bola.feito{background:color-mix(in srgb,var(--accent) 45%,transparent)}
+.fc-meio{flex:1;display:flex;align-items:center;justify-content:center;padding:10px 28px 60px}
+.fc-caixa{width:100%;max-width:720px;text-align:center}
+.fc-conta{font-size:11.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:12px}
+.fc-caixa h2{font-size:29px;font-weight:800;letter-spacing:-1px;line-height:1.15;
+  margin-bottom:9px;color:var(--ink)}
+.fc-caixa .fc-sub{font-size:14.5px;color:var(--muted);margin-bottom:28px}
+.fc-lista{display:grid;gap:10px;text-align:left}
+.fc-lista.duas{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.fc-pe{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:26px}
+.fc-pe .pp{color:var(--soft)}
+
+/* a entrada de cada passo */
+@keyframes fc-entra{from{opacity:0;transform:translateY(14px);filter:blur(5px)}
+  to{opacity:1;transform:none;filter:none}}
+.fc-caixa > *{animation:fc-entra .42s cubic-bezier(.22,1,.36,1) both}
+.fc-caixa > *:nth-child(2){animation-delay:.05s}
+.fc-caixa > *:nth-child(3){animation-delay:.1s}
+.fc-caixa > *:nth-child(4){animation-delay:.16s}
+.fc-caixa > *:nth-child(n+5){animation-delay:.22s}
+
+/* o cartao de escolha */
+.fc-op{display:flex;align-items:center;gap:13px;padding:14px 16px;border-radius:14px;
+  border:1px solid var(--rule-solid);background:var(--branco);cursor:pointer;
+  text-align:left;color:var(--ink);font:inherit;width:100%;
+  transition:border-color .16s ease, transform .16s ease, background .16s ease}
+.fc-op:hover{border-color:var(--accent);transform:translateY(-1px)}
+.fc-op.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--branco))}
+.fc-op img,.fc-op .ini{width:40px;height:40px;border-radius:999px;flex:0 0 auto;
+  object-fit:cover;display:flex;align-items:center;justify-content:center;
+  background:var(--paper-2);color:var(--muted);font-size:14px;font-weight:800}
+.fc-op .quem{min-width:0;flex:1}
+.fc-op .quem b{display:block;font-size:14.5px;font-weight:600;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.fc-op .quem span{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
+.fc-op .marca{width:20px;height:20px;border-radius:999px;flex:0 0 auto;
+  border:1.5px solid var(--rule-solid);display:flex;align-items:center;
+  justify-content:center;color:transparent}
+.fc-op.on .marca{background:var(--accent);border-color:var(--accent);color:#fff}
+.fc-op .marca svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:3;
+  stroke-linecap:round;stroke-linejoin:round}
+
+.fc-aviso{display:flex;align-items:center;gap:12px;padding:15px 17px;border-radius:14px;
+  text-align:left;background:color-mix(in srgb,var(--ambar) 9%,var(--paper));
+  border:1px solid color-mix(in srgb,var(--ambar) 30%,transparent)}
+.fc-aviso p{font-size:13.5px;color:var(--ink);flex:1}
+
+/* A linha de rascunho: o cartao continua clicavel para continuar, e o excluir mora na
+   ponta, separado, para nao virar clique errado. */
+.fc-op .lixo{width:34px;height:34px;border-radius:10px;flex:0 0 auto;display:flex;
+  align-items:center;justify-content:center;border:1px solid var(--rule-solid);
+  background:var(--paper);color:var(--muted);cursor:pointer;padding:0}
+.fc-op .lixo:hover{color:var(--vermelho);
+  border-color:color-mix(in srgb,var(--vermelho) 45%,transparent);
+  background:color-mix(in srgb,var(--vermelho) 8%,transparent)}
+.fc-op .lixo svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
+.fc-conf{display:flex;align-items:center;gap:11px;padding:14px 16px;border-radius:14px;
+  border:1px solid color-mix(in srgb,var(--vermelho) 40%,transparent);
+  background:color-mix(in srgb,var(--vermelho) 7%,var(--branco));text-align:left}
+.fc-conf p{flex:1;font-size:13.5px;color:var(--ink)}
+.fc-conf .bt.ruim{border-color:color-mix(in srgb,var(--vermelho) 45%,transparent);
+  color:var(--vermelho)}
+.fc-novo{border-style:dashed}
+
+/* O CARTAO DE CONTA DO PASSO 1. Grande porque e' a decisao que manda no lote inteiro:
+   errar a conta aqui e' programar cem videos no perfil errado. */
+.fc-grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  gap:16px;text-align:left}
+.fc-tile{position:relative;display:flex;flex-direction:column;align-items:center;
+  gap:14px;padding:30px 22px 26px;border-radius:20px;border:1.5px solid var(--rule-solid);
+  background:var(--branco);cursor:pointer;color:var(--ink);font:inherit;text-align:center;
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1), border-color .18s ease,
+             background .18s ease}
+.fc-tile:hover{transform:translateY(-4px);border-color:var(--accent);
+  background:color-mix(in srgb,var(--accent) 4%,var(--branco))}
+.fc-tile:active{transform:translateY(-1px) scale(.99)}
+.fc-tile.on{border-color:var(--accent);
+  background:color-mix(in srgb,var(--accent) 9%,var(--branco))}
+.fc-tile.on:hover{transform:translateY(-4px)}
+.fc-tile .rosto{width:88px;height:88px;border-radius:999px;object-fit:cover;
+  display:flex;align-items:center;justify-content:center;background:var(--paper-2);
+  color:var(--muted);font-size:30px;font-weight:800;
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+.fc-tile:hover .rosto{transform:scale(1.06)}
+.fc-tile.on .rosto{box-shadow:0 0 0 3px var(--branco), 0 0 0 6px var(--accent)}
+.fc-tile b{font-size:16.5px;font-weight:700;letter-spacing:-.3px;max-width:100%;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fc-tile .est{font-size:13px;color:var(--muted);margin-top:-6px}
+.fc-tile .marca{position:absolute;top:14px;right:14px;width:26px;height:26px;
+  border-radius:999px;border:1.5px solid var(--rule-solid);display:flex;
+  align-items:center;justify-content:center;color:transparent;
+  transition:background .18s ease, border-color .18s ease, transform .2s ease}
+.fc-tile:hover .marca{border-color:var(--accent)}
+.fc-tile.on .marca{background:var(--accent);border-color:var(--accent);color:#fff;
+  transform:scale(1.06)}
+.fc-tile .marca svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:3;
+  stroke-linecap:round;stroke-linejoin:round}
+@keyframes fc-pop{0%{transform:scale(.94)}60%{transform:scale(1.02)}100%{transform:scale(1)}}
+.fc-tile.on .rosto{animation:fc-pop .3s ease-out}
+
+/* O rodape do cartao de conta: um selo para a fila e uma linha calma para o ultimo post.
+   Antes era tudo na mesma linha, separado por ponto, e virava sopa. */
+.fc-tile .selo-fila{display:inline-flex;align-items:center;gap:6px;font-size:12px;
+  font-weight:700;padding:5px 11px;border-radius:999px;
+  background:color-mix(in srgb,var(--ambar) 14%,transparent);color:var(--ambar)}
+.fc-tile .selo-fila::before{content:"";width:6px;height:6px;border-radius:999px;
+  background:currentColor}
+.fc-tile .selo-fila.cheia{background:color-mix(in srgb,var(--verde) 14%,transparent);
+  color:var(--verde)}
+.fc-tile .ult{font-size:12.5px;color:var(--muted)}
+
+/* a linha de rascunho saindo da lista */
+@keyframes fc-sai{to{opacity:0;transform:translateY(-6px) scale(.98);
+  max-height:0;margin-top:-10px;padding-top:0;padding-bottom:0}}
+.fc-op.saindo{animation:fc-sai .26s ease-in forwards;overflow:hidden}
+.fc-parede{display:flex;flex-direction:column;align-items:center;gap:14px;
+  padding:34px 24px;border-radius:18px;border:1px dashed var(--rule-forte);
+  background:var(--paper)}
+.fc-parede .selo-obra{font-size:11.5px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ambar);
+  background:color-mix(in srgb,var(--ambar) 13%,transparent);
+  padding:5px 12px;border-radius:999px}
+.fc-parede p{font-size:14px;color:var(--muted);max-width:460px}
