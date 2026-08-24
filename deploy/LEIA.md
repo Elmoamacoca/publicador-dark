@@ -23,7 +23,14 @@ no funcionamento (o Cloudflare so hospeda o DNS do dominio).
 
 ## Login
 
-`painel/senha.py` grava `estado/dados/acesso.json` (cozido pbkdf2 + chave de sessao).
+`painel/senha.py` grava o `acesso.json` (cozido pbkdf2 + chave de sessao). NA VPS,
+rode DENTRO do container, porque o `dados/` dele ja e o estado montado:
+
+    printf 'a-senha-nova
+' > /opt/publicador/estado/dados/senha-tmp.txt
+    docker compose -f deploy/docker-compose.yml run --rm painel         python senha.py gabriel --arquivo /app/dados/senha-tmp.txt
+    rm /opt/publicador/estado/dados/senha-tmp.txt
+
 Trocar a senha = rodar de novo (mata as sessoes abertas). Sem esse arquivo o painel
 nao tranca, entao ele SEMPRE existe na VPS, e o portao de provas reprova se a tranca
 nao responder 401.

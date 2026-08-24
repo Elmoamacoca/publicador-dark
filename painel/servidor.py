@@ -46,6 +46,7 @@ ANALYTICS = os.environ.get("PAINEL_ANALYTICS", os.path.join(PASTA, "analytics.js
 ACESSO = os.path.join(PASTA, "dados", "acesso.json")
 SESSAO_DIAS = 30
 _falhas = {}          # ip -> [quantas, proibido_ate]. Trava de forca bruta, em memoria.
+_tranca = __import__("threading").Lock()
 
 
 def _acesso():
@@ -111,6 +112,14 @@ class SemCache(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(corpo)
 
     # ------------------------------------------------------------------ o login
+    def ip_cliente(self):
+        """Atras do Caddy, todo pedido chega do IP do proxy; o cliente de verdade
+        viaja no X-Forwarded-For. Sem ele (uso local direto), vale o socket."""
+        xff = self.headers.get("X-Forwarded-For", "")
+        if xff:
+            return xff.split(",")[0].strip()
+        return self.client_address[0]
+
     def sessao_ok(self):
         acesso = _acesso()
         if not acesso:
@@ -140,26 +149,36 @@ class SemCache(http.server.SimpleHTTPRequestHandler):
         acesso = _acesso()
         if not acesso:
             return self.responder({"ok": True, "aviso": "servidor sem login"})
-        ip = self.client_address[0]
-        falha = _falhas.get(ip, [0, 0])
-        if falha[1] > time.time():
-            return self.responder({"erro": "muitas tentativas, espere um minuto"}, 429)
+        ip = self.ip_cliente()
+        with _tranca:
+            falha = _falhas.get(ip, [0, 0])
+            if falha[1] > time.time():
+                return self.responder({"erro": "muitas tentativas, espere um minuto"}, 429)
         usuario = str(corpo.get("usuario") or "").strip()
         senha = str(corpo.get("senha") or "")
-        if (hmac.compare_digest(usuario, acesso["usuario"])
-                and hmac.compare_digest(_cozinhar(senha, acesso["sal"]),
-                                        acesso["cozido"])):
-            _falhas.pop(ip, None)
+        # comparacao em bytes: compare_digest com str recusa acento e viraria 500
+        try:
+            combina = (hmac.compare_digest(usuario.encode("utf-8"),
+                                           str(acesso["usuario"]).encode("utf-8"))
+                       and hmac.compare_digest(
+                           _cozinhar(senha, acesso["sal"]).encode("ascii"),
+                           str(acesso["cozido"]).encode("ascii")))
+        except Exception:
+            combina = False
+        if combina:
+            with _tranca:
+                _falhas.pop(ip, None)
             biscoito = ("painel_sessao=" + _carimbo(usuario, acesso["chave"])
                         + f"; Max-Age={SESSAO_DIAS * 86400}; Path=/; HttpOnly"
                         + "; SameSite=Lax")
             if self.headers.get("X-Forwarded-Proto") == "https":
                 biscoito += "; Secure"
             return self.responder({"ok": True}, cookie=biscoito)
-        falha = [falha[0] + 1, 0]
-        if falha[0] >= 5:
-            falha = [0, time.time() + 60]
-        _falhas[ip] = falha
+        with _tranca:
+            falha = [falha[0] + 1, 0]
+            if falha[0] >= 5:
+                falha = [0, time.time() + 60]
+            _falhas[ip] = falha
         return self.responder({"erro": "usuario ou senha errados"}, 401)
 
     def rota_de_midia(self, p, corpo=None):
@@ -421,7 +440,18 @@ class SemCache(http.server.SimpleHTTPRequestHandler):
                 return self.responder(c or {"erro": "essa conta nao esta no publicador"},
                                       200 if c else 404)
             return self.responder(d.get("previas", {}).get(quem, []))
+        # O ESTADO NUNCA SE SERVE. `dados/` mora dentro da raiz servida (no container o
+        # volume monta ali) e guarda a credencial do Drive, o cozido da senha e a chave
+        # que assina as sessoes: servir isso por http entregaria a casa a qualquer
+        # sessao valida. Codigo-fonte tambem nao e' pagina.
+        if rota.split("/")[0] == "dados" or rota.endswith(".py"):
+            return self.responder({"erro": "esse caminho nao se serve"}, 404)
         return super().do_GET()
+
+    def list_directory(self, path):
+        # Listar pasta e' vitrine de coisa que ninguem pediu para expor.
+        self.send_error(404)
+        return None
 
     def send_head(self):
         # O 304 nasce aqui, comparando com o cabecalho de data que o navegador manda.
@@ -448,6 +478,12 @@ class Reusavel(socketserver.ThreadingTCPServer):
 
 
 if __name__ == "__main__":
+    # FALHA FECHADA: exposto para fora sem tranca, o servidor se recusa a subir.
+    # A falta do acesso.json so' e' aceitavel no uso local de desenvolvimento.
+    if ENDERECO != "127.0.0.1" and not _acesso():
+        print(f"RECUSADO: escutaria em {ENDERECO} sem dados/acesso.json. "
+              "Rode painel/senha.py antes; painel exposto nao sobe aberto.", flush=True)
+        sys.exit(1)
     with Reusavel((ENDERECO, PORTA), SemCache) as s:
         tranca = "com login" if _acesso() else "SEM login (uso local)"
         print(f"painel em http://{ENDERECO}:{PORTA} ({tranca})", flush=True)

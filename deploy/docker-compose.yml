@@ -1,6 +1,6 @@
 # O painel na VPS: o servidor Python atras do Caddy, que faz o HTTPS sozinho.
-# O ESTADO (livro.db, config, credencial do Drive, analytics, capas) mora FORA do
-# container, em /opt/publicador/estado: containers morrem, o estado fica.
+# O ESTADO (livro.db, config, acesso, credencial do Drive, analytics, capas) mora FORA
+# do container, em /opt/publicador/estado: containers morrem, o estado fica.
 services:
   painel:
     build:
@@ -13,6 +13,13 @@ services:
       - /opt/publicador/estado/midia:/app/midia
     expose:
       - "4173"
+    healthcheck:
+      test: ["CMD", "python3", "-c",
+             "import urllib.request; urllib.request.urlopen('http://127.0.0.1:4173/entrar', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   caddy:
     image: caddy:2

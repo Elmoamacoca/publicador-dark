@@ -33,6 +33,19 @@ mesmo commit. Toda rota devolve JSON `utf-8` sem cache, salvo onde dito.
 | `painel/rascunho` | `{apagar:id\|"todos"}` | apaga; e o UNICO jeito de sumir rascunho |
 | `painel/pulso` | `{publicando,paradas,caidas}` | o retrato do dia, sobrescreve |
 
+## Acesso
+
+| Rota | Promessa |
+| --- | --- |
+| `GET /entrar` | a pagina de login (unica rota de tela sem sessao) |
+| `POST /entrar` | `{usuario,senha}` -> 200 com cookie `painel_sessao` (30 dias, httponly); 401 errado; 429 apos 5 falhas do mesmo IP por 60s |
+| `GET /sair` | 302 pra `/entrar` apagando o cookie |
+
+Com `dados/acesso.json` presente, TODA outra rota exige a sessao: dado sem sessao
+leva 401 `{erro}`, tela sem sessao leva 302 pra `/entrar`. `dados/` e arquivos `.py`
+NUNCA sao servidos, e listagem de pasta nao existe. Exposto fora de 127.0.0.1 sem
+acesso.json, o servidor se recusa a subir.
+
 ## Regras transversais
 
 1. Erro vem como `{erro:"motivo escrito"}` com codigo 4xx/5xx; a tela mostra o motivo.

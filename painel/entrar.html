@@ -47,13 +47,13 @@ document.getElementById('f').addEventListener('submit', function (ev) {
   ev.preventDefault();
   var b = document.getElementById('b'), aviso = document.getElementById('aviso');
   b.disabled = true; aviso.textContent = '';
-  fetch('entrar', {
+  fetch('/entrar', {
     method: 'POST', headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({usuario: document.getElementById('u').value,
                           senha: document.getElementById('s').value})
   }).then(function (r) { return r.json().then(function (d) { return [r.status, d]; }); })
     .then(function (par) {
-      if (par[0] === 200) { location.href = './'; return; }
+      if (par[0] === 200) { location.href = '/'; return; }
       aviso.textContent = par[1].erro || 'nao deu certo, tente de novo';
       b.disabled = false;
     })

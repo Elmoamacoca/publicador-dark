@@ -19,14 +19,18 @@ import os
 import secrets
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
-ACESSO = os.path.join(AQUI, "dados", "acesso.json")
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("usuario")
     ap.add_argument("--arquivo", help="arquivo com a senha na primeira linha")
+    ap.add_argument("--destino", default=os.environ.get(
+        "PAINEL_ACESSO", os.path.join(AQUI, "dados", "acesso.json")),
+        help="onde gravar o acesso.json (na VPS: rode DENTRO do container, que "
+             "o dados/ dele ja e o estado montado)")
     a = ap.parse_args()
+    ACESSO = a.destino
 
     if a.arquivo:
         with open(a.arquivo, encoding="utf-8") as f:

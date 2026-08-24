@@ -127,6 +127,69 @@ def provar_rotas(base, cookie, falhas):
         falhas.append(f"pagina inicial: {e}")
 
 
+def provar_derivadas(base, cookie, falhas):
+    """As rotas que dependem de dado real (um @ de verdade, um sc de verdade) e o
+    ciclo de escrita. A escrita e' DESCARTAVEL: cria um rascunho de conta de prova,
+    confere que existe, apaga, confere que sumiu. Nada do Gabriel e' tocado."""
+    try:
+        _, corpo, _ = pedir(base + "/perfis", cookie)
+        us = [p.get("u") for p in json.loads(corpo).get("perfis", []) if p.get("u")]
+    except Exception:
+        us = []
+    if us:
+        for rota, chaves in ((f"conta?u={us[0]}", ("posts",)),
+                             (f"posts?u={us[0]}", ())):
+            codigo, corpo, _ = pedir(base + "/" + rota, cookie)
+            if codigo != 200:
+                falhas.append(f"rota {rota}: codigo {codigo}")
+            else:
+                print(f"  rota {rota.split('?')[0]}?u=: ok")
+    else:
+        print("  conta/posts: pulado, sem perfil na base")
+    try:
+        _, corpo, _ = pedir(base + "/calendario/saidas", cookie)
+        scs = [s.get("sc") for s in json.loads(corpo).get("saidas", []) if s.get("sc")]
+    except Exception:
+        scs = []
+    if scs:
+        codigo, corpo, cab = pedir(base + f"/img?sc={scs[0]}", cookie)
+        if codigo != 200 or "image" not in (cab.get("Content-Type") or ""):
+            falhas.append(f"rota img?sc=: codigo {codigo}")
+        else:
+            print("  rota img?sc=: ok")
+    else:
+        print("  img: pulado, sem sc na base")
+    codigo, corpo, _ = pedir(base + "/midia/navegar", cookie)
+    d = json.loads(corpo)
+    if codigo == 200 and all(k in d for k in ("trilha", "pastas", "aqui")):
+        print("  rota midia/navegar: ok")
+    elif "erro" in d:
+        print(f"  rota midia/navegar: fonte indisponivel com motivo escrito ({codigo})")
+    else:
+        falhas.append(f"rota midia/navegar: codigo {codigo} sem forma conhecida")
+
+    # o ciclo de escrita: nasce, aparece, morre, some
+    conta_prova = "prova-portao"
+    codigo, corpo, _ = pedir(base + "/painel/rascunho", cookie,
+                             corpo={"dados": {"escolha": {"conta": conta_prova}}})
+    if codigo != 200:
+        falhas.append(f"escrita rascunho: codigo {codigo}")
+        return
+    _, corpo, _ = pedir(base + "/painel/rascunho", cookie)
+    meus = [r for r in json.loads(corpo).get("rascunhos", [])
+            if r.get("conta") == conta_prova]
+    if not meus:
+        falhas.append("escrita rascunho: gravou mas nao aparece na leitura")
+        return
+    pedir(base + "/painel/rascunho", cookie, corpo={"apagar": meus[0]["id"]})
+    _, corpo, _ = pedir(base + "/painel/rascunho", cookie)
+    if any(r.get("conta") == conta_prova
+           for r in json.loads(corpo).get("rascunhos", [])):
+        falhas.append("escrita rascunho: apagou e continua la")
+    else:
+        print("  escrita rascunho (nasce/aparece/morre): ok")
+
+
 def provar_telas(base, cookie, falhas):
     from playwright.sync_api import sync_playwright
     os.makedirs(SAIDA, exist_ok=True)
@@ -218,6 +281,8 @@ def main():
                 raise SystemExit(1)
         print("rotas:")
         provar_rotas(base, cookie, falhas)
+        print("derivadas e escrita:")
+        provar_derivadas(base, cookie, falhas)
         if not a.sem_telas:
             print("telas:")
             provar_telas(base, cookie, falhas)

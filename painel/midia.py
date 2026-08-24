@@ -58,9 +58,6 @@ def _chave_drive() -> Path:
         return na_pasta
     return Path(r"C:\Users\Gabri\.claude\secrets\google_drive.json")
 
-
-CHAVE_DRIVE = _chave_drive()
-
 # O motor so' aceita mp4. Os outros aparecem na contagem de "fora do formato" para voce
 # saber que eles existem, e nao entram no livro.
 ACEITOS = {".mp4"}
@@ -329,15 +326,17 @@ class FonteDrive:
         self._nome = {}
 
     def pronta(self) -> tuple:
-        if not CHAVE_DRIVE.exists():
-            return False, ("falta a credencial de leitura do Drive em "
-                           f"{CHAVE_DRIVE.name}")
+        # A chave se resolve A CADA USO, e nao no import: congelada, um arquivo que
+        # nasce depois do servidor subir nunca seria visto.
+        chave = _chave_drive()
+        if not chave.exists():
+            return False, f"falta a credencial de leitura do Drive em {chave}"
         return True, ""
 
     def robo(self) -> str:
         """O endereco do robo. Nao e' segredo: e' com ele que a pasta e' compartilhada."""
         try:
-            return json.loads(CHAVE_DRIVE.read_text(encoding="utf-8")).get(
+            return json.loads(_chave_drive().read_text(encoding="utf-8")).get(
                 "client_email", "")
         except Exception:
             return ""
@@ -348,7 +347,7 @@ class FonteDrive:
         import time, urllib.request
         if self._token and self._token[1] > time.time() + 60:
             return {"Authorization": "Bearer " + self._token[0]}
-        dados = json.loads(CHAVE_DRIVE.read_text(encoding="utf-8"))
+        dados = json.loads(_chave_drive().read_text(encoding="utf-8"))
         from google.oauth2 import service_account          # noqa: import tardio
         import google.auth.transport.requests as pedidos
         cred = service_account.Credentials.from_service_account_info(
