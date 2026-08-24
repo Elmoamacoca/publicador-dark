@@ -1,0 +1,4 @@
+postador.borusa.com.br {
+	encode gzip
+	reverse_proxy painel:4173
+}

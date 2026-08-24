@@ -1,24 +1,35 @@
 # -*- coding: utf-8 -*-
-"""Servidor do rascunho, sem cache nenhum.
+"""Servidor do painel: rotas de dados, arquivos estaticos, login e zero cache.
 
-O `python -m http.server` guarda a pagina no navegador e responde 304 na recarga: o
-Gabriel apertava F5 e continuava vendo a tela velha. Como aqui cada rodada troca o
-arquivo, cache so atrapalha. Este servidor manda o navegador nunca guardar, e ignora o
-pedido condicional que gera o 304.
+SEM CACHE porque cada rodada troca o arquivo e o 304 fazia o Gabriel ver tela velha.
+
+COM LOGIN quando `dados/acesso.json` existir. E o caso da VPS: toda rota, de tela ou
+de dado, exige a sessao. Sem o arquivo (o uso local de desenvolvimento), o servidor
+se comporta como sempre: aberto, mas escutando so em 127.0.0.1.
+
+O FUSO E O DE SAO PAULO. A maquina pode estar em UTC (a VPS esta): "hoje" calculado
+no relogio cru viraria amanha as 21h e o painel mentiria. Tudo que decide "que dia e
+hoje" passa por FUSO.
 """
 import base64
+import hashlib
+import hmac
 import http.server
 import json
 import os
 import socketserver
 import sys
+import time
 import urllib.parse
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 import midia
 
-PORTA = int(sys.argv[1]) if len(sys.argv) > 1 else 4173
+PORTA = int(sys.argv[1] if len(sys.argv) > 1 else os.environ.get("PAINEL_PORTA", 4173))
+ENDERECO = os.environ.get("PAINEL_ENDERECO", "127.0.0.1")
 PASTA = os.path.dirname(os.path.abspath(__file__))
-
+FUSO = ZoneInfo("America/Sao_Paulo")
 
 # ------------------------------------------------------------------ dados da aba Analytics
 #
@@ -26,7 +37,47 @@ PASTA = os.path.dirname(os.path.abspath(__file__))
 # do servidor, e nao num arquivo. Reescrever esses pedidos seria mexer no motor copiado,
 # e a copia deixaria de ser copia. Entao quem se adapta e' este servidor: ele responde as
 # mesmas tres rotas lendo `analytics.json`, que o montador gera com a API do Instagram.
-ANALYTICS = os.path.join(PASTA, "analytics.json")
+ANALYTICS = os.environ.get("PAINEL_ANALYTICS", os.path.join(PASTA, "analytics.json"))
+
+# ------------------------------------------------------------------ o acesso
+#
+# `dados/acesso.json` guarda usuario, o tempero e o cozido da senha (pbkdf2, nunca a
+# senha em si) e a chave que assina o carimbo de sessao. Quem cria e' `senha.py`.
+ACESSO = os.path.join(PASTA, "dados", "acesso.json")
+SESSAO_DIAS = 30
+_falhas = {}          # ip -> [quantas, proibido_ate]. Trava de forca bruta, em memoria.
+
+
+def _acesso():
+    try:
+        with open(ACESSO, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+
+def _cozinhar(senha, sal):
+    return hashlib.pbkdf2_hmac("sha256", senha.encode("utf-8"),
+                               bytes.fromhex(sal), 200_000).hex()
+
+
+def _carimbo(usuario, chave):
+    ate = str(int(time.time()) + SESSAO_DIAS * 86400)
+    massa = usuario + "|" + ate
+    ass = hmac.new(bytes.fromhex(chave), massa.encode("utf-8"), "sha256").hexdigest()
+    return base64.urlsafe_b64encode((massa + "|" + ass).encode("utf-8")).decode("ascii")
+
+
+def _carimbo_vale(valor, acesso):
+    try:
+        massa = base64.urlsafe_b64decode(valor.encode("ascii")).decode("utf-8")
+        usuario, ate, ass = massa.rsplit("|", 2)
+        certo = hmac.new(bytes.fromhex(acesso["chave"]),
+                         (usuario + "|" + ate).encode("utf-8"), "sha256").hexdigest()
+        return (hmac.compare_digest(ass, certo)
+                and usuario == acesso["usuario"] and int(ate) > time.time())
+    except Exception:
+        return False
 
 
 def _pedaco(texto, teto):
@@ -48,14 +99,68 @@ class SemCache(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *a, **kw):
         super().__init__(*a, directory=PASTA, **kw)
 
-    def responder(self, obj, codigo=200):
+    def responder(self, obj, codigo=200, cookie=None):
         corpo = json.dumps(obj, ensure_ascii=False).encode("utf-8")
         self.send_response(codigo)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(corpo)))
         self.send_header("Cache-Control", "no-store")
+        if cookie:
+            self.send_header("Set-Cookie", cookie)
         self.end_headers()
         self.wfile.write(corpo)
+
+    # ------------------------------------------------------------------ o login
+    def sessao_ok(self):
+        acesso = _acesso()
+        if not acesso:
+            return True                      # sem acesso.json = uso local aberto
+        biscoitos = self.headers.get("Cookie", "")
+        for pedaco in biscoitos.split(";"):
+            nome, _, valor = pedaco.strip().partition("=")
+            if nome == "painel_sessao" and _carimbo_vale(valor, acesso):
+                return True
+        return False
+
+    def pagina_entrar(self, errado=False):
+        try:
+            with open(os.path.join(PASTA, "entrar.html"), encoding="utf-8") as f:
+                corpo = f.read()
+        except FileNotFoundError:
+            corpo = "<h1>falta entrar.html</h1>"
+        corpo = corpo.replace("{ERRO}", "certo" if not errado else "errado")
+        corpo = corpo.encode("utf-8")
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(corpo)))
+        self.end_headers()
+        self.wfile.write(corpo)
+
+    def entrar(self, corpo):
+        acesso = _acesso()
+        if not acesso:
+            return self.responder({"ok": True, "aviso": "servidor sem login"})
+        ip = self.client_address[0]
+        falha = _falhas.get(ip, [0, 0])
+        if falha[1] > time.time():
+            return self.responder({"erro": "muitas tentativas, espere um minuto"}, 429)
+        usuario = str(corpo.get("usuario") or "").strip()
+        senha = str(corpo.get("senha") or "")
+        if (hmac.compare_digest(usuario, acesso["usuario"])
+                and hmac.compare_digest(_cozinhar(senha, acesso["sal"]),
+                                        acesso["cozido"])):
+            _falhas.pop(ip, None)
+            biscoito = ("painel_sessao=" + _carimbo(usuario, acesso["chave"])
+                        + f"; Max-Age={SESSAO_DIAS * 86400}; Path=/; HttpOnly"
+                        + "; SameSite=Lax")
+            if self.headers.get("X-Forwarded-Proto") == "https":
+                biscoito += "; Secure"
+            return self.responder({"ok": True}, cookie=biscoito)
+        falha = [falha[0] + 1, 0]
+        if falha[0] >= 5:
+            falha = [0, time.time() + 60]
+        _falhas[ip] = falha
+        return self.responder({"erro": "usuario ou senha errados"}, 401)
 
     def rota_de_midia(self, p, corpo=None):
         """A aba de Midia responde por `midia.py`. Aqui so' passa o pedido adiante.
@@ -86,6 +191,10 @@ class SemCache(http.server.SimpleHTTPRequestHandler):
             corpo = json.loads(self.rfile.read(tamanho) or b"{}")
         except Exception:
             corpo = {}
+        if p.path.strip("/") == "entrar":
+            return self.entrar(corpo)
+        if not self.sessao_ok():
+            return self.responder({"erro": "sem sessao, entre de novo"}, 401)
         if not self.rota_de_midia(p, corpo):
             self.send_error(404)
 
@@ -100,15 +209,13 @@ class SemCache(http.server.SimpleHTTPRequestHandler):
     #   quantas cairam              -> o livro-caixa (hoje ninguem grava queda: fica 0)
     # Onde a fonte nao existe, o valor sai zero e a tela diz o motivo. Nada e' inventado.
     def rede(self):
-        from datetime import datetime, timedelta, timezone
-
         try:
             d = _analytics()
         except FileNotFoundError:
             d = {}
         perfis = d.get("perfis", [])
         fundo = d.get("fundo") or {}
-        hoje = datetime.now().date()
+        hoje = datetime.now(FUSO).date()
 
         # 1. quem publicou em cada um dos ultimos 30 dias, conta a conta
         #
@@ -221,6 +328,22 @@ class SemCache(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         p = urllib.parse.urlparse(self.path)
         rota = p.path.strip("/")
+        if rota == "entrar":
+            return self.pagina_entrar()
+        if rota == "sair":
+            self.send_response(302)
+            self.send_header("Set-Cookie", "painel_sessao=; Max-Age=0; Path=/")
+            self.send_header("Location", "/entrar")
+            self.end_headers()
+            return
+        if not self.sessao_ok():
+            # rota de dado leva o 401 escrito; rota de tela leva para a porta de entrada
+            if rota and ("/" in rota or rota in ("perfis", "conta", "posts", "img")):
+                return self.responder({"erro": "sem sessao, entre de novo"}, 401)
+            self.send_response(302)
+            self.send_header("Location", "/entrar")
+            self.end_headers()
+            return
         if self.rota_de_midia(p):
             return
         if rota == "painel/rede":
@@ -324,6 +447,8 @@ class Reusavel(socketserver.ThreadingTCPServer):
     daemon_threads = True
 
 
-with Reusavel(("127.0.0.1", PORTA), SemCache) as s:
-    print(f"painel em http://localhost:{PORTA} (sem cache)", flush=True)
-    s.serve_forever()
+if __name__ == "__main__":
+    with Reusavel((ENDERECO, PORTA), SemCache) as s:
+        tranca = "com login" if _acesso() else "SEM login (uso local)"
+        print(f"painel em http://{ENDERECO}:{PORTA} ({tranca})", flush=True)
+        s.serve_forever()

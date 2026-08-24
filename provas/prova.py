@@ -3,15 +3,17 @@
 
 O que ele prova, em ordem:
   1. O servidor sobe e responde.
-  2. Cada rota de dados devolve 200 com o formato esperado.
-  3. Cada aba abre no navegador de verdade SEM NENHUM erro de console.
-  4. O modo foco (Programar publicacoes) abre e volta.
-  5. Um print por aba fica em provas/saida/ para conferencia de olho.
+  2. Se o login estiver ligado: rota sem sessao leva 401, e entrar funciona.
+  3. Cada rota de dados devolve 200 com o formato esperado.
+  4. Cada aba abre no navegador de verdade SEM NENHUM erro de console.
+  5. O modo foco (Programar publicacoes) abre.
+  6. Um print por aba fica em provas/saida/ para conferencia de olho.
 
 Uso:
-  python prova.py                     -> prova o painel do proprio repositorio
-  python prova.py --pasta CAMINHO     -> prova outro painel local
-  python prova.py --url https://...   -> prova um painel ja no ar (nao sobe servidor)
+  python prova.py                          -> prova o painel do proprio repositorio
+  python prova.py --pasta CAMINHO          -> prova outro painel local
+  python prova.py --url https://... \
+     --usuario g --senha-arquivo cofre.txt -> prova um painel no ar, com login
 
 Sai com codigo 0 quando passa e 1 quando reprova, para travar deploy em script.
 """
@@ -27,8 +29,7 @@ import urllib.request
 AQUI = os.path.dirname(os.path.abspath(__file__))
 SAIDA = os.path.join(AQUI, "saida")
 
-# Cada rota com a prova do seu formato: (rota, chave que tem que existir na resposta).
-# Chave vazia = basta o 200 com JSON valido. As rotas de pagina html ficam fora daqui.
+# Cada rota com a prova do seu formato: (rota, chaves que tem que existir na resposta).
 ROTAS = [
     ("painel/rede", ("contas", "resumo", "serie", "semana")),
     ("perfis", ("perfis",)),
@@ -54,21 +55,57 @@ def esperar(url, tempo=15):
         try:
             urllib.request.urlopen(url, timeout=2)
             return True
+        except urllib.error.HTTPError:
+            return True
         except Exception:
             time.sleep(0.3)
     return False
 
 
-def pedir(url):
-    req = urllib.request.Request(url, headers={"User-Agent": "prova"})
-    with urllib.request.urlopen(req, timeout=20) as r:
-        return r.status, r.read()
+def pedir(url, cookie="", corpo=None):
+    cab = {"User-Agent": "prova"}
+    if cookie:
+        cab["Cookie"] = cookie
+    dados = None
+    if corpo is not None:
+        dados = json.dumps(corpo).encode("utf-8")
+        cab["Content-Type"] = "application/json"
+    req = urllib.request.Request(url, headers=cab, data=dados)
+    try:
+        with urllib.request.urlopen(req, timeout=20) as r:
+            return r.status, r.read(), r.headers
+    except urllib.error.HTTPError as e:
+        return e.code, e.read(), e.headers
 
 
-def provar_rotas(base, falhas):
+def entrar(base, usuario, senha, falhas):
+    codigo, corpo, cab = pedir(base + "/entrar", corpo={"usuario": usuario,
+                                                        "senha": senha})
+    if codigo != 200:
+        falhas.append(f"login recusado (codigo {codigo}): {corpo[:120]}")
+        return ""
+    biscoito = (cab.get("Set-Cookie") or "").split(";")[0]
+    if not biscoito.startswith("painel_sessao="):
+        falhas.append("login nao devolveu a sessao")
+        return ""
+    print("  login: ok")
+    return biscoito
+
+
+def provar_tranca(base, cookie, falhas):
+    """Com login ligado, rota pelada tem que levar 401 e tela tem que ser levada
+    para /entrar. Painel aberto quando devia estar trancado e REPROVA na hora."""
+    codigo, _, _ = pedir(base + "/painel/rede")
+    if codigo != 401:
+        falhas.append(f"TRANCA FALHOU: painel/rede sem sessao respondeu {codigo}, nao 401")
+    else:
+        print("  tranca: rota sem sessao leva 401")
+
+
+def provar_rotas(base, cookie, falhas):
     for rota, chaves in ROTAS:
         try:
-            codigo, corpo = pedir(base + "/" + rota)
+            codigo, corpo, _ = pedir(base + "/" + rota, cookie)
             d = json.loads(corpo)
             if codigo != 200:
                 falhas.append(f"rota {rota}: codigo {codigo}")
@@ -81,7 +118,7 @@ def provar_rotas(base, falhas):
         except Exception as e:
             falhas.append(f"rota {rota}: {type(e).__name__}: {e}")
     try:
-        codigo, corpo = pedir(base + "/")
+        codigo, corpo, _ = pedir(base + "/", cookie)
         if codigo != 200 or b"Publicador" not in corpo:
             falhas.append("pagina inicial nao parece o painel")
         else:
@@ -90,13 +127,19 @@ def provar_rotas(base, falhas):
         falhas.append(f"pagina inicial: {e}")
 
 
-def provar_telas(base, falhas):
+def provar_telas(base, cookie, falhas):
     from playwright.sync_api import sync_playwright
     os.makedirs(SAIDA, exist_ok=True)
     erros_js = []
+    dominio = base.split("//", 1)[1].split("/")[0].split(":")[0]
     with sync_playwright() as p:
         nav = p.chromium.launch()
-        pag = nav.new_page(viewport={"width": 1440, "height": 900})
+        ctx = nav.new_context(viewport={"width": 1440, "height": 900})
+        if cookie:
+            nome, valor = cookie.split("=", 1)
+            ctx.add_cookies([{"name": nome, "value": valor, "domain": dominio,
+                              "path": "/"}])
+        pag = ctx.new_page()
         pag.on("console", lambda m: erros_js.append(f"console [{m.type}] {m.text}")
                if m.type == "error" else None)
         pag.on("pageerror", lambda e: erros_js.append(f"pageerror {e}"))
@@ -117,7 +160,6 @@ def provar_telas(base, falhas):
             falhas.append("modo foco nao abriu (data-tela != foco)")
         else:
             print("  modo foco: abriu")
-        pag.click("#fc-voltar") if pag.query_selector("#fc-voltar") else None
         # o tema escuro nao pode quebrar
         pag.evaluate("document.documentElement.setAttribute('data-theme','dark')")
         pag.wait_for_timeout(400)
@@ -134,6 +176,9 @@ def main():
     ap.add_argument("--pasta", default=os.path.join(os.path.dirname(AQUI), "painel"))
     ap.add_argument("--porta", type=int, default=4199)
     ap.add_argument("--url", default="")
+    ap.add_argument("--usuario", default="")
+    ap.add_argument("--senha-arquivo", default="",
+                    help="arquivo com a senha na primeira linha (nunca na linha de comando)")
     ap.add_argument("--sem-telas", action="store_true",
                     help="so as rotas, sem navegador (maquina sem playwright)")
     a = ap.parse_args()
@@ -150,16 +195,32 @@ def main():
                 [sys.executable, "servidor.py", str(a.porta)], cwd=a.pasta,
                 stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
         base = f"http://127.0.0.1:{a.porta}"
-        if not esperar(base + "/"):
-            print("REPROVA: o servidor nao subiu")
-            return 1
+    if not esperar(base + "/"):
+        print("REPROVA: o servidor nao subiu")
+        return 1
 
+    cookie = ""
     try:
+        codigo, _, _ = pedir(base + "/painel/rede")
+        trancado = codigo == 401
+        if a.usuario and not trancado:
+            falhas.append("o painel DEVIA exigir login e respondeu sem sessao")
+        if trancado:
+            if not a.usuario or not a.senha_arquivo:
+                print("REPROVA: painel com login; passe --usuario e --senha-arquivo")
+                return 1
+            with open(a.senha_arquivo, encoding="utf-8") as f:
+                senha = f.readline().strip()
+            print("tranca:")
+            provar_tranca(base, cookie, falhas)
+            cookie = entrar(base, a.usuario, senha, falhas)
+            if not cookie:
+                raise SystemExit(1)
         print("rotas:")
-        provar_rotas(base, falhas)
+        provar_rotas(base, cookie, falhas)
         if not a.sem_telas:
             print("telas:")
-            provar_telas(base, falhas)
+            provar_telas(base, cookie, falhas)
     finally:
         if servidor:
             servidor.terminate()

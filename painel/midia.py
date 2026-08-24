@@ -47,7 +47,19 @@ PASTA = Path(__file__).parent
 DADOS = PASTA / "dados"
 BANCO = DADOS / "livro.db"
 CONFIG = DADOS / "config.json"
-CHAVE_DRIVE = Path(r"C:\Users\Gabri\.claude\secrets\google_drive.json")
+def _chave_drive() -> Path:
+    """Onde mora a credencial do Drive, na ordem: variavel de ambiente (o Docker),
+    `dados/google_drive.json` (a VPS), cofre local do PC (o desenvolvimento)."""
+    ambiente = os.environ.get("CHAVE_DRIVE")
+    if ambiente:
+        return Path(ambiente)
+    na_pasta = DADOS / "google_drive.json"
+    if na_pasta.exists():
+        return na_pasta
+    return Path(r"C:\Users\Gabri\.claude\secrets\google_drive.json")
+
+
+CHAVE_DRIVE = _chave_drive()
 
 # O motor so' aceita mp4. Os outros aparecem na contagem de "fora do formato" para voce
 # saber que eles existem, e nao entram no livro.
@@ -152,6 +164,15 @@ def abrir() -> sqlite3.Connection:
 def agora() -> str:
     from datetime import datetime, timezone
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+def hoje_local() -> str:
+    """O dia NO FUSO DO PAINEL (Sao Paulo). O carimbo `agora()` continua em UTC de
+    proposito (hora absoluta de registro); mas 'que dia e hoje' e pergunta de fuso:
+    numa VPS em UTC, o dia cru viraria amanha as 21h e o pulso cairia no dia errado."""
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+    return datetime.now(ZoneInfo("America/Sao_Paulo")).date().isoformat()
 
 
 # ============================================================== o que a conta e'
@@ -551,7 +572,7 @@ def gravar_pulso(publicando: int, paradas: int, caidas: int) -> dict:
 
     Sobrescrever e' de proposito: dentro do mesmo dia vale o ultimo estado conhecido,
     e nao a media. O que interessa na linha e' 'como a rede estava naquele dia'."""
-    dia = agora()[:10]
+    dia = hoje_local()
     con = abrir()
     con.execute("INSERT INTO pulso (dia, publicando, paradas, caidas, em) "
                 "VALUES (?,?,?,?,?) ON CONFLICT(dia) DO UPDATE SET "

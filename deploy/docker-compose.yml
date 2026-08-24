@@ -1,0 +1,30 @@
+# O painel na VPS: o servidor Python atras do Caddy, que faz o HTTPS sozinho.
+# O ESTADO (livro.db, config, credencial do Drive, analytics, capas) mora FORA do
+# container, em /opt/publicador/estado: containers morrem, o estado fica.
+services:
+  painel:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    restart: unless-stopped
+    volumes:
+      - /opt/publicador/estado/dados:/app/dados
+      - /opt/publicador/estado/analytics.json:/app/analytics.json
+      - /opt/publicador/estado/midia:/app/midia
+    expose:
+      - "4173"
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_dados:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_dados:
+  caddy_config:
