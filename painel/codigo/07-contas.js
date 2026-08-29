@@ -77,6 +77,11 @@
   function num(n){ return (n == null ? 0 : n).toLocaleString('pt-BR'); }
   var cores = ['var(--ct-1)','var(--ct-2)','var(--ct-3)','var(--ct-4)','var(--ct-5)'];
   var ROTULO = {viva:'Conectada', vencendo:'Vencendo', caiu:'Sem Conexão'};
+  /* A Meta devolve o tipo em caixa alta e em ingles. Isso e nome de campo, nao
+     nome de coisa, e nome de campo nao vai para a tela. */
+  var TIPO = {MEDIA_CREATOR:'Criador De Mídia', BUSINESS:'Empresa',
+              CREATOR:'Criador', PERSONAL:'Pessoal'};
+  function tipoDe(t){ return TIPO[t] || (t ? String(t).toLowerCase() : 'Instagram'); }
 
   /* ------------------------------------------------------------- o estado */
   var DADOS = {contas: []}, filtro = '', mercado = '', busca = '';
@@ -225,8 +230,11 @@
            emphasis: {focus: 'series', scale: 1.6},
            areaStyle: {color: new ECharts.graphic.LinearGradient(0, 0, 0, 1, [
              {offset: 0, color: alfa(a, .30)}, {offset: 1, color: alfa(a, 0)}])}},
-          {name: 'Recusaram', type: 'bar', data: falhou, z: 2, barMaxWidth: 18,
-           barMinHeight: 2,
+          /* ZERO NAO VIRA BARRA. Com `barMinHeight` o ECharts desenha um traco
+             mesmo onde o valor e zero, e o grafico ficava com uma linha vermelha
+             rente ao eixo em dias sem recusa nenhuma: parecia falha todo dia. */
+          {name: 'Recusaram', type: 'bar', z: 2, barMaxWidth: 18, barMinHeight: 2,
+           data: falhou.map(function(v){ return v > 0 ? v : null; }),
            itemStyle: {borderRadius: [3,3,0,0],
              color: new ECharts.graphic.LinearGradient(0, 0, 0, 1, [
                {offset: 0, color: alfa(b, .92)}, {offset: 1, color: alfa(b, .45)}])},
@@ -522,7 +530,7 @@
       '<div class="ct-par"><span class="rot">' + ico('chave','xs') +
         'Ligada Ao Publicador</span><b>' + faz(c.ligada_em) + '</b></div>' +
       '<div class="ct-par"><span class="rot">' + ico('ig','xs') +
-        'Tipo Da Conta</span><b>' + seguro(c.tipo || 'não informado') + '</b></div>';
+        'Tipo Da Conta</span><b>' + seguro(tipoDe(c.tipo)) + '</b></div>';
   }
 
   function corpoDiario(c){
@@ -567,8 +575,9 @@
     var qual = aba[c.arroba] || 'estado';
     var falhasNaTira = (c.tira || []).filter(function(t){
       return t.estado === 'caiu'; }).length;
-    var face = c.avatar
-      ? '<img class="ct-av" src="' + c.avatar + '" alt="">'
+    var retrato = c.avatar || RETRATOS[String(c.arroba).toLowerCase()];
+    var face = retrato
+      ? '<img class="ct-av" src="' + retrato + '" alt="">'
       : '<span class="ct-av" style="background:' + cores[i % 5] + '">' +
         seguro(String(c.arroba).slice(0, 2).toUpperCase()) + '</span>';
     var corpo = qual === 'diario' ? corpoDiario(c)
@@ -579,7 +588,7 @@
       '<div class="ct-f-cab">' + face +
         '<div class="ct-quem"><div class="ct-arroba">@' + seguro(c.arroba) + '</div>' +
         '<div class="ct-sub">' + seguro(c.nome || c.arroba) + ' · ' +
-        seguro(c.tipo || 'Instagram') + '</div></div>' +
+        seguro(tipoDe(c.tipo)) + '</div></div>' +
         '<span class="ct-estado ' + c.estado + '"><i></i>' + ROTULO[c.estado] +
         '</span></div>' +
       tira(c) + medidas(c) +
@@ -632,11 +641,24 @@
   }
 
   /* ============================================================ carregar */
+  /* O RETRATO NAO VEM DA CONEXAO. A chamada de identidade da Meta devolve arroba e
+     numeros, nunca a foto; ela mora em `analytics.json`, que a rota `perfis` serve.
+     Sao duas fontes para uma ficha so, e por isso o retrato e' guardado a parte. */
+  var RETRATOS = {};
+  function lerRetratos(){
+    return pedir('/perfis').then(function(d){
+      (d.perfis || []).forEach(function(p){
+        if (p.u && p.avatar) RETRATOS[String(p.u).toLowerCase()] = p.avatar;
+      });
+    }).catch(function(){});
+  }
+
   function carregar(forcar){
     if (carregando) return Promise.resolve();
     carregando = true;
     var vai = forcar ? pedir('/contas/testar', {}) : pedir('/contas/estado');
-    return (window.lerMeta ? window.lerMeta() : Promise.resolve())
+    return Promise.all([
+        (window.lerMeta ? window.lerMeta() : Promise.resolve()), lerRetratos()])
       .then(function(){ return vai; })
       .then(function(d){
         DADOS = d || {contas: []};
