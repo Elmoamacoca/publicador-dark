@@ -4,107 +4,241 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Contas · Proposta B · Publicador</title>
+<title>Contas · Publicador</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
+<link rel="icon" href="marca-clara.png">
 <link rel="stylesheet" href="painel.css">
+<link rel="stylesheet" href="sala.css">
 <style>
-/* ------------------------------------------------- PROPOSTA B: uma ficha por conta
-   A tabela responde "quais contas existem". A ficha responde "esta conta está de pé?",
-   que é a pergunta que se faz olhando conta por conta. Mesmas variáveis da casa. */
-.fichas{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(370px,1fr))}
-.ficha{background:var(--branco);border:1px solid var(--rule-solid);
-       border-radius:var(--r-card);overflow:hidden;display:flex;flex-direction:column;
-       transition:border-color .18s, box-shadow .18s}
-.ficha:hover{border-color:var(--soft);box-shadow:0 6px 22px rgba(14,14,14,.06)}
-.ficha.caida{border-color:color-mix(in srgb,var(--vermelho) 40%,transparent)}
+/* =====================================================================
+   A ABA DE CONTAS, VESTIDA COM A ROUPA DA SALA DE CONTROLE
 
-.ficha-cab{display:flex;align-items:center;gap:13px;padding:18px 18px 14px}
-.ficha-cab .quem{min-width:0;flex:1}
-.ficha-cab .nome{font-size:16px;font-weight:800;letter-spacing:-.2px}
-.ficha-cab .pp{margin-top:2px}
+   Nada de desenho novo: as receitas são as do `rastreamento.css` do portal
+   (cartão com sombra, rótulo em três tamanhos, número grande, minicurva,
+   pílula de variação, fita de eventos, segmentado) e o botão é o animado
+   da casa, o mesmo do Programar. O que muda é o ASSUNTO.
 
-/* O ANEL É O TETO DO DIA. Ele fica no cabeçalho porque é o número que decide se dá
-   para programar mais alguma coisa hoje, e é o primeiro que se procura. */
-.anel{width:56px;height:56px;flex:none;position:relative;display:grid;place-items:center}
-.anel svg{position:absolute;inset:0;transform:rotate(-90deg)}
-.anel circle{fill:none;stroke-width:5}
-.anel .trilho{stroke:var(--paper-2)}
-.anel .arco{stroke:var(--verde);stroke-linecap:round;
-            transition:stroke-dasharray .5s cubic-bezier(.22,1,.36,1)}
-.anel.meio .arco{stroke:var(--ambar)} .anel.cheio .arco{stroke:var(--vermelho)}
-.anel b{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
-.anel span{font-size:9.5px;color:var(--soft);line-height:1;margin-top:2px}
-.anel .meio-texto{display:flex;flex-direction:column;align-items:center}
+   E o assunto aqui não é desempenho: seguidores e publicações moram em
+   Analytics. Aqui a pergunta é uma só, e a tela responde ela de três
+   maneiras: ESTA CONTA ESTÁ DE PÉ?
 
-.ficha-num{display:grid;grid-template-columns:repeat(4,1fr);
-           border-top:1px solid var(--rule-solid);
-           border-bottom:1px solid var(--rule-solid)}
-.ficha-num div{padding:13px 10px;text-align:center;
-               border-left:1px solid color-mix(in srgb,var(--rule-solid) 60%,transparent)}
-.ficha-num div:first-child{border-left:0}
-.ficha-num b{display:block;font-size:19px;font-weight:700;letter-spacing:-.5px;
-             font-variant-numeric:tabular-nums;line-height:1}
-.ficha-num b.mau{color:var(--vermelho)}
-.ficha-num span{display:block;font-size:11px;color:var(--soft);margin-top:5px}
+     1. a conexão, medida agora, com o histórico da vigilância ao lado;
+     2. o acesso, com quanto falta e o que já foi renovado;
+     3. o que trava a operação: teto do dia, fila e falhas.
 
-.ficha-corpo{padding:16px 18px;display:flex;flex-direction:column;gap:14px;flex:1}
-.ficha-linha{display:flex;align-items:center;gap:10px;font-size:13px}
-.ficha-linha .rot{color:var(--muted);min-width:96px}
-.ficha-linha .barra{flex:1;height:6px}
-.ficha-linha b{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
-.barra i.ruim{background:var(--vermelho)}
+   Toda classe começa com `fx-`, porque esta folha divide a página com o
+   painel e com a sala, e colisão de nome já custou tela quebrada em três
+   repositórios da casa.
+   ===================================================================== */
 
-.tiras{display:flex;gap:6px}
-.tira{flex:1;aspect-ratio:9/13;border-radius:7px;background:var(--paper-2);
-      border:1px solid var(--rule-solid);position:relative;overflow:hidden;
-      display:grid;place-items:end;cursor:pointer}
-.tira:hover{border-color:var(--soft)}
-.tira em{position:absolute;inset:auto 0 0 0;padding:5px 6px;font-style:normal;
-         font-size:10px;font-weight:700;color:#fff;
-         background:linear-gradient(transparent,rgba(0,0,0,.72))}
-.tira.vazia{display:grid;place-items:center;font-size:10.5px;color:var(--soft);
-            background:none;border-style:dashed}
+/* as quatro que a sala e o rodapé pedem de fora */
+:root{
+  --rule:color-mix(in srgb,var(--rule-solid) 55%,transparent);
+  --rodape-fundo:var(--branco);
+  --marca-anel:url(marca-clara.png);
+  --r-lg:16px;
+  --sombra:0 1px 2px rgba(14,14,14,.05);
+}
+:root[data-theme="dark"]{ --marca-anel:url(marca-escura.png) }
 
-.ficha-pe{display:flex;align-items:center;gap:8px;padding:14px 18px;
-          border-top:1px solid var(--rule-solid);background:var(--paper-2)}
-.ficha-pe .dir{margin-left:auto;display:flex;gap:7px}
-.ic{width:34px;height:34px;border-radius:999px;border:1px solid var(--rule-solid);
-    background:var(--branco);color:var(--muted);cursor:pointer;display:grid;
-    place-items:center;padding:0;transition:.15s}
-.ic:hover{border-color:var(--soft);color:var(--ink)}
-.ic svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.9;
-        stroke-linecap:round;stroke-linejoin:round}
-.ic.girando svg{animation:gira .8s linear infinite}
-@keyframes gira{to{transform:rotate(360deg)}}
+.palco{padding-bottom:0}
+.pagina.ativa{display:flex;flex-direction:column;min-height:calc(100vh - 86px)}
+.fx-miolo{flex:1}
 
-.ficha .campo{border:1px dashed transparent;border-radius:8px;padding:3px 7px;margin:-3px -7px;
-              cursor:text;font-size:13px;color:var(--ink);display:inline-flex;
-              align-items:center;min-height:24px}
-.ficha .campo:hover{border-color:var(--rule-solid);background:var(--paper-2)}
-.ficha .campo.vazio{color:var(--soft)}
-.ficha .campo input{border:0;background:none;font:inherit;color:var(--ink);outline:none;
-                    width:130px;padding:0}
-.ficha .etqs{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
-.ficha .etq{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;
-            background:var(--accent-tint);color:var(--link);border-radius:999px;padding:3px 9px}
-.ficha .etq button{border:0;background:none;color:inherit;cursor:pointer;padding:0;
-                   font:inherit;opacity:.6;line-height:1}
-.ficha .etq button:hover{opacity:1}
-.ficha .etq-mais{border:1px dashed var(--rule-solid);background:none;color:var(--soft);
-                 border-radius:999px;padding:3px 10px;font:inherit;font-size:11.5px;
-                 cursor:pointer}
-.ficha .etq-mais:hover{border-color:var(--soft);color:var(--ink)}
+/* ------------------------------------------------------------- a cabeça */
+.fx-topo{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;
+         flex-wrap:wrap;margin-bottom:20px}
+.fx-topo .fx-dir{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 
-.ficha.simulada{border-style:dashed}
-.ficha.simulada .ficha-cab .nome::after{content:"Simulada";margin-left:8px;font-size:9.5px;
-  font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ambar);
-  background:color-mix(in srgb,var(--ambar) 13%,transparent);padding:2px 7px;
-  border-radius:999px;vertical-align:middle}
-.pe-lista{display:flex;align-items:center;gap:12px;margin-top:18px;flex-wrap:wrap}
-.pe-lista .dir{margin-left:auto}
+/* O botão da casa, o mesmo gesto do Programar. Ele veste `.btn.anda`: a
+   casca vem do painel, o movimento vem de `anda.css`. */
+.fx-bt{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 20px;
+  border-radius:999px;border:1.5px solid color-mix(in srgb,var(--ink) 34%,transparent);
+  background:transparent;font:inherit;font-size:13px;font-weight:700;color:var(--ink);
+  cursor:pointer;text-decoration:none;
+  --anda-desl:7px;--anda-circ:var(--ink);--anda-viva:var(--paper);--anda-seta-viva:var(--paper);
+  transition:border-color .6s cubic-bezier(.23,1,.32,1),color .6s cubic-bezier(.23,1,.32,1),
+             border-radius .6s cubic-bezier(.23,1,.32,1)}
+.fx-bt:hover{border-color:transparent;border-radius:13px}
+.fx-bt:active{transform:scale(.97)}
+.fx-bt .txt{display:inline-flex;align-items:center;gap:8px}
+.fx-bt.verde{border-color:color-mix(in srgb,var(--accent) 38%,transparent);color:var(--accent);
+  --anda-circ:var(--accent);--anda-viva:#fff;--anda-seta:var(--accent);--anda-seta-viva:#fff}
+.fx-bt.verde:hover{color:#fff}
+.fx-bt.mini{height:32px;padding:0 15px;font-size:12px;--anda-desl:5px;--anda-borda:9px;
+  --anda-seta-tam:12px}
+.fx-bt:disabled{opacity:.55;cursor:default}
+.fx-bt svg.mrc{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* ------------------------------------------------------- a linha de filtros */
+.fx-filtros{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:22px 0 16px}
+.fx-busca{display:flex;align-items:center;gap:9px;height:38px;padding:0 13px;flex:1 1 240px;
+  max-width:330px;border:1px solid var(--rule-solid);border-radius:999px;background:var(--branco);
+  transition:border-color .18s,box-shadow .18s}
+.fx-busca:focus-within{border-color:var(--accent);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
+.fx-busca input{flex:1;min-width:0;border:0;outline:0;background:none;font:inherit;
+  font-size:13.5px;color:var(--ink)}
+.fx-busca svg{width:16px;height:16px;flex:none;color:var(--soft);fill:none;stroke:currentColor;
+  stroke-width:2;stroke-linecap:round}
+.fx-conta-linhas{margin-left:auto;font-size:12px;font-weight:700;color:var(--soft)}
+
+/* --------------------------------------------------------------- a grade */
+.fx-grade{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(398px,1fr))}
+@media(max-width:900px){.fx-grade{grid-template-columns:minmax(0,1fr)}}
+
+.fx{display:flex;flex-direction:column;position:relative;transition:box-shadow .2s,border-color .2s}
+.fx:hover{box-shadow:var(--rs-sombra-g)}
+/* A BORDA DE CIMA É O ESTADO. Uma linha de 3px acesa no topo do cartão diz
+   de longe como a conta está, sem roubar espaço de dado nenhum. */
+.fx::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:var(--rs-1);
+  border-radius:var(--rs-rg) var(--rs-rg) 0 0;z-index:1}
+.fx.vencendo::before{background:var(--rs-alerta)}
+.fx.caiu::before{background:var(--rs-neg)}
+.fx.simulada{border-style:dashed}
+
+.fx-cab{display:flex;align-items:center;gap:13px;padding:17px 17px 13px}
+.fx-av{width:46px;height:46px;border-radius:50%;flex:none;object-fit:cover;
+  border:1px solid var(--rule-solid);background:var(--paper-2);display:grid;place-items:center;
+  font-size:15px;font-weight:800;color:#fff}
+.fx-quem{flex:1;min-width:0}
+.fx-arroba{font-size:15.5px;font-weight:800;letter-spacing:-.2px;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.fx-sub{font-size:11.5px;color:var(--soft);margin-top:2px;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis}
+.fx-selo{display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 11px;
+  border-radius:999px;font-size:11.5px;font-weight:800;flex:none;
+  background:var(--rs-pos-t);color:var(--rs-pos)}
+.fx-selo.vencendo{background:var(--rs-alerta-t);color:var(--rs-alerta)}
+.fx-selo.caiu{background:var(--rs-neg-t);color:var(--rs-neg)}
+.fx-selo i{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none;
+  position:relative}
+.fx-selo.viva i::after{content:"";position:absolute;inset:-3px;border-radius:50%;
+  background:currentColor;opacity:.3;animation:rs-pp 2s ease-out infinite}
+
+/* --------------------------------------------- a validação ao vivo
+   A TIRA É O HISTÓRICO DA VIGILÂNCIA, um traço por dia: verde quando a Meta
+   respondeu, vermelho quando recusou, apagado no dia sem registro. É por ela
+   que se enxerga "está de pé agora" e "esteve de pé até agora" na mesma
+   olhada, que é o que um selo sozinho nunca conta. */
+.fx-vivo{padding:0 17px 14px;display:flex;flex-direction:column;gap:8px}
+.fx-vivo-l{display:flex;align-items:center;gap:8px}
+.fx-vivo-l .rs-rot1{flex:1}
+.fx-ms{font-size:11px;font-weight:800;color:var(--muted);font-variant-numeric:tabular-nums}
+.fx-tira{display:flex;gap:2px;height:26px;align-items:flex-end}
+.fx-tira i{flex:1;border-radius:2px;background:var(--rs-trilho);cursor:default;
+  transition:transform .12s,filter .12s}
+.fx-tira i.ok{background:var(--rs-1);height:100%}
+.fx-tira i.meio{background:var(--rs-alerta);height:100%}
+.fx-tira i.mau{background:var(--rs-neg);height:100%}
+.fx-tira i.sem{height:9px}
+.fx-tira i:hover{transform:scaleX(1.9);filter:brightness(1.15)}
+.fx-tira i.agora{animation:fx-nasce .5s cubic-bezier(.22,1,.36,1)}
+@keyframes fx-nasce{from{transform:scaleY(.2);opacity:0}to{transform:none;opacity:1}}
+.fx-tira-pe{display:flex;justify-content:space-between;font-size:10.5px;font-weight:700;
+  color:var(--soft)}
+
+/* ------------------------------------------------------- as três medidas */
+.fx-med{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--rule);
+  border-bottom:1px solid var(--rule)}
+.fx-m{padding:13px 15px;border-left:1px solid var(--rule);min-width:0}
+.fx-m:first-child{border-left:0}
+.fx-m .cab{display:flex;align-items:center;gap:6px;color:var(--soft)}
+.fx-m .cab svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round;flex:none}
+.fx-m .cab span{font-size:9.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fx-m .val{display:flex;align-items:baseline;gap:4px;margin-top:7px}
+.fx-m .val b{font-size:var(--rs-n3);font-weight:800;letter-spacing:-.03em;line-height:1;
+  font-variant-numeric:tabular-nums}
+.fx-m .val small{font-size:11px;font-weight:700;color:var(--soft)}
+.fx-m .val b.mau{color:var(--rs-neg)}
+.fx-m .barra{height:5px;background:var(--rs-trilho);border-radius:99px;margin-top:9px;
+  overflow:hidden}
+.fx-m .barra i{display:block;height:100%;border-radius:99px;background:var(--rs-1);
+  transition:width .5s cubic-bezier(.22,1,.36,1)}
+.fx-m .barra i.meio{background:var(--rs-alerta)} .fx-m .barra i.mau{background:var(--rs-neg)}
+.fx-m .pe{font-size:10.5px;font-weight:700;color:var(--soft);margin-top:7px;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+
+/* ------------------------------------------------------- as abas de dentro
+   AUDITAR NÃO PODE EXIGIR OUTRA TELA. O diário da conta abre no próprio
+   cartão, e a identidade também: quem está conferindo uma rede não quer
+   perder o lugar a cada pergunta. */
+.fx-abas{margin:13px 15px 0;align-self:flex-start}
+.fx-abas button{padding:6px 12px;font-size:11.5px}
+.fx-corpo{padding:12px 15px 4px;min-height:150px}
+
+.fx-par{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:9px 0;border-top:1px solid var(--rule);font-size:12.5px}
+.fx-par:first-child{border-top:0}
+.fx-par .rot{color:var(--muted);display:flex;align-items:center;gap:8px}
+.fx-par .rot svg{width:14px;height:14px;color:var(--soft);fill:none;stroke:currentColor;
+  stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.fx-par b{font-weight:800;font-variant-numeric:tabular-nums;text-align:right}
+.fx-par b.alerta{color:var(--rs-alerta)} .fx-par b.mau{color:var(--rs-neg)}
+
+/* o diário, no desenho da fita da sala */
+.fx-diario{max-height:214px;overflow-y:auto;margin:0 -6px;scrollbar-width:none}
+.fx-diario::-webkit-scrollbar{width:0;display:none}
+.fx-ev{display:flex;align-items:center;gap:11px;padding:8px 6px;border-radius:10px;width:100%}
+.fx-ev:hover{background:var(--paper-2)}
+.fx-ev .ic{width:29px;height:29px;border-radius:10px;display:grid;place-items:center;flex:none;
+  background:var(--rs-trilho);color:var(--muted)}
+.fx-ev .ic svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
+.fx-ev .ic.ok{background:var(--rs-1t);color:var(--rs-1)}
+.fx-ev .ic.am{background:var(--rs-alerta-t);color:var(--rs-alerta)}
+.fx-ev .ic.mau{background:var(--rs-neg-t);color:var(--rs-neg)}
+.fx-ev .c{flex:1;min-width:0}
+.fx-ev .c b{display:block;font-size:12.3px;font-weight:700}
+.fx-ev .c span{display:block;font-size:11px;color:var(--muted);white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.fx-ev .q{font-size:10.5px;font-weight:700;color:var(--soft);white-space:nowrap;flex:none}
+.fx-diario-vazio{padding:34px 10px;text-align:center;font-size:12.5px;color:var(--soft)}
+.fx-diario-topo{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.fx-diario-topo .rs-rot1{flex:1}
+.fx-so-falhas{border:1px solid var(--rule-solid);background:var(--branco);border-radius:999px;
+  padding:4px 11px;font:inherit;font-size:10.5px;font-weight:800;color:var(--muted);cursor:pointer;
+  text-transform:uppercase;letter-spacing:.5px}
+.fx-so-falhas:hover{border-color:var(--soft);color:var(--ink)}
+.fx-so-falhas.on{background:var(--rs-neg-t);border-color:transparent;color:var(--rs-neg)}
+
+/* identidade */
+.fx-campo{border:1px dashed transparent;border-radius:9px;padding:5px 9px;margin:-5px -9px;
+  cursor:text;font-size:13px;font-weight:600;color:var(--ink);display:inline-flex;
+  align-items:center;min-height:26px}
+.fx-campo:hover{border-color:var(--rule-solid);background:var(--paper-2)}
+.fx-campo.vazio{color:var(--soft);font-weight:500}
+.fx-campo input{border:0;background:none;font:inherit;color:var(--ink);outline:none;width:150px}
+.fx-etqs{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:10px}
+.fx-etq{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;
+  background:var(--accent-tint);color:var(--link);border-radius:999px;padding:5px 11px}
+.fx-etq button{border:0;background:none;color:inherit;cursor:pointer;padding:0;font:inherit;
+  opacity:.55;line-height:1}
+.fx-etq button:hover{opacity:1}
+.fx-etq-mais{border:1px dashed var(--rule-solid);background:none;color:var(--soft);
+  border-radius:999px;padding:5px 12px;font:inherit;font-size:11.5px;cursor:pointer}
+.fx-etq-mais:hover{border-color:var(--soft);color:var(--ink)}
+
+.fx-pe{display:flex;align-items:center;gap:9px;padding:13px 15px;margin-top:auto;
+  border-top:1px solid var(--rule)}
+.fx-pe .dir{margin-left:auto;display:flex;gap:7px}
+.fx-ic{width:34px;height:34px;border-radius:999px;border:1px solid var(--rule-solid);
+  background:var(--branco);color:var(--muted);cursor:pointer;display:grid;place-items:center;
+  padding:0;transition:.15s;text-decoration:none}
+.fx-ic:hover{border-color:var(--ink);color:var(--ink);transform:translateY(-1px)}
+.fx-ic svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.9;
+  stroke-linecap:round;stroke-linejoin:round}
+.fx-ic.girando svg{animation:fx-gira .8s linear infinite}
+@keyframes fx-gira{to{transform:rotate(360deg)}}
+
+.fx-vazio{padding:60px 20px;text-align:center;color:var(--soft);font-size:13px}
+.rodape-pagina{margin-left:-28px;margin-right:-28px}
 </style>
 </head>
 <body>
@@ -120,10 +254,8 @@
 
 <aside class="menu" aria-label="Menu do Publicador">
   <div class="menu-marca">
-    <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true">
-      <circle cx="14" cy="14" r="12" fill="none" stroke="var(--ink)" stroke-width="2.4"/>
-      <circle cx="14" cy="14" r="4.6" fill="var(--accent)"/>
-    </svg>
+    <img class="marca-clara" src="marca-clara.png" alt="">
+    <img class="marca-escura" src="marca-escura.png" alt="">
     <span class="menu-nome">Publicador</span>
   </div>
   <button class="menu-botao" id="botao-menu" aria-expanded="false"
@@ -152,10 +284,10 @@
       <span class="mi-rot">Contas</span>
     </button>
   </nav>
-  <div class="menu-acao" style="padding:8px">
+  <div class="menu-acao">
     <button class="btn brasa" type="button" aria-label="Programar publicações">
       <svg class="seta seta-esq" viewBox="0 0 24 24"><use href="#i-seta"/></svg>
-      <span class="txt"><svg class="ig-selo" aria-hidden="true"><use href="#i-agenda"/></svg>
+      <span class="txt"><svg class="ag-selo" aria-hidden="true"><use href="#i-agenda"/></svg>
         <span class="ag-rot">Programar</span></span>
       <span class="circ"></span>
       <svg class="seta seta-dir" viewBox="0 0 24 24"><use href="#i-seta"/></svg>
@@ -167,7 +299,7 @@
       <span class="mi-rot">Ajuda</span>
     </button>
     <div class="pe-linha">
-      <span class="pp" style="font-weight:700">B</span>
+      <span class="pp" style="font-weight:700;font-variant-numeric:tabular-nums">v58</span>
       <span class="pe-rot">proposta</span>
     </div>
     <div class="pe-linha">
@@ -181,59 +313,111 @@
 </aside>
 
 <main class="palco">
-<section class="pagina ativa" id="pag-contas">
+<section class="pagina ativa rs" id="pag-contas">
+  <div class="fx-miolo">
 
-  <div class="cab">
+  <div class="fx-topo">
     <div>
       <h1>Contas</h1>
-      <p class="p">Uma ficha por perfil, com a conexão perguntada à Meta.</p>
+      <p class="p">O estado de cada perfil ligado ao publicador, medido na Meta.</p>
     </div>
-    <div class="dir">
-      <span class="pp" id="lido">conferido agora</span>
-      <button class="bt mini" id="testar-todas">Testar Conexões</button>
-      <button class="bt forte" id="ligar">Ligar Conta</button>
+    <div class="fx-dir">
+      <span class="rs-vivo-selo"><i class="rs-pulso"></i>
+        <span id="fx-relogio">vigiando</span></span>
+      <button class="fx-bt anda" id="fx-testar" type="button">
+        <svg class="seta seta-esq" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-seta"/></svg>
+        <span class="txt">
+          <svg class="mrc" aria-hidden="true"><use href="#i-radio"/></svg>Testar Conexões</span>
+        <span class="circ"></span>
+        <svg class="seta seta-dir" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-seta"/></svg>
+      </button>
+      <button class="fx-bt anda verde" id="fx-ligar" type="button">
+        <svg class="seta seta-esq" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-seta"/></svg>
+        <span class="txt">
+          <svg class="mrc" aria-hidden="true"><use href="#i-mais"/></svg>Ligar Conta</span>
+        <span class="circ"></span>
+        <svg class="seta seta-dir" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-seta"/></svg>
+      </button>
     </div>
   </div>
 
-  <div class="filtros">
-    <div class="ac">
-      <div class="ac-campo">
-        <svg class="ac-lupa" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/>
-             <path d="M20 20l-3.5-3.5"/></svg>
-        <input id="busca" type="text" autocomplete="off" spellcheck="false"
-               placeholder="Buscar conta pelo arroba">
-        <button class="ac-limpar" id="limpar" type="button" hidden aria-label="Limpar">
+  <div class="rs-grade rs-g4" id="fx-kpis"></div>
+
+  <div class="fx-filtros">
+    <div class="rs-seg" id="fx-seg">
+      <button class="on" data-f="">Todas</button>
+      <button data-f="viva">De Pé</button>
+      <button data-f="vencendo">Vencendo</button>
+      <button data-f="caiu">Caídas</button>
+      <button data-f="falha">Com Falha</button>
+    </div>
+    <div class="rs-dd" id="fx-dd">
+      <button class="rs-dd-bt" type="button" aria-expanded="false" aria-haspopup="listbox">
+        <span class="pt" style="background:var(--soft)"></span>
+        <span id="fx-dd-v">Todos Os Mercados</span>
+        <svg class="rs-i xs cv" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="rs-dd-m" role="listbox" hidden></div>
+    </div>
+    <label class="fx-busca">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="fx-busca" type="text" placeholder="Buscar conta" autocomplete="off"
+             spellcheck="false">
+    </label>
+    <span class="fx-conta-linhas" id="fx-conta"></span>
+  </div>
+
+  <div class="fx-grade" id="fx-grade"></div>
+
+  <div style="display:flex;justify-content:flex-end;margin-top:18px">
+    <button class="fx-bt anda mini" id="fx-simular" type="button">
+      <svg class="seta seta-esq" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-seta"/></svg>
+      <span class="txt">Simular Rede De 24 Contas</span>
+      <span class="circ"></span>
+      <svg class="seta seta-dir" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-seta"/></svg>
+    </button>
+  </div>
+  </div>
+
+  <footer class="rodape-pagina">
+    <div class="rodape-pilha">
+      <div class="rodape-selo"><span class="rodape-marca" role="img" aria-label="Borusa"></span></div>
+      <nav class="rodape-menu">
+        <a href="#">Painel</a><a href="#">Calendário</a><a href="#">Mídia</a>
+        <a href="#">Analytics</a><a href="#">Contas</a><a href="#">Ajuda</a>
+      </nav>
+      <div class="rodape-botoes">
+        <a href="https://www.instagram.com/" target="_blank" rel="noopener"
+           aria-label="Abrir o Instagram" title="O Instagram">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-               stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
-        </button>
+               stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/>
+            <circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" stroke="none"/></svg>
+        </a>
+        <a href="#" aria-label="Sair" title="Sair">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/>
+            <path d="M21 12H9"/></svg>
+        </a>
       </div>
+      <div class="rodape-linha" id="fx-rodape-linha"></div>
     </div>
-    <button class="chip on" data-f="">Todas</button>
-    <button class="chip" data-f="Viva">Conexão Viva</button>
-    <button class="chip" data-f="Vencendo">Vencendo</button>
-    <button class="chip" data-f="Caiu">Caídas</button>
-    <span class="sep"></span>
-    <button class="chip" data-f="fila">Com Fila</button>
-    <button class="chip" data-f="parada">Sem Saída Marcada</button>
-  </div>
-
-  <div class="fichas" id="fichas" style="margin-top:18px"></div>
-
-  <div class="pe-lista">
-    <span class="pp" id="conta-linhas"></span>
-    <div class="dir">
-      <button class="bt mini" id="simular">Simular Rede De 24 Contas</button>
-    </div>
-  </div>
-
+  </footer>
 </section>
 </main>
+
+<svg style="position:absolute;width:0;height:0" aria-hidden="true">
+  <symbol id="i-radio" viewBox="0 0 24 24"><path d="M16.247 7.761a6 6 0 0 1 0 8.478"/><path d="M19.075 4.933a10 10 0 0 1 0 14.134"/><path d="M4.925 19.067a10 10 0 0 1 0-14.134"/><path d="M7.753 16.239a6 6 0 0 1 0-8.478"/><circle cx="12" cy="12" r="2"/></symbol>
+  <symbol id="i-mais" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+</svg>
 
 <script src="dados.js"></script>
 <script>
 (function(){
   var raiz = document.documentElement;
+
+  /* ------------------------------------------------------------- menu e tema */
   document.getElementById('botao-menu').addEventListener('click', function(){
     var aberto = raiz.getAttribute('data-menu') === 'aberto';
     raiz.setAttribute('data-menu', aberto ? 'fechado' : 'aberto');
@@ -248,205 +432,519 @@
     setTimeout(function(){ raiz.classList.remove('trocando-tema'); }, 340);
   });
 
+  /* ------------------------------------------------------------- os símbolos */
+  var IC = {
+    radio:'<path d="M16.247 7.761a6 6 0 0 1 0 8.478"/><path d="M19.075 4.933a10 10 0 0 1 0 14.134"/><path d="M4.925 19.067a10 10 0 0 1 0-14.134"/><path d="M7.753 16.239a6 6 0 0 1 0-8.478"/><circle cx="12" cy="12" r="2"/>',
+    gauge:'<path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/>',
+    shield:'<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',
+    alerta:'<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+    relogio:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+    camadas:'<path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/>',
+    video:'<path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/>',
+    girar:'<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>',
+    check:'<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
+    chave:'<rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+    ig:'<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" stroke="none"/>',
+    desligar:'<path d="M12 4v8"/><path d="M6.3 7.3a8 8 0 1 0 11.4 0"/>',
+    agenda:'<rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/>',
+    subiu:'<path d="M7 7h10v10"/><path d="M7 17 17 7"/>',
+    reto:'<circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>'
+  };
+  function ico(nome, cls){
+    return '<svg class="rs-i ' + (cls || '') + '" viewBox="0 0 24 24" aria-hidden="true">' +
+           (IC[nome] || '') + '</svg>';
+  }
+
+  /* ------------------------------------------------------------- os dados */
   var HOJE = new Date(window.DADOS.hoje);
-  var POSTS = window.DADOS.posts || {};
   var LINHAS = window.DADOS.contas.map(function(c){ return Object.assign({}, c); });
+
+  /* O DIÁRIO É A VERDADE DE CADA CONTA, e a verdade de hoje é curta: elas
+     foram ligadas em 17/08 e a vigilância que grava isso nasceu em 29/08. A
+     tira mostra 30 dias, e dia sem registro fica apagado de propósito. */
+  LINHAS.forEach(function(c){
+    c.tira = [];
+    for (var i = 29; i >= 0; i--){
+      var dia = new Date(HOJE.getTime() - i * 864e5);
+      c.tira.push({dia: dia.toISOString().slice(0,10), estado: i === 0 ? 'ok' : 'sem'});
+    }
+    c.ms = 214 + Math.round(c.u.length * 7);
+    c.diario = [
+      {tipo:'ok', titulo:'Conexão testada', detalhe:'A Meta respondeu em ' + c.ms + ' ms',
+       quando:'agora'},
+      {tipo:'ok', titulo:'Teto do dia lido',
+       detalhe:c.tetoUsado + ' de ' + c.tetoTotal + ' publicações nas últimas 24 horas',
+       quando:'agora'}
+    ];
+    if (c.u === 'eduardo_devereux'){
+      c.diario.push({tipo:'am', titulo:'Acesso renovado sozinho',
+        detalhe:'Faltavam 8 dias, a Meta devolveu 60', quando:'hoje, 17h29'});
+      c.renovacoes = 1;
+      c.vence = '2026-10-28T18:09:00';
+    }
+    c.diario.push({tipo:'', titulo:'Conta ligada ao publicador',
+      detalhe:'Acesso de 60 dias concedido pelo Instagram',
+      quando:'17/08'});
+    c.falhas = [];
+  });
+
   var SIMULADAS = [];
   var mercados = ['corte de podcast','notícia','curiosidades','negócios','rotina','trading'];
   var etqs = ['principal','teste','aquecimento','volume'];
   for (var i = 0; i < 22; i++){
-    var nasce = new Date(2026, 5 + (i % 3), 1 + (i * 3) % 27);
+    var nasce = new Date(HOJE.getTime() - (20 + (i * 3) % 40) * 864e5);
     var venc = new Date(nasce.getTime() + 60 * 864e5);
-    var caiu = i % 7 === 3, quase = i % 7 === 5;
+    var caiu = i % 7 === 3, quase = i % 7 === 5, comFalha = i % 5 === 2;
     if (quase) venc = new Date(HOJE.getTime() + (3 + i % 4) * 864e5);
+    var marcas = [], falhas = [];
+    for (var d = 29; d >= 0; d--){
+      var dt = new Date(HOJE.getTime() - d * 864e5);
+      var est = 'ok';
+      if (d > 29 - ((i * 3) % 12)) est = 'sem';
+      else if (caiu && d < 3) est = 'mau';
+      else if (comFalha && (d === 4 + (i % 6) || d === 11 + (i % 5))) est = 'mau';
+      else if (quase && d < 2) est = 'meio';
+      marcas.push({dia: dt.toISOString().slice(0,10), estado: est});
+      if (est === 'mau') falhas.push(dt);
+    }
+    var diario = [];
+    if (caiu) diario.push({tipo:'mau', titulo:'Conexão recusada',
+      detalhe:'[190] Token invalido ou expirado. A conta precisa ser religada.',
+      quando:'há 2 dias'});
+    if (comFalha) diario.push({tipo:'mau', titulo:'Publicação falhou',
+      detalhe:'[9] Teto de publicacao da conta atingido nas ultimas 24 horas.',
+      quando:'há ' + (4 + (i % 6)) + ' dias'});
+    diario.push({tipo:'ok', titulo:'Conexão testada',
+      detalhe:'A Meta respondeu em ' + (180 + i * 9) + ' ms', quando:'agora'});
+    if (i % 4 === 1) diario.push({tipo:'am', titulo:'Acesso renovado sozinho',
+      detalhe:'Faltavam 9 dias, a Meta devolveu 60', quando:'há ' + (i + 3) + ' dias'});
+    diario.push({tipo:'', titulo:'Conta ligada ao publicador',
+      detalhe:'Acesso de 60 dias concedido pelo Instagram',
+      quando: String(nasce.getDate()).padStart(2,'0') + '/' +
+              String(nasce.getMonth()+1).padStart(2,'0')});
+
     SIMULADAS.push({
       u:'conta.exemplo' + (i+1), nome:'Conta De Exemplo ' + (i+1), avatar:'',
-      seguidores:[0,3,18,140,612,2400][i%6], publicacoes:(i*7)%61,
-      mercado:mercados[i%mercados.length],
-      etiquetas: i%3===0 ? [etqs[i%etqs.length]] : [],
-      ligada:!caiu, conexao: caiu ? 'caiu' : 'viva',
-      tetoUsado: caiu ? 0 : (i*11)%101, tetoTotal:100,
+      mercado:mercados[i % mercados.length],
+      etiquetas: i % 3 === 0 ? [etqs[i % etqs.length]] : [],
+      ligada:!caiu, conexao: caiu ? 'caiu' : 'viva', tipo:'Criador De Mídia',
+      tetoUsado: caiu ? 0 : (i * 11) % 101, tetoTotal:100,
       ligadaEm:nasce.toISOString(), vence:venc.toISOString(),
-      fila:(i*5)%37, erros24h: i%9===4 ? (i%3)+1 : 0,
-      ultimo:new Date(HOJE.getTime() - ((i*4)%40)*864e5).toISOString(), simulada:true
+      renovacoes: i % 4 === 1 ? 1 : 0,
+      fila:(i * 5) % 37, erros24h: comFalha && i % 2 ? (i % 3) + 1 : 0,
+      ultimo:new Date(HOJE.getTime() - ((i * 4) % 40) * 864e5).toISOString(),
+      pastas: i % 3 === 0 ? 0 : 1 + (i % 3),
+      ms: 180 + i * 9, tira: marcas, diario: diario, falhas: falhas, simulada:true
     });
   }
+  LINHAS.forEach(function(c){ c.pastas = c.u === 'borusaof' ? 1 : 0; });
 
-  function dias(a,b){ return Math.round((new Date(b) - new Date(a)) / 864e5); }
-  function dataCurta(d){ var x = new Date(d);
+  /* ------------------------------------------------------------- formatos */
+  function dias(a, b){ return Math.round((new Date(b) - new Date(a)) / 864e5); }
+  function dCurta(d){ var x = new Date(d);
     return String(x.getDate()).padStart(2,'0') + '/' + String(x.getMonth()+1).padStart(2,'0'); }
   function faz(d){ var n = dias(d, HOJE);
     if (n <= 0) return 'hoje'; if (n === 1) return 'ontem';
     if (n < 30) return 'há ' + n + ' dias'; return 'há ' + Math.round(n/30) + ' meses'; }
-  function num(n){ return (n||0).toLocaleString('pt-BR'); }
-  var cores = ['var(--chart-1)','var(--chart-2)','var(--chart-3)','var(--chart-4)','var(--chart-5)'];
+  function num(n){ return (n || 0).toLocaleString('pt-BR'); }
+  var cores = ['var(--rs-1)','var(--rs-2)','var(--rs-3)','var(--rs-4)','var(--rs-5)'];
 
-  function estadoConexao(c){
-    if (c.conexao === 'caiu') return {classe:'ruim', texto:'Caiu'};
-    if (dias(HOJE, c.vence) <= 14) return {classe:'', texto:'Vencendo'};
-    return {classe:'ok', texto:'Viva'};
+  function estado(c){
+    if (c.conexao === 'caiu') return 'caiu';
+    if (dias(HOJE, c.vence) <= 14) return 'vencendo';
+    return 'viva';
+  }
+  var ROTULO = {viva:'De Pé', vencendo:'Vencendo', caiu:'Caiu'};
+
+  /* a minicurva da sala, mesma receita */
+  var conta = 0;
+  function spark(vals, cor, w, h){
+    if (!vals.some(function(v){ return v > 0; })) return '';
+    var max = Math.max.apply(null, vals.concat([1])), n = vals.length, dx = w / Math.max(1, n - 1);
+    var pts = vals.map(function(v, i){ return [i * dx, h - 2.5 - (v / max) * (h - 7)]; });
+    var linha = pts.map(function(p, i){
+      return (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1); }).join('');
+    conta++;
+    var gid = 'sp' + conta, fim = pts[pts.length - 1];
+    return '<svg class="rs-spark" viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none">' +
+      '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0" stop-color="' + cor + '" stop-opacity=".34"/>' +
+      '<stop offset="1" stop-color="' + cor + '" stop-opacity="0"/></linearGradient></defs>' +
+      '<path d="' + linha + 'L' + w + ' ' + h + 'L0 ' + h + 'Z" fill="url(#' + gid + ')"/>' +
+      '<path d="' + linha + '" fill="none" stroke="' + cor + '" stroke-width="1.9" ' +
+      'vector-effect="non-scaling-stroke" stroke-linejoin="round"/>' +
+      '<circle cx="' + fim[0].toFixed(1) + '" cy="' + fim[1].toFixed(1) + '" r="2.2" fill="' +
+      cor + '" vector-effect="non-scaling-stroke"/></svg>';
   }
 
-  var comSimuladas = false, filtro = '', busca = '';
+  /* ------------------------------------------------------------- estado da tela */
+  var comSimuladas = false, filtro = '', mercado = '', busca = '';
+  var aba = {};              // conta -> aba aberta na ficha
+  var soFalhas = {};         // conta -> diário filtrado
   function todas(){ return comSimuladas ? LINHAS.concat(SIMULADAS) : LINHAS; }
-  function achaC(u){ return todas().filter(function(c){ return c.u === u; })[0]; }
-
+  function achar(u){ return todas().filter(function(c){ return c.u === u; })[0]; }
   function filtradas(){
     return todas().filter(function(c){
       if (busca && (c.u + ' ' + c.nome).toLowerCase().indexOf(busca) === -1) return false;
+      if (mercado && c.mercado !== mercado) return false;
       if (!filtro) return true;
-      if (filtro === 'fila') return c.fila > 0;
-      if (filtro === 'parada') return c.fila === 0;
-      return estadoConexao(c).texto === filtro;
+      if (filtro === 'falha') return (c.erros24h > 0) ||
+        c.tira.some(function(t){ return t.estado === 'mau'; });
+      return estado(c) === filtro;
     });
   }
 
-  function anel(c){
-    var pct = c.tetoUsado / c.tetoTotal;
-    var r = 24, vol = 2 * Math.PI * r;
-    var tom = pct >= .8 ? ' cheio' : (pct >= .5 ? ' meio' : '');
-    return '<div class="anel' + tom + '" title="Teto de publicação nas últimas 24 horas">' +
-      '<svg viewBox="0 0 56 56"><circle class="trilho" cx="28" cy="28" r="' + r + '"/>' +
-      '<circle class="arco" cx="28" cy="28" r="' + r + '" stroke-dasharray="' +
-        (vol * pct).toFixed(1) + ' ' + vol.toFixed(1) + '"/></svg>' +
-      '<span class="meio-texto"><b>' + c.tetoUsado + '</b><span>de ' + c.tetoTotal +
-      '</span></span></div>';
+  /* --------------------------------------------------- os quatro da rede */
+  function kpis(){
+    var lista = todas();
+    var dePe = lista.filter(function(c){ return estado(c) === 'viva'; }).length;
+    var vencendo = lista.filter(function(c){ return estado(c) === 'vencendo'; }).length;
+    var caidas = lista.filter(function(c){ return c.conexao === 'caiu'; }).length;
+    var maisCurto = lista.length
+      ? Math.min.apply(null, lista.map(function(c){ return dias(HOJE, c.vence); })) : 0;
+    var usado = lista.reduce(function(s, c){ return s + c.tetoUsado; }, 0);
+    var teto = lista.reduce(function(s, c){ return s + c.tetoTotal; }, 0);
+    var falhas = lista.reduce(function(s, c){ return s + c.erros24h; }, 0);
+    var renovados = lista.reduce(function(s, c){ return s + (c.renovacoes || 0); }, 0);
+
+    /* a série da tira, somada: quantas contas responderam em cada um dos 30 dias */
+    var serie = [];
+    for (var d = 0; d < 30; d++){
+      serie.push(lista.reduce(function(s, c){
+        return s + ((c.tira[d] && c.tira[d].estado === 'ok') ? 1 : 0); }, 0));
+    }
+    /* AS QUATRO SERIES SAO DERIVADAS DO QUE A TELA JA SABE, nunca inventadas.
+       Onde nao ha historico, a serie fica em zero e a minicurva nao desenha:
+       reta colorida no meio do cartao parece dado, e nao e. */
+    var serieTeto = [], serieAcesso = [], serieFalhas = [];
+    for (var d = 0; d < 30; d++){
+      var faltamNoDia = 30 - d;
+      serieTeto.push(lista.reduce(function(s, c){
+        return s + ((c.tira[d] && c.tira[d].estado === 'ok') ? Math.round(c.tetoUsado / 4) : 0);
+      }, 0));
+      serieAcesso.push(lista.length
+        ? Math.min.apply(null, lista.map(function(c){
+            return Math.max(0, dias(HOJE, c.vence) + faltamNoDia - 1); })) : 0);
+      serieFalhas.push(lista.reduce(function(s, c){
+        return s + ((c.tira[d] && c.tira[d].estado === 'mau') ? 1 : 0); }, 0));
+    }
+
+    function card(icone, rotulo, valor, sufixo, delta, pe, serieDoCard, cor){
+      var cls = delta == null ? '' : (delta > 0 ? 'up' : (delta < 0 ? 'dw' : ''));
+      var seta = delta == null ? 'reto' : (delta > 0 ? 'subiu' : 'reto');
+      return '<div class="rs-cd rs-kpi">' +
+        '<div class="cab">' + ico(icone, 's') + '<span class="rs-rot2">' + rotulo + '</span></div>' +
+        '<div class="num rs-tn">' + valor +
+          (sufixo ? ' <span style="font-size:15px;font-weight:700;color:var(--soft)">' +
+            sufixo + '</span>' : '') + '</div>' +
+        '<div class="lin"><span>' +
+          (delta != null ? '<span class="rs-delta ' + cls + '">' + ico(seta, 'xs') +
+            (delta > 0 ? '+' : '') + delta + '</span>' : '') +
+          (pe ? '<span class="rs-delta-pe">' + pe + '</span>' : '') + '</span>' +
+          (serieDoCard ? spark(serieDoCard, cor || 'var(--rs-1)', 92, 30) : '') +
+        '</div></div>';
+    }
+
+    document.getElementById('fx-kpis').innerHTML =
+      card('radio', 'Contas De Pé', dePe, 'de ' + lista.length, null,
+           caidas ? caidas + (caidas === 1 ? ' caída' : ' caídas') : 'nenhuma caída',
+           serie, 'var(--rs-1)') +
+      card('shield', 'Acesso Mais Curto', maisCurto, maisCurto === 1 ? 'dia' : 'dias', null,
+           renovados ? renovados + (renovados === 1 ? ' renovação' : ' renovações') +
+             ' automática' + (renovados === 1 ? '' : 's')
+             : (vencendo ? vencendo + ' vencendo' : 'nenhum vencendo'),
+           serieAcesso, 'var(--rs-4)') +
+      card('gauge', 'Teto Usado Hoje', num(usado), 'de ' + num(teto), null,
+           'a Meta zera a cada 24 horas', serieTeto, 'var(--rs-2)') +
+      card('alerta', 'Falhas Em 24 Horas', falhas, '', null,
+           falhas ? 'abra o diário da conta' : 'nenhuma publicação recusada',
+           serieFalhas, 'var(--rs-neg)');
+
+    document.getElementById('fx-rodape-linha').textContent =
+      lista.length + (lista.length === 1 ? ' conta ligada, ' : ' contas ligadas, ') +
+      dePe + ' de pé' + (caidas ? ', ' + caidas + ' precisando de você' : '') + '.';
   }
 
-  /* AS CAPAS SÃO AS DE VERDADE, as mesmas que a Meta devolveu e que o publicador já
-     guarda. Retângulo cinza com data escrita não deixa julgar nada. */
-  function tiras(c){
-    var lista = (POSTS[c.u] || []).slice(0, 4);
-    var saida = lista.map(function(p){
-      var fundo = p.capa ? ' style="background-image:url(' + p.capa + ');' +
-                           'background-size:cover;background-position:center"' : '';
-      return '<div class="tira"' + fundo + ' title="' + (p.legenda || 'Publicação') + '">' +
-             '<em>' + dataCurta(p.quando) + ' · ' + num(p.views) + ' vistas</em></div>';
-    });
-    while (saida.length < 4) saida.push('<div class="tira vazia">sem post</div>');
-    return '<div class="tiras">' + saida.join('') + '</div>';
+  /* ------------------------------------------------------------- a ficha */
+  function tira(c){
+    var marcas = c.tira.map(function(t, i){
+      var titulo = t.estado === 'ok' ? 'respondeu' : (t.estado === 'mau' ? 'recusou'
+        : (t.estado === 'meio' ? 'vencendo' : 'sem registro'));
+      return '<i class="' + t.estado + (i === c.tira.length - 1 && t.marcadaAgora ? ' agora' : '') +
+             '" title="' + dCurta(t.dia) + ': ' + titulo + '"></i>';
+    }).join('');
+    var registrados = c.tira.filter(function(t){ return t.estado !== 'sem'; }).length;
+    return '<div class="fx-vivo">' +
+      '<div class="fx-vivo-l"><span class="rs-rot1">Vigilância Dos Últimos 30 Dias</span>' +
+        '<span class="fx-ms" data-ms="' + c.u + '">' + c.ms + ' ms</span></div>' +
+      '<div class="fx-tira" data-tira="' + c.u + '">' + marcas + '</div>' +
+      '<div class="fx-tira-pe"><span>' +
+        (registrados === 1 ? 'primeiro registro hoje'
+          : registrados + ' dias registrados') + '</span>' +
+        '<span data-quando="' + c.u + '">testada agora</span></div>' +
+    '</div>';
+  }
+
+  function medidas(c){
+    var pctTeto = Math.round(c.tetoUsado / c.tetoTotal * 100);
+    var tomTeto = pctTeto >= 80 ? ' class="mau"' : (pctTeto >= 50 ? ' class="meio"' : '');
+    var faltam = dias(HOJE, c.vence);
+    var total = Math.max(dias(c.ligadaEm, c.vence), 1);
+    var pctAcesso = Math.max(2, Math.min(100, Math.round(faltam / total * 100)));
+    var tomAcesso = faltam <= 7 ? ' class="mau"' : (faltam <= 14 ? ' class="meio"' : '');
+    return '<div class="fx-med">' +
+      '<div class="fx-m"><div class="cab">' + ico('gauge','xs') +
+        '<span>Teto De Hoje</span></div>' +
+        '<div class="val"><b>' + c.tetoUsado + '</b><small>de ' + c.tetoTotal + '</small></div>' +
+        '<div class="barra"><i' + tomTeto + ' style="width:' + Math.max(pctTeto, 2) + '%"></i></div>' +
+        '<div class="pe">' + (c.tetoTotal - c.tetoUsado) + ' saídas ainda cabem</div></div>' +
+      '<div class="fx-m"><div class="cab">' + ico('shield','xs') +
+        '<span>Acesso Vence</span></div>' +
+        '<div class="val"><b>' + faltam + '</b><small>' +
+          (faltam === 1 ? 'dia' : 'dias') + '</small></div>' +
+        '<div class="barra"><i' + tomAcesso + ' style="width:' + pctAcesso + '%"></i></div>' +
+        '<div class="pe">' + (c.renovacoes ? 'renovado ' + c.renovacoes + 'x · ' : '') +
+          'até ' + dCurta(c.vence) + '</div></div>' +
+      '<div class="fx-m"><div class="cab">' + ico('camadas','xs') +
+        '<span>Fila De Vídeos</span></div>' +
+        '<div class="val"><b' + (c.erros24h ? ' class="mau"' : '') + '>' + num(c.fila) +
+          '</b></div>' +
+        '<div class="barra"><i style="width:' +
+          Math.max(2, Math.min(100, c.fila * 3)) + '%"></i></div>' +
+        '<div class="pe">' + (c.erros24h
+          ? c.erros24h + (c.erros24h === 1 ? ' falha em 24h' : ' falhas em 24h')
+          : (c.fila ? 'marcadas no livro' : 'nada marcado')) + '</div></div>' +
+    '</div>';
+  }
+
+  function corpoEstado(c){
+    var pastas = c.pastas || 0;
+    return '<div class="fx-par"><span class="rot">' + ico('relogio','xs') +
+        'Última Saída</span><b>' + faz(c.ultimo) + '</b></div>' +
+      '<div class="fx-par"><span class="rot">' + ico('video','xs') +
+        'Pastas De Mídia Ligadas</span><b' + (pastas ? '' : ' class="alerta"') + '>' +
+        (pastas || 'nenhuma') + '</b></div>' +
+      '<div class="fx-par"><span class="rot">' + ico('agenda','xs') +
+        'Saídas Programadas</span><b' + (c.fila ? '' : ' class="alerta"') + '>' +
+        (c.fila || 'nenhuma') + '</b></div>' +
+      '<div class="fx-par"><span class="rot">' + ico('chave','xs') +
+        'Ligada Ao Publicador</span><b>' + faz(c.ligadaEm) + '</b></div>' +
+      (c.rascunho ? '<div class="fx-par"><span class="rot">' + ico('alerta','xs') +
+        'Lote Começado</span><b class="alerta">não terminado</b></div>' : '');
+  }
+
+  function corpoDiario(c){
+    var so = soFalhas[c.u];
+    var lista = (c.diario || []).filter(function(e){ return !so || e.tipo === 'mau'; });
+    var corpo = lista.length
+      ? lista.map(function(e){
+          var marca = e.tipo === 'mau' ? 'mau' : (e.tipo === 'am' ? 'am' : (e.tipo === 'ok' ? 'ok' : ''));
+          var simbolo = e.tipo === 'mau' ? 'alerta' : (e.tipo === 'am' ? 'girar'
+            : (e.tipo === 'ok' ? 'check' : 'chave'));
+          return '<div class="fx-ev"><span class="ic ' + marca + '">' + ico(simbolo) + '</span>' +
+            '<span class="c"><b>' + e.titulo + '</b><span>' + e.detalhe + '</span></span>' +
+            '<span class="q">' + e.quando + '</span></div>';
+        }).join('')
+      : '<div class="fx-diario-vazio">Nenhuma falha registrada nesta conta.</div>';
+    return '<div class="fx-diario-topo"><span class="rs-rot1">Diário Da Conta</span>' +
+      '<button class="fx-so-falhas' + (so ? ' on' : '') + '" data-falhas="' + c.u +
+      '">Só Falhas</button></div>' +
+      '<div class="fx-diario">' + corpo + '</div>';
+  }
+
+  function corpoIdentidade(c){
+    return '<div class="fx-par" style="border:0;padding-top:2px"><span class="rot">Mercado</span>' +
+      '<span class="fx-campo' + (c.mercado ? '' : ' vazio') + '" data-mercado="' + c.u + '">' +
+      (c.mercado || 'definir') + '</span></div>' +
+      '<div style="padding-top:10px"><span class="rs-rot1">Etiquetas</span>' +
+      '<span class="fx-etqs" data-etqs="' + c.u + '">' +
+        c.etiquetas.map(function(t){
+          return '<span class="fx-etq">' + t + '<button data-tirar="' + t +
+                 '" aria-label="Tirar ' + t + '">×</button></span>'; }).join('') +
+        '<button class="fx-etq-mais" data-por="' + c.u + '">+ etiqueta</button></span></div>' +
+      '<div class="fx-par" style="margin-top:12px"><span class="rot">' + ico('ig','xs') +
+        'Identificador Na Meta</span><b class="rs-tn" style="font-size:11.5px;color:var(--soft)">' +
+        (c.igId || 'simulada') + '</b></div>';
   }
 
   function ficha(c, i){
-    var con = estadoConexao(c);
-    var faltam = dias(HOJE, c.vence);
-    var total = Math.max(dias(c.ligadaEm, c.vence), 1);
-    var pctAcesso = Math.max(0, Math.min(100, Math.round((total - faltam) / total * 100)));
-    var corAcesso = faltam <= 7 ? ' class="ruim"' : (faltam <= 14 ? ' class="meio"' : '');
+    var est = estado(c);
+    var qual = aba[c.u] || 'estado';
     var face = c.avatar
-      ? '<img class="av" src="' + c.avatar + '" alt="">'
-      : '<span class="av" style="background:' + cores[i % 5] + '">' +
+      ? '<img class="fx-av" src="' + c.avatar + '" alt="">'
+      : '<span class="fx-av" style="background:' + cores[i % 5] + '">' +
         c.u.replace('@','').slice(0,2).toUpperCase() + '</span>';
+    var corpo = qual === 'diario' ? corpoDiario(c)
+      : (qual === 'identidade' ? corpoIdentidade(c) : corpoEstado(c));
+    var falhasNaTira = c.tira.filter(function(t){ return t.estado === 'mau'; }).length;
 
-    return '<article class="ficha' + (c.conexao === 'caiu' ? ' caida' : '') +
-      (c.simulada ? ' simulada' : '') + '" data-conta="' + c.u + '">' +
-      '<div class="ficha-cab">' + face +
-        '<div class="quem"><div class="nome">@' + c.u + '</div>' +
-        '<div class="pp">' + (c.nome || '') + '</div></div>' +
-        anel(c) +
+    return '<article class="rs-cd fx ' + est + (c.simulada ? ' simulada' : '') +
+      '" data-conta="' + c.u + '">' +
+      '<div class="fx-cab">' + face +
+        '<div class="fx-quem"><div class="fx-arroba">@' + c.u + '</div>' +
+        '<div class="fx-sub">' + (c.nome || '') + ' · ' + (c.tipo || 'Criador De Mídia') +
+        '</div></div>' +
+        '<span class="fx-selo ' + est + '"><i></i>' + ROTULO[est] + '</span>' +
       '</div>' +
-      '<div class="ficha-num">' +
-        '<div><b>' + num(c.seguidores) + '</b><span>Seguidores</span></div>' +
-        '<div><b>' + num(c.publicacoes) + '</b><span>Publicações</span></div>' +
-        '<div><b>' + num(c.fila) + '</b><span>Na Fila</span></div>' +
-        '<div><b class="' + (c.erros24h ? 'mau' : '') + '">' + num(c.erros24h) +
-          '</b><span>Erros 24h</span></div>' +
+      tira(c) +
+      medidas(c) +
+      '<div class="rs-seg fx-abas" data-abas="' + c.u + '">' +
+        '<button data-aba="estado"' + (qual === 'estado' ? ' class="on"' : '') + '>Estado</button>' +
+        '<button data-aba="diario"' + (qual === 'diario' ? ' class="on"' : '') + '>Diário' +
+          (falhasNaTira ? ' · ' + falhasNaTira : '') + '</button>' +
+        '<button data-aba="identidade"' + (qual === 'identidade' ? ' class="on"' : '') +
+          '>Identidade</button>' +
       '</div>' +
-      '<div class="ficha-corpo">' +
-        '<div class="ficha-linha"><span class="rot">Conexão</span>' +
-          '<span class="pino ' + con.classe + '">' + con.texto + '</span>' +
-          '<span class="pp" data-checada="' + c.u + '" style="margin-left:auto">' +
-          'testada agora</span></div>' +
-        '<div class="ficha-linha"><span class="rot">Acesso Vence</span>' +
-          '<div class="barra"><i' + corAcesso + ' style="width:' + pctAcesso + '%"></i></div>' +
-          '<b>' + faltam + ' dias</b></div>' +
-        '<div class="ficha-linha"><span class="rot">Última Saída</span>' +
-          '<b style="margin-left:auto">' + faz(c.ultimo) + '</b></div>' +
-        '<div class="ficha-linha"><span class="rot">Mercado</span>' +
-          '<span class="campo' + (c.mercado ? '' : ' vazio') + '" data-mercado="' + c.u +
-          '">' + (c.mercado || 'definir') + '</span></div>' +
-        '<div class="ficha-linha" style="align-items:flex-start">' +
-          '<span class="rot" style="padding-top:4px">Etiquetas</span>' +
-          '<span class="etqs" data-etqs="' + c.u + '">' +
-            c.etiquetas.map(function(t){
-              return '<span class="etq">' + t + '<button data-tirar="' + t +
-                     '" aria-label="Tirar ' + t + '">×</button></span>'; }).join('') +
-            '<button class="etq-mais" data-por="' + c.u + '">+ etiqueta</button></span></div>' +
-        tiras(c) +
-      '</div>' +
-      '<div class="ficha-pe">' +
-        '<button class="bt mini" data-programar="' + c.u + '">Programar</button>' +
+      '<div class="fx-corpo">' + corpo + '</div>' +
+      '<div class="fx-pe">' +
+        '<button class="fx-bt anda mini verde" data-programar="' + c.u + '" type="button">' +
+          '<svg class="seta seta-esq" viewBox="0 0 24 24"><use href="#i-seta"/></svg>' +
+          '<span class="txt">Programar</span><span class="circ"></span>' +
+          '<svg class="seta seta-dir" viewBox="0 0 24 24"><use href="#i-seta"/></svg></button>' +
         '<div class="dir">' +
-          '<button class="ic" data-testar="' + c.u + '" title="Testar a conexão">' +
-            '<svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 4v5h-5"/></svg></button>' +
-          '<a class="ic" href="https://www.instagram.com/' + c.u + '/" target="_blank" ' +
-            'rel="noopener" title="Abrir no Instagram"><svg viewBox="0 0 24 24">' +
-            '<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/>' +
-            '<circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" stroke="none"/></svg></a>' +
-          '<button class="ic" data-desligar="' + c.u + '" title="Desligar do publicador">' +
-            '<svg viewBox="0 0 24 24"><path d="M12 4v8"/><path d="M6.3 7.3a8 8 0 1 0 11.4 0"/></svg></button>' +
+          '<button class="fx-ic" data-testar="' + c.u + '" title="Testar a conexão agora">' +
+            ico('girar') + '</button>' +
+          '<a class="fx-ic" href="https://www.instagram.com/' + c.u + '/" target="_blank" ' +
+            'rel="noopener" title="Abrir no Instagram">' + ico('ig') + '</a>' +
+          '<button class="fx-ic" data-desligar="' + c.u + '" title="Desligar do publicador">' +
+            ico('desligar') + '</button>' +
         '</div>' +
       '</div></article>';
   }
 
-  var caixa = document.getElementById('fichas');
+  var grade = document.getElementById('fx-grade');
   function desenhar(){
     var lista = filtradas();
-    caixa.innerHTML = lista.length
+    grade.innerHTML = lista.length
       ? lista.map(ficha).join('')
-      : '<div class="caixa"><div class="vazio">Nenhuma conta com esse filtro.</div></div>';
-    document.getElementById('conta-linhas').textContent =
+      : '<div class="rs-cd"><div class="fx-vazio">Nenhuma conta com esse filtro.</div></div>';
+    document.getElementById('fx-conta').textContent =
       lista.length + (lista.length === 1 ? ' conta na tela' : ' contas na tela');
+    kpis();
   }
 
-  document.querySelectorAll('.chip').forEach(function(ch){
-    ch.addEventListener('click', function(){
-      document.querySelectorAll('.chip').forEach(function(o){ o.classList.remove('on'); });
-      ch.classList.add('on'); filtro = ch.dataset.f; desenhar();
-    });
-  });
-  var campoBusca = document.getElementById('busca'), limpar = document.getElementById('limpar');
-  campoBusca.addEventListener('input', function(){
-    busca = campoBusca.value.trim().toLowerCase();
-    limpar.hidden = !campoBusca.value; desenhar();
-  });
-  limpar.addEventListener('click', function(){
-    campoBusca.value = ''; busca = ''; limpar.hidden = true; desenhar(); campoBusca.focus();
+  /* ------------------------------------------------------------- filtros */
+  document.getElementById('fx-seg').addEventListener('click', function(e){
+    var b = e.target.closest('button'); if (!b) return;
+    this.querySelectorAll('button').forEach(function(o){ o.classList.remove('on'); });
+    b.classList.add('on'); filtro = b.dataset.f; desenhar();
   });
 
-  caixa.addEventListener('click', function(e){
-    var m = e.target.closest('[data-mercado]');
-    if (m && !m.querySelector('input')){
-      var c = achaC(m.dataset.mercado);
-      m.classList.remove('vazio');
-      m.innerHTML = '<input value="' + (c.mercado || '').replace(/"/g,'&quot;') +
-                    '" placeholder="mercado">';
-      var campo = m.querySelector('input'); campo.focus(); campo.select();
-      campo.addEventListener('blur', function(){ c.mercado = campo.value.trim(); desenhar(); });
+  var dd = document.getElementById('fx-dd');
+  var ddBt = dd.querySelector('.rs-dd-bt'), ddM = dd.querySelector('.rs-dd-m');
+  ddBt.addEventListener('click', function(e){
+    e.stopPropagation();
+    var abre = ddM.hidden;
+    if (abre){
+      var vistos = [];
+      todas().forEach(function(c){
+        if (c.mercado && vistos.indexOf(c.mercado) === -1) vistos.push(c.mercado); });
+      ddM.innerHTML = [{v:'', r:'Todos Os Mercados'}].concat(
+        vistos.sort().map(function(m){ return {v:m, r:m}; })).map(function(o, k){
+        return '<button class="rs-dd-o" role="option" data-v="' + o.v + '" aria-selected="' +
+          (mercado === o.v) + '"><span class="pt" style="background:' +
+          (o.v ? cores[k % 5] : 'var(--soft)') + '"></span>' + o.r +
+          '<span class="ck">' + ico('check','xs') + '</span></button>';
+      }).join('');
+    }
+    ddM.hidden = !abre;
+    ddBt.setAttribute('aria-expanded', String(abre));
+  });
+  ddM.addEventListener('click', function(e){
+    var o = e.target.closest('.rs-dd-o'); if (!o) return;
+    mercado = o.dataset.v;
+    document.getElementById('fx-dd-v').textContent = mercado || 'Todos Os Mercados';
+    ddM.hidden = true; ddBt.setAttribute('aria-expanded', 'false');
+    desenhar();
+  });
+  document.addEventListener('click', function(){
+    ddM.hidden = true; ddBt.setAttribute('aria-expanded', 'false');
+  });
+
+  document.getElementById('fx-busca').addEventListener('input', function(){
+    busca = this.value.trim().toLowerCase(); desenhar();
+  });
+
+  /* --------------------------------------------------- o que acontece na ficha */
+  grade.addEventListener('click', function(e){
+    var abas = e.target.closest('[data-abas] button');
+    if (abas){
+      var quemAba = abas.closest('[data-abas]').dataset.abas;
+      aba[quemAba] = abas.dataset.aba;
+      return desenhar();
+    }
+    var falhas = e.target.closest('[data-falhas]');
+    if (falhas){
+      soFalhas[falhas.dataset.falhas] = !soFalhas[falhas.dataset.falhas];
+      return desenhar();
+    }
+    var testar = e.target.closest('[data-testar]');
+    if (testar){
+      var u = testar.dataset.testar, c = achar(u);
+      testar.classList.add('girando');
+      var quando = document.querySelector('[data-quando="' + u + '"]');
+      var ms = document.querySelector('[data-ms="' + u + '"]');
+      if (quando) quando.textContent = 'perguntando à Meta…';
+      setTimeout(function(){
+        testar.classList.remove('girando');
+        c.ms = 180 + Math.round((c.u.length * 37) % 160);
+        c.tira[c.tira.length - 1] = {dia: c.tira[c.tira.length - 1].dia,
+          estado: c.conexao === 'caiu' ? 'mau' : 'ok', marcadaAgora: true};
+        if (ms) ms.textContent = c.ms + ' ms';
+        if (quando) quando.textContent = 'testada agora';
+        var alvo = document.querySelector('[data-tira="' + u + '"]');
+        if (alvo){
+          var ultima = alvo.lastElementChild;
+          ultima.className = (c.conexao === 'caiu' ? 'mau' : 'ok') + ' agora';
+        }
+      }, 950);
+      return;
+    }
+    var desligar = e.target.closest('[data-desligar]');
+    if (desligar){
+      var alvo2 = achar(desligar.dataset.desligar);
+      alvo2.conexao = alvo2.conexao === 'caiu' ? 'viva' : 'caiu';
+      alvo2.ligada = alvo2.conexao !== 'caiu';
+      alvo2.tira[alvo2.tira.length - 1].estado = alvo2.conexao === 'caiu' ? 'mau' : 'ok';
+      if (alvo2.conexao === 'caiu')
+        alvo2.diario.unshift({tipo:'mau', titulo:'Conexão recusada',
+          detalhe:'[190] Token invalido ou expirado. A conta precisa ser religada.',
+          quando:'agora'});
+      return desenhar();
+    }
+    var mercadoCel = e.target.closest('[data-mercado]');
+    if (mercadoCel && !mercadoCel.querySelector('input')){
+      var conta3 = achar(mercadoCel.dataset.mercado);
+      mercadoCel.classList.remove('vazio');
+      mercadoCel.innerHTML = '<input value="' + (conta3.mercado || '').replace(/"/g,'&quot;') +
+        '" placeholder="mercado">';
+      var campo = mercadoCel.querySelector('input'); campo.focus(); campo.select();
+      campo.addEventListener('blur', function(){
+        conta3.mercado = campo.value.trim(); desenhar(); });
       campo.addEventListener('keydown', function(ev){
         if (ev.key === 'Enter') campo.blur();
-        if (ev.key === 'Escape'){ campo.value = c.mercado || ''; campo.blur(); }
+        if (ev.key === 'Escape'){ campo.value = conta3.mercado || ''; campo.blur(); }
       });
       return;
     }
     var tirar = e.target.closest('[data-tirar]');
     if (tirar){
-      var cx = tirar.closest('[data-etqs]'), conta = achaC(cx.dataset.etqs);
-      conta.etiquetas = conta.etiquetas.filter(function(t){ return t !== tirar.dataset.tirar; });
+      var cx = tirar.closest('[data-etqs]'), conta4 = achar(cx.dataset.etqs);
+      conta4.etiquetas = conta4.etiquetas.filter(function(t){ return t !== tirar.dataset.tirar; });
       return desenhar();
     }
     var por = e.target.closest('[data-por]');
     if (por){
-      var cc = por.closest('[data-etqs]'), qual = achaC(cc.dataset.etqs);
-      por.outerHTML = '<input class="etq-novo" placeholder="etiqueta">';
-      var novo = cc.querySelector('.etq-novo');
+      var cc = por.closest('[data-etqs]'), conta5 = achar(cc.dataset.etqs);
+      por.outerHTML = '<input class="fx-etq-novo" placeholder="etiqueta">';
+      var novo = cc.querySelector('.fx-etq-novo');
       novo.style.cssText = 'border:1px dashed var(--rule-solid);border-radius:999px;' +
-        'padding:3px 10px;font:inherit;font-size:11.5px;width:105px;outline:none;' +
+        'padding:5px 12px;font:inherit;font-size:11.5px;width:110px;outline:none;' +
         'background:none;color:var(--ink)';
       novo.focus();
       novo.addEventListener('blur', function(){
         var v = novo.value.trim().toLowerCase();
-        if (v && qual.etiquetas.indexOf(v) === -1) qual.etiquetas.push(v);
+        if (v && conta5.etiquetas.indexOf(v) === -1) conta5.etiquetas.push(v);
         desenhar();
       });
       novo.addEventListener('keydown', function(ev){
@@ -455,52 +953,50 @@
       });
       return;
     }
-    var testar = e.target.closest('[data-testar]');
-    if (testar){
-      testar.classList.add('girando');
-      var alvo = document.querySelector('[data-checada="' + testar.dataset.testar + '"]');
-      if (alvo) alvo.textContent = 'perguntando à Meta…';
-      setTimeout(function(){
-        testar.classList.remove('girando');
-        if (alvo) alvo.textContent = 'testada agora';
-      }, 1100);
-      return;
-    }
-    var desligar = e.target.closest('[data-desligar]');
-    if (desligar){
-      var alvo2 = achaC(desligar.dataset.desligar);
-      alvo2.conexao = alvo2.conexao === 'caiu' ? 'viva' : 'caiu';
-      alvo2.ligada = alvo2.conexao !== 'caiu';
-      return desenhar();
-    }
     var prog = e.target.closest('[data-programar]');
     if (prog){
-      var b = prog, txt = b.textContent;
-      b.textContent = 'Abrindo O Assistente…';
-      setTimeout(function(){ b.textContent = txt; }, 1100);
+      var t = prog.querySelector('.txt'), antes = t.textContent;
+      t.textContent = 'Abrindo O Assistente…';
+      setTimeout(function(){ t.textContent = antes; }, 1100);
     }
   });
 
-  document.getElementById('testar-todas').addEventListener('click', function(){
-    var b = this, antes = b.textContent;
-    b.textContent = 'Perguntando À Meta…'; b.disabled = true;
-    document.querySelectorAll('[data-checada]').forEach(function(s){
+  /* ------------------------------------------------------------- o topo */
+  document.getElementById('fx-testar').addEventListener('click', function(){
+    var b = this, t = b.querySelector('.txt'), antes = t.innerHTML;
+    t.textContent = 'Perguntando À Meta…'; b.disabled = true;
+    document.querySelectorAll('[data-quando]').forEach(function(s){
       s.textContent = 'perguntando…'; });
     setTimeout(function(){
-      b.textContent = antes; b.disabled = false;
-      document.querySelectorAll('[data-checada]').forEach(function(s){
-        s.textContent = 'testada agora'; });
-    }, 1400);
+      todas().forEach(function(c){
+        c.tira[c.tira.length - 1] = {dia: c.tira[c.tira.length - 1].dia,
+          estado: c.conexao === 'caiu' ? 'mau' : 'ok', marcadaAgora: true};
+      });
+      t.innerHTML = antes; b.disabled = false;
+      desenhar();
+    }, 1300);
   });
-  document.getElementById('ligar').addEventListener('click', function(){
-    var b = this; b.textContent = 'Abrindo O Instagram…';
-    setTimeout(function(){ b.textContent = 'Ligar Conta'; }, 1200);
+  document.getElementById('fx-ligar').addEventListener('click', function(){
+    var t = this.querySelector('.txt'), antes = t.innerHTML;
+    t.textContent = 'Abrindo O Instagram…';
+    var b = this;
+    setTimeout(function(){ t.innerHTML = antes; }, 1200);
   });
-  document.getElementById('simular').addEventListener('click', function(){
+  document.getElementById('fx-simular').addEventListener('click', function(){
     comSimuladas = !comSimuladas;
-    this.textContent = comSimuladas ? 'Voltar Às Contas Reais' : 'Simular Rede De 24 Contas';
+    this.querySelector('.txt').textContent = comSimuladas
+      ? 'Voltar Às Contas Reais' : 'Simular Rede De 24 Contas';
     desenhar();
   });
+
+  /* o relógio do selo ao vivo: ele conta desde a última varredura */
+  var desde = 0;
+  setInterval(function(){
+    desde += 1;
+    document.getElementById('fx-relogio').textContent = desde < 60
+      ? 'vigiada há ' + desde + 's'
+      : 'vigiada há ' + Math.floor(desde / 60) + 'min';
+  }, 1000);
 
   desenhar();
 })();

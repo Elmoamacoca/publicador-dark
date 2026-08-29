@@ -17,3 +17,5 @@ npm-debug.log
 # gerados do build das propostas de layout (o dados.js leva capa e retrato das contas)
 docs/propostas/**/painel.css
 docs/propostas/**/dados.js
+docs/propostas/**/sala.css
+docs/propostas/**/marca-*.png
