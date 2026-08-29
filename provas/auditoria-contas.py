@@ -254,79 +254,70 @@ def main():
         pag.wait_for_timeout(500)
 
         # ------------------------------------------------ a janela de ligar conta
-        # ELA E' A CORRECAO DO ERRO DE 29/08. O botao mandava direto para a Meta e a
-        # Meta respondeu "Invalid redirect_uri" sem dizer o que fazer. Nao existe
-        # rota que pergunte a ela se o endereco esta cadastrado, entao o que a tela
-        # deve e' mostrar o endereco exato, copiavel, e onde ele precisa estar.
+        # UM METODO SO', UMA ETAPA POR VEZ. As duas regras sao dele, de 29/08, e a
+        # auditoria cobra as duas: nao pode existir seletor de metodo, e a etapa 1
+        # nao pode ja' mostrar o campo que e' da etapa 2.
         pag.click('[data-acao="ligar"]')
-        pag.wait_for_timeout(2500)
-        anota("Ligar Conta abre o passo a passo, e nao o Instagram direto",
+        pag.wait_for_timeout(2200)
+        anota("Ligar Conta abre a janela, e nao o Instagram direto",
               pag.eval_on_selector("#ct-jan", "e => !e.hidden")
               and "instagram.com/oauth" not in pag.url, pag.url[:60])
+        anota("nao ha mais de um metodo na tela",
+              pag.eval_on_selector_all("#ct-cam, [data-cam]", "e => e.length") == 0)
+        pontos = pag.eval_on_selector_all(".ct-trilha i", "e => e.length")
+        anota("a trilha mostra as tres etapas", pontos == 3, f"{pontos} ponto(s)")
+        anota("a etapa 1 e' a que esta acesa",
+              pag.eval_on_selector(".ct-trilha i", "e => e.classList.contains('agora')"))
+        et1 = pag.eval_on_selector("#ct-jan-corpo", "e => e.textContent")
+        anota("a etapa 1 pede uma coisa so': gerar o token",
+              "Gere O Token Na Meta" in et1)
+        anota("a etapa 1 NAO mostra o campo da etapa 2",
+              pag.eval_on_selector_all("#ct-token", "e => e.length") == 0)
+        anota("a etapa 1 leva ao painel da Meta",
+              pag.eval_on_selector_all(
+                  '#ct-jan-corpo a[href*="developers.facebook.com"]', "e => e.length") == 1)
+        pag.screenshot(path=os.path.join(SAIDA, "contas-ligar-1.png"))
 
-        # SAO DOIS CAMINHOS, e o curto (colar o token que a Meta gera na tela dela)
-        # abre primeiro, porque e' o unico que funciona sem cadastro nenhum.
-        abas = pag.eval_on_selector_all("#ct-cam button", "e => e.length")
-        anota("a janela oferece os dois caminhos", abas == 2, f"{abas} aba(s)")
-        anota("o caminho curto abre primeiro",
-              pag.eval_on_selector('#ct-cam [data-cam="colar"]',
-                                   "e => e.classList.contains('on')"))
-        anota("o caminho curto tem onde colar o token",
-              pag.eval_on_selector_all("#ct-token", "e => e.length") == 1)
-        anota("o caminho curto tem o botao de ligar",
-              pag.eval_on_selector_all('#ct-jan-pe [data-acao="colar"]',
-                                       "e => e.length") == 1)
-        texto_colar = pag.eval_on_selector("#ct-jan-corpo", "e => e.textContent")
-        anota("o caminho curto diz onde a Meta gera o token",
-              "Gerar token de acesso" in texto_colar)
-        anota("o caminho curto nao promete token eterno",
-              "Não existe token eterno" in texto_colar)
-        pag.screenshot(path=os.path.join(SAIDA, "contas-janela-colar.png"))
-        # botao de ligar sem token nenhum nao pode disparar pedido
-        antes_pedidos = len([u for u in rede if "/contas/colar" in u])
-        pag.click('#ct-jan-pe [data-acao="colar"]')
+        pag.click('[data-acao="etapa-avancar"]')
         pag.wait_for_timeout(700)
+        et2 = pag.eval_on_selector("#ct-jan-corpo", "e => e.textContent")
+        anota("avancar leva para a etapa 2", "Cole O Token Aqui" in et2)
+        anota("a etapa 2 tem o campo do token",
+              pag.eval_on_selector_all("#ct-token", "e => e.length") == 1)
+        anota("a etapa 2 nao repete o texto da etapa 1",
+              "Gere O Token Na Meta" not in et2)
+        anota("a etapa 2 tem como voltar",
+              pag.eval_on_selector_all('[data-acao="etapa-voltar"]', "e => e.length") == 1)
+        pag.screenshot(path=os.path.join(SAIDA, "contas-ligar-2.png"))
+
+        # ligar sem token nao pode disparar pedido, e tem que avisar em vez de calar
+        antes_pedidos = len([u for u in rede if "/contas/colar" in u])
+        pag.click('[data-acao="colar"]')
+        pag.wait_for_timeout(800)
         anota("ligar sem token nao chama o servidor",
               len([u for u in rede if "/contas/colar" in u]) == antes_pedidos)
+        anota("ligar sem token avisa em vez de calar",
+              pag.eval_on_selector_all(".ct-erro", "e => e.length") == 1)
 
-        pag.click('#ct-cam [data-cam="oauth"]')
+        pag.click('[data-acao="etapa-voltar"]')
         pag.wait_for_timeout(600)
-        passos = pag.eval_on_selector_all("#ct-jan-corpo .ct-pss", "e => e.length")
-        anota("o caminho de tela tem os quatro passos", passos == 4, f"{passos} passo(s)")
-        # NEGRITO NO MEIO DA FRASE TEM QUE CONTINUAR NO MEIO DA FRASE. A regra do
-        # titulo do passo (`b` em bloco) pegava tambem os negritos do texto, e o
-        # passo saia picado em cinco pedacos, um por palavra grifada.
-        picado = pag.evaluate("""() => [...document.querySelectorAll(
-                '#ct-jan-corpo p b, #ct-jan-corpo li b')]
-            .filter(b => getComputedStyle(b).display !== 'inline')
-            .map(b => b.textContent.trim().slice(0, 24))""")
-        anota("negrito no meio da frase nao quebra linha", not picado, str(picado))
+        anota("voltar retorna para a etapa 1",
+              "Gere O Token Na Meta" in pag.eval_on_selector("#ct-jan-corpo",
+                                                             "e => e.textContent"))
+
+        # a rota que a etapa 2 usa e' de verdade: token inventado leva recusa da META,
+        # e a recusa chega escrita. Rota que engole erro de token grava conta pela
+        # metade, com o cofre mexido e nada funcionando.
         d = pag.evaluate("""async () => {
-            const r = await fetch('/contas/ligar', {cache: 'no-store'});
+            const r = await fetch('/contas/colar', {method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({token: 'IG' + 'Q'.repeat(70)})});
             return {codigo: r.status, corpo: await r.json()};
         }""")
-        url = (d.get("corpo") or {}).get("url", "")
-        anota("Ligar Conta monta a autorizacao do Instagram",
-              "instagram.com/oauth/authorize" in url,
-              (d.get("corpo") or {}).get("erro", "")[:80])
-        mostrado = pag.eval_on_selector("#ct-jan-corpo .ct-cod code",
-                                        "e => e.textContent.trim()")
-        anota("o endereco que a janela mostra e' o mesmo que vai para a Meta",
-              bool(mostrado) and mostrado in urllib.parse.unquote(url), mostrado)
-        anota("da para copiar o endereco sem digitar",
-              pag.eval_on_selector_all("#ct-jan-corpo [data-copiar]", "e => e.length") == 1)
-        texto_ligar = pag.eval_on_selector("#ct-jan-corpo", "e => e.textContent")
-        anota("a janela diz onde cadastrar o endereco na Meta",
-              "URIs de redirecionamento" in texto_ligar)
-        anota("a janela avisa do erro que a Meta devolve se faltar o cadastro",
-              "Invalid redirect_uri" in texto_ligar)
-        anota("a janela leva ao painel da Meta",
-              pag.eval_on_selector_all(
-                  '#ct-jan-corpo a[href*="developers.facebook.com"]', "e => e.length") >= 1)
-        anota("o botao de autorizar esta no pe da janela",
-              pag.eval_on_selector_all('#ct-jan-pe [data-acao="autorizar"]',
-                                       "e => e.length") == 1)
-        pag.screenshot(path=os.path.join(SAIDA, "contas-janela-ligar.png"))
+        anota("colar token inventado leva recusa escrita da Meta",
+              d.get("codigo") == 400 and bool((d.get("corpo") or {}).get("erro")),
+              str((d.get("corpo") or {}).get("erro", ""))[:70])
+
         pag.mouse.click(20, 20)
         pag.wait_for_timeout(500)
         anota("clicar fora fecha a janela", pag.eval_on_selector("#ct-jan", "e => e.hidden"))

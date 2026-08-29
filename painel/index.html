@@ -140,7 +140,7 @@ d.setAttribute("data-menu",localStorage.getItem("pub-menu")||"fechado");})();</s
          numero sobe a cada entrega: se ele nao subiu na tela dele, e' cache, e nao ha o
          que discutir sobre o desenho. -->
     <div class="pe-linha">
-      <span class="pp" style="font-weight:700;font-variant-numeric:tabular-nums">v60</span>
+      <span class="pp" style="font-weight:700;font-variant-numeric:tabular-nums">v61</span>
       <span class="pe-rot">29/08 · no ar</span>
     </div>
     <div class="pe-linha">
@@ -909,28 +909,27 @@ pode perder o lugar a cada pergunta.</p>
   <li><b>Testar Conexões</b> pergunta à Meta na hora e abre uma <b>janela por conta</b>
       com o caminho inteiro: quem a conta é, quantos dias o acesso ainda tem, quanto
       ainda cabe hoje e em quantos milissegundos a Meta respondeu.</li>
-  <li><b>Ligar Conta</b> abre o passo a passo, com <b>dois caminhos</b>. O curto é
-      colar o token que a própria Meta gera na tela de configuração do aplicativo. O
-      outro é autorizar no site do Instagram e voltar para cá.</li>
+  <li><b>Ligar Conta</b> abre um passo a passo de três etapas, uma por vez: gerar o
+      token na Meta, colar aqui, pronto.</li>
   <li><b>Renovar</b> troca o acesso agora, sem esperar o prazo.</li>
   <li><b>Desligar</b> apaga o acesso desta máquina. <b>O diário e o histórico ficam:</b>
       desligar é dizer "não opere mais por aqui", não "apague o que aconteceu".</li>
 </ol>
 
-<h3>Os dois caminhos de ligar uma conta</h3>
+<h3>Ligar uma conta: um método só, três etapas</h3>
+<p>O botão abre uma etapa por vez, e cada etapa pede uma coisa.</p>
 <ol>
-  <li><b>Colar token (o curto).</b> No aplicativo da Meta, em Instagram → Configuração da
-      API com login do Instagram, o bloco <b>Gerar token de acesso</b> conecta a conta e
-      entrega o token. Você cola aqui, o publicador pergunta à Meta de quem ele é e liga.
-      <b>Não precisa de endereço cadastrado, nem de Página do Facebook, nem de convite de
-      conta de teste.</b></li>
-  <li><b>Autorizar na tela (o OAuth).</b> Mais confortável no dia a dia, porque cada conta
-      nova vira um clique. Em troca, exige um cadastro único: o endereço
-      <code>https://postador.borusa.com.br/contas/voltar</code> precisa estar em
-      Configurações de login da empresa → URIs de redirecionamento do OAuth,
-      <b>letra por letra</b>. Sem ele a resposta é <i>Solicitação inválida: Invalid
-      redirect_uri</i>.</li>
+  <li><b>Gere o token na Meta.</b> No aplicativo, em Instagram → Configuração da API com
+      login do Instagram, o bloco <b>Gerar token de acesso</b> conecta a conta e entrega o
+      token.</li>
+  <li><b>Cole aqui.</b> O publicador pergunta à Meta de quem é o token e liga a conta
+      certa. Você não digita o arroba.</li>
+  <li><b>Pronto.</b> A tela mostra o que a Meta respondeu e a partir dali a renovação é
+      automática.</li>
 </ol>
+<p><b>Não precisa de Página do Facebook, nem de convite de conta de teste, nem de endereço
+de retorno cadastrado.</b> Esse é o motivo de ser este o método, e não o de autorização
+pela tela: este funciona sem depender de configuração nenhuma no painel da Meta.</p>
 
 <div class="nota">
   <span class="nota-rot">Token eterno não existe nesta API</span>
