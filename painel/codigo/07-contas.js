@@ -766,7 +766,11 @@
         item('Ligar de novo uma conta que já está aqui não duplica: o acesso novo ' +
              'toma o lugar do antigo.') + '</ul>') +
 
-      passoNum(sonda ? 'ok' : '', '3', 'O Endereço De Volta',
+      /* O PASSO 3 NAO GANHA O RISCO VERDE, mesmo com a sonda respondendo. A sonda
+         prova metade: que o endereco existe deste lado. A outra metade, o cadastro
+         no aplicativo da Meta, ninguem daqui consegue conferir, e risco verde no
+         passo que justamente falhou seria a mentira mais cara desta tela. */
+      passoNum('', '3', 'O Endereço De Volta',
         '<p>Depois que você autorizar, o Instagram devolve o navegador para este ' +
         'endereço. Ele precisa estar cadastrado no aplicativo da Meta <b>letra por ' +
         'letra</b>, senão a resposta é <i>Solicitação inválida: Invalid ' +
