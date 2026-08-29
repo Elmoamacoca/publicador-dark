@@ -281,6 +281,7 @@ def main():
               "Gerar token de acesso" in texto_colar)
         anota("o caminho curto nao promete token eterno",
               "Não existe token eterno" in texto_colar)
+        pag.screenshot(path=os.path.join(SAIDA, "contas-janela-colar.png"))
         # botao de ligar sem token nenhum nao pode disparar pedido
         antes_pedidos = len([u for u in rede if "/contas/colar" in u])
         pag.click('#ct-jan-pe [data-acao="colar"]')
