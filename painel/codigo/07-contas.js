@@ -773,7 +773,12 @@
         'do Instagram</b> → <b>Configurações de login da empresa</b> → <b>URIs de ' +
         'redirecionamento do OAuth</b>. Cole o endereço, salve e volte aqui. ' +
         '<a href="' + seguro(p.console || 'https://developers.facebook.com/apps/') +
-        '" target="_blank" rel="noopener">Abrir o painel da Meta</a></p>' +
+        '" target="_blank" rel="noopener">Abrir o painel da Meta</a>' +
+        /* o atalho vai direto no aplicativo, mas ele depende do numero do
+           aplicativo do Facebook estar anotado no `app_meta.json`; a lista fica
+           ao lado justamente para o caso de o atalho nao abrir */
+        ' · <a href="https://developers.facebook.com/apps/" target="_blank" ' +
+        'rel="noopener">lista de aplicativos</a></p>' +
         (sonda ? '<p>Conferido agora: este painel responde nesse endereço. O que ' +
                  'falta é a Meta aceitá-lo, e isso só o cadastro resolve.</p>'
                : '<p>Não consegui confirmar que este painel responde nesse ' +
