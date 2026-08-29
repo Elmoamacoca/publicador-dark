@@ -168,15 +168,6 @@
 .ct-selo-n.aviso{background:var(--ct-alerta-t);color:var(--ct-alerta)}
 .ct-selo-n.mau{background:var(--ct-neg-t);color:var(--ct-neg)}
 
-/* o quadro do grafico so' reserva a altura: quem desenha e' a biblioteca */
-.ct-ec{width:100%;height:230px}
-.ct-ec.baixo{height:200px}
-.ct-ec-leg{display:flex;gap:16px;flex-wrap:wrap;padding-top:4px;font-size:11.5px;
-  font-weight:700;color:var(--muted)}
-.ct-ec-leg span{display:inline-flex;align-items:center;gap:7px}
-.ct-ec-leg i{width:13px;height:3px;border-radius:2px;display:block}
-.ct-ec-leg i.bl{width:9px;height:11px;border-radius:2px}
-
 /* ------------------------------------------------------- a linha de filtros
    A FAIXA PRECISA DE `z-index`, e a razao nao e' obvia. Cada filho direto de
    `.pagina.ativa` recebe a animacao de entrada, que anima `transform` e `filter`;
@@ -372,3 +363,166 @@
 
 .ct-vazio{padding:56px 20px;text-align:center;color:var(--soft);font-size:13px}
 .ct-sem{font-size:12.5px;color:var(--soft);padding:22px 2px;text-align:center}
+
+/* ==================================================================== A JANELA
+   Ela e' de VERDADE, e nao o `alert` do navegador. Pedido dele em 29/08: "quando
+   eu clico no botao de testar conexao, eu deveria receber um pop-up, e cada
+   pop-up seria referente a uma conta... e ai voce bota tambem a animacao de
+   entrada". O `alert` trava a pagina inteira, nao tem entrada, nao tem a letra da
+   casa e nao cabe uma lista dentro.
+
+   A ANATOMIA E A MESMA DA JANELA DO POST (`09-janela-post.css`): fundo escurecido,
+   caixa no meio, cabeca fixa, corpo que rola, pe com os botoes. Duas anatomias
+   diferentes para a mesma coisa seriam duas manutencoes.
+
+   ELA MORA NO FIM DO `body`, FORA DE `.pagina`, e isso e' de proposito: cada filho
+   de `.pagina.ativa` recebe a animacao de entrada da aba, que anima `transform` e
+   faz dele um contexto de empilhamento proprio. Uma janela nascida la' dentro
+   ficaria presa debaixo da grade de fichas, que e' o mesmo defeito que o balao de
+   mercado teve. */
+.ct-jan{position:fixed;inset:0;z-index:90;display:flex;align-items:center;
+  justify-content:center;padding:24px}
+.ct-jan[hidden]{display:none}
+.ct-jan-fundo{position:absolute;inset:0;background:rgba(14,14,14,.55);
+  -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
+  animation:ct-jan-fundo .18s ease both}
+:root[data-theme="dark"] .ct-jan-fundo{background:rgba(0,0,0,.68)}
+.ct-jan-cx{position:relative;display:flex;flex-direction:column;
+  width:min(560px,100%);max-height:min(86vh,760px);background:var(--branco);
+  border:1px solid var(--rule-solid);border-radius:var(--ct-rg);
+  box-shadow:var(--ct-sombra-g);overflow:hidden;
+  animation:ct-jan-entra .26s cubic-bezier(.22,1,.36,1) both}
+.ct-jan.larga .ct-jan-cx{width:min(680px,100%)}
+@keyframes ct-jan-fundo{from{opacity:0}}
+@keyframes ct-jan-entra{from{opacity:0;transform:translateY(14px) scale(.975)}}
+/* a saida existe para a janela nao sumir de estalo: e' a entrada ao contrario */
+.ct-jan.saindo .ct-jan-fundo{animation:ct-jan-fundo .16s ease reverse both}
+.ct-jan.saindo .ct-jan-cx{animation:ct-jan-entra .16s ease reverse both}
+@media(prefers-reduced-motion:reduce){
+  .ct-jan-fundo,.ct-jan-cx,.ct-jan.saindo .ct-jan-fundo,.ct-jan.saindo .ct-jan-cx{
+    animation:none}
+}
+
+.ct-jan-cab{display:flex;align-items:center;gap:13px;padding:16px 17px;flex:none;
+  border-bottom:1px solid var(--rule-solid)}
+.ct-jan-cab .ct-av{width:40px;height:40px;font-size:13px}
+.ct-jan-quem{flex:1;min-width:0}
+.ct-jan-quem b{display:block;font-size:15px;font-weight:800;letter-spacing:-.2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ct-jan-quem span{display:block;font-size:11.5px;color:var(--soft);margin-top:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ct-jan-x{width:32px;height:32px;flex:none;display:grid;place-items:center;padding:0;
+  border:1px solid var(--rule-solid);background:var(--branco);border-radius:9px;
+  cursor:pointer;color:var(--soft);transition:.15s}
+.ct-jan-x:hover{color:var(--ink);border-color:var(--soft)}
+.ct-jan-x svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round}
+.ct-jan-rolo{overflow-y:auto;scrollbar-width:none;padding:16px 17px}
+.ct-jan-rolo::-webkit-scrollbar{width:0;display:none}
+.ct-jan-pe{display:flex;align-items:center;gap:9px;padding:13px 17px;flex:none;
+  flex-wrap:wrap;border-top:1px solid var(--rule-solid);background:var(--paper-2)}
+.ct-jan-pe .dir{margin-left:auto;display:flex;align-items:center;gap:9px}
+.ct-jan-pe .nota{font-size:11.5px;font-weight:600;color:var(--soft)}
+
+/* ---------------------------------------------------------------- o veredito
+   A PRIMEIRA LINHA DA JANELA RESPONDE A PERGUNTA. Quem abre um teste de conexao
+   quer saber uma coisa so': respondeu ou nao. O detalhe vem embaixo. */
+.ct-vered{display:flex;align-items:center;gap:14px;padding:15px;border-radius:var(--ct-r);
+  background:var(--ct-pos-t)}
+.ct-vered.aviso{background:var(--ct-alerta-t)}
+.ct-vered.mau{background:var(--ct-neg-t)}
+.ct-vered.neutro{background:var(--paper-2)}
+.ct-vered .bolha{width:42px;height:42px;border-radius:50%;flex:none;display:grid;
+  place-items:center;background:var(--ct-pos);color:#fff}
+.ct-vered.aviso .bolha{background:var(--ct-alerta)}
+.ct-vered.mau .bolha{background:var(--ct-neg)}
+.ct-vered.neutro .bolha{background:var(--soft)}
+.ct-vered .bolha svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.1;
+  stroke-linecap:round;stroke-linejoin:round}
+.ct-vered.esperando .bolha svg{animation:ct-gira .8s linear infinite}
+/* OS SELETORES DE DENTRO SAO QUALIFICADOS PELO `.c`: `.ct-vered span` pegaria
+   tambem a bolha e o tempo de resposta, que sao spans irmaos. */
+.ct-vered .c{flex:1;min-width:0}
+.ct-vered .c b{display:block;font-size:15px;font-weight:800;letter-spacing:-.2px}
+.ct-vered .c span{display:block;font-size:12.5px;color:var(--muted);margin-top:3px}
+.ct-vered .ms{font-size:var(--ct-n3);font-weight:800;letter-spacing:-.03em;flex:none;
+  font-variant-numeric:tabular-nums}
+.ct-vered .ms small{font-size:11px;font-weight:700;color:var(--soft);margin-left:2px}
+
+/* ------------------------------------------------------------ o que foi feito
+   UMA LINHA POR PERGUNTA FEITA A META, na ordem em que `checar()` faz: renovar (se
+   for a hora), identidade e teto do dia. A janela conta o caminho, e nao so' o fim. */
+.ct-pas{display:flex;align-items:flex-start;gap:12px;padding:13px 0;
+  border-top:1px solid color-mix(in srgb,var(--rule-solid) 65%,transparent)}
+.ct-pas:first-child{border-top:0;padding-top:4px}
+.ct-pas .ic{width:30px;height:30px;border-radius:10px;flex:none;display:grid;
+  place-items:center;background:var(--paper-2);color:var(--soft)}
+.ct-pas .ic.ok{background:var(--ct-pos-t);color:var(--ct-pos)}
+.ct-pas .ic.aviso{background:var(--ct-alerta-t);color:var(--ct-alerta)}
+.ct-pas .ic.mau{background:var(--ct-neg-t);color:var(--ct-neg)}
+.ct-pas .ic svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
+.ct-pas .c{flex:1;min-width:0}
+.ct-pas .c b{display:block;font-size:13px;font-weight:700}
+.ct-pas .c span{display:block;font-size:12px;color:var(--muted);margin-top:2px;
+  line-height:1.45}
+.ct-pas .v{flex:none;font-size:12.5px;font-weight:800;text-align:right;
+  font-variant-numeric:tabular-nums;padding-top:1px}
+.ct-pas .v.mau{color:var(--ct-neg)} .ct-pas .v.aviso{color:var(--ct-alerta)}
+
+/* ------------------------------------------------------- a rede, conta a conta */
+.ct-lin{display:flex;align-items:center;gap:11px;padding:9px 8px;border-radius:11px;
+  width:100%;border:0;background:none;font:inherit;text-align:left;cursor:pointer;
+  color:var(--ink)}
+.ct-lin:hover{background:var(--paper-2)}
+.ct-lin .ct-av{width:32px;height:32px;font-size:11px}
+.ct-lin .c{flex:1;min-width:0}
+.ct-lin .c b{display:block;font-size:13px;font-weight:700}
+.ct-lin .c span{display:block;font-size:11.5px;color:var(--soft)}
+.ct-lin .ms{font-size:12px;font-weight:800;color:var(--muted);
+  font-variant-numeric:tabular-nums;flex:none}
+
+/* ---------------------------------------------------------- o passo a passo
+   LIGAR CONTA TEM TRES PASSOS E DOIS DELES NAO ACONTECEM AQUI DENTRO: a conta
+   precisa ser profissional no Instagram, e o endereco de volta precisa estar
+   cadastrado no aplicativo da Meta. Esconder isso foi o que produziu o "Invalid
+   redirect_uri" na cara dele em 29/08: o botao mandava para a Meta sem dizer o
+   que a Meta ia exigir do outro lado. */
+.ct-pss{display:flex;gap:13px;padding:14px 0;
+  border-top:1px solid color-mix(in srgb,var(--rule-solid) 65%,transparent)}
+.ct-pss:first-child{border-top:0;padding-top:2px}
+.ct-pss .n{width:26px;height:26px;border-radius:50%;flex:none;display:grid;
+  place-items:center;background:var(--paper-2);border:1px solid var(--rule-solid);
+  font-size:12px;font-weight:800;color:var(--muted)}
+.ct-pss .n.ok{background:var(--ct-pos-t);border-color:transparent;color:var(--ct-pos)}
+.ct-pss .n svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.4;
+  stroke-linecap:round;stroke-linejoin:round}
+.ct-pss .c{flex:1;min-width:0}
+.ct-pss .c b{display:block;font-size:13.5px;font-weight:800;margin-bottom:5px}
+.ct-pss .c p{font-size:12.5px;color:var(--muted);line-height:1.55}
+.ct-pss .c p + p{margin-top:7px}
+.ct-pss .c a{color:var(--link);font-weight:700;text-decoration:none}
+.ct-pss .c a:hover{text-decoration:underline}
+.ct-pss ul{margin:6px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;
+  gap:6px}
+.ct-pss li{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;
+  color:var(--muted);line-height:1.5}
+.ct-pss li svg{width:14px;height:14px;flex:none;margin-top:2px;color:var(--ct-pos);
+  fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+
+/* o endereco por extenso, para conferir letra por letra e copiar sem digitar */
+.ct-cod{display:flex;align-items:center;gap:9px;margin-top:8px;padding:9px 10px;
+  background:var(--paper-2);border:1px solid var(--rule-solid);border-radius:10px}
+.ct-cod code{flex:1;min-width:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:11.5px;line-height:1.5;color:var(--ink);word-break:break-all}
+.ct-copiar{flex:none;border:1px solid var(--rule-solid);background:var(--branco);
+  border-radius:8px;padding:5px 11px;font:inherit;font-size:11.5px;font-weight:700;
+  color:var(--muted);cursor:pointer;transition:.15s}
+.ct-copiar:hover{border-color:var(--ink);color:var(--ink)}
+.ct-copiar.feito{background:var(--ct-pos-t);border-color:transparent;color:var(--ct-pos)}
+
+@media(max-width:560px){
+  .ct-jan{padding:12px}
+  .ct-jan-pe{flex-wrap:wrap}
+  .ct-jan-pe .nota{width:100%;order:2}
+}

@@ -141,6 +141,7 @@ def provar_contas(base, cookie, falhas):
     configurar. O que nao pode e' a rota sumir, ou devolver endereco que nao seja do
     Instagram com o nosso endereco de volta.
     """
+    url = ""            # a autorizacao montada; a prontidao e' conferida contra ela
     try:
         codigo, corpo, _ = pedir(base + "/contas/estado", cookie)
         d = json.loads(corpo)
@@ -171,6 +172,40 @@ def provar_contas(base, cookie, falhas):
             falhas.append(f"contas/ligar: resposta inesperada ({codigo}) {url[:90]}")
     except Exception as e:
         falhas.append(f"contas/ligar: {type(e).__name__}: {e}")
+
+    # A PRONTIDAO E O QUE A JANELA DE LIGAR MOSTRA ANTES DE MANDAR ALGUEM PARA A
+    # META. Ela nao pode carregar segredo (o numero do aplicativo e' publico, o
+    # segredo nao) e o endereco de volta tem que ser o mesmo que a autorizacao usa:
+    # os dois batendo e' o que evita repetir o "Invalid redirect_uri".
+    try:
+        codigo, corpo, _ = pedir(base + "/contas/prontidao", cookie)
+        d = json.loads(corpo)
+        crus = json.dumps(d)
+        for proibido in ("segredo", "client_secret", "app_secret", "token"):
+            if proibido in crus:
+                falhas.append(f"contas/prontidao: A RESPOSTA CARREGA '{proibido}'")
+        if not (d.get("volta") or "").endswith("/contas/voltar"):
+            falhas.append(f"contas/prontidao: endereco de volta estranho "
+                          f"({d.get('volta')})")
+        if d.get("volta") and d["volta"] not in urllib.parse.unquote(url or ""):
+            falhas.append("contas/prontidao: a volta que a janela mostra NAO e' a "
+                          "que a autorizacao usa")
+        print(f"  contas/prontidao: {d.get('volta')} | aplicativo pronto: "
+              f"{d.get('app_pronto')}")
+    except Exception as e:
+        falhas.append(f"contas/prontidao: {type(e).__name__}: {e}")
+
+    # A SONDA DA VOLTA. Ela e' o unico pedaco do caminho de retorno que da' para
+    # provar sem a Meta: que o endereco existe neste painel e responde.
+    try:
+        codigo, corpo, _ = pedir(base + "/contas/voltar?sonda=1", cookie)
+        d = json.loads(corpo)
+        if codigo != 200 or not d.get("pronto"):
+            falhas.append(f"contas/voltar?sonda=1: nao respondeu pronto ({codigo})")
+        else:
+            print("  contas/voltar: o endereco de volta responde neste painel")
+    except Exception as e:
+        falhas.append(f"contas/voltar?sonda=1: {type(e).__name__}: {e}")
 
     # O COFRE E O CODIGO NAO SE SERVEM, nem para quem ja entrou.
     for caminho in ("dados/contas.json", "dados/vigia.json", "contas.py"):

@@ -16,6 +16,7 @@ import argparse
 import json
 import os
 import sys
+import urllib.parse
 import urllib.request
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
@@ -169,14 +170,57 @@ def main():
         rede = []
         pag.on("request", lambda r: rede.append(r.url) if "/contas/" in r.url else None)
         ms_antes = pag.eval_on_selector(".ct-ms", "e => e.textContent")
+        arroba = pag.eval_on_selector(".ct-arroba", "e => e.textContent.replace('@','')")
         pag.click("[data-testar]")
-        pag.wait_for_timeout(4200)
+        pag.wait_for_timeout(500)
+
+        # A JANELA ABRE ANTES DA RESPOSTA, de proposito: perguntar a Meta leva de
+        # 200 ms a alguns segundos, e botao que fica mudo nesse tempo parece
+        # quebrado. Entao ela nasce com o "perguntando" e depois troca de recheio.
+        anota("testar abre a janela na hora, sem esperar a Meta",
+              pag.eval_on_selector("#ct-jan", "e => !e.hidden"))
+        anima = pag.eval_on_selector(".ct-jan-cx", "e => getComputedStyle(e).animationName")
+        anota("a janela entra com animacao", anima == "ct-jan-entra", str(anima))
+        em_cima = pag.evaluate("""() => {
+            const cx = document.querySelector('.ct-jan-cx');
+            const r = cx.getBoundingClientRect();
+            const alvo = document.elementFromPoint(r.left + r.width / 2, r.top + 30);
+            return {dentro: !!(alvo && cx.contains(alvo)),
+                    quem: alvo ? (alvo.className || alvo.tagName).toString() : 'nada'};
+        }""")
+        anota("a janela abre por cima de tudo", em_cima.get("dentro") is True,
+              "quem esta no lugar dela: " + str(em_cima.get("quem"))[:50])
+        anota("a janela diz de qual conta ela fala",
+              arroba in pag.eval_on_selector("#ct-jan-cab", "e => e.textContent"),
+              "@" + arroba)
+
+        pag.wait_for_timeout(5000)
         chamou = any("/contas/testar" in u for u in rede)
         anota("o botao de testar chama a Meta pelo servidor", chamou)
+        corpo_jan = pag.eval_on_selector("#ct-jan-corpo", "e => e.textContent")
+        for parte in ("Identidade Da Conta", "Validade Do Acesso", "Teto De Publicação"):
+            anota(f"a janela conta o que foi perguntado: {parte}", parte in corpo_jan)
+        anota("a janela nao ficou no 'perguntando'",
+              "Perguntando à Meta" not in corpo_jan, corpo_jan[:60].strip())
+        veredito = pag.eval_on_selector("#ct-jan-corpo .ct-vered", "e => e.textContent")
+        anota("a janela da o veredito da conexao",
+              "respondeu" in veredito or "recusou" in veredito, veredito[:70].strip())
+        pag.screenshot(path=os.path.join(SAIDA, "contas-janela-teste.png"))
         ms_depois = pag.eval_on_selector(".ct-ms", "e => e.textContent")
-        anota("o tempo de resposta se atualiza depois do teste",
+        anota("o tempo de resposta se atualiza na ficha tambem",
               bool(ms_depois) and ms_depois.endswith("ms"),
               f"antes {ms_antes}, depois {ms_depois}")
+
+        # A REGRA DO BOTAO, valendo para a tela inteira: icone OU seta, nunca os
+        # dois. Foi ele quem escreveu, em 29/08, olhando o Ligar Conta.
+        mistura = pag.evaluate("""() => [...document.querySelectorAll('.ct-bt')]
+            .filter(b => b.querySelector('.mrc') && b.querySelector('.seta'))
+            .map(b => b.textContent.trim().slice(0, 24))""")
+        anota("nenhum botao usa icone e seta ao mesmo tempo", not mistura, str(mistura))
+
+        pag.keyboard.press("Escape")
+        pag.wait_for_timeout(500)
+        anota("Escape fecha a janela", pag.eval_on_selector("#ct-jan", "e => e.hidden"))
 
         # ------------------------------------------------- os botoes do cabecalho
         for acao, rotulo in (("testar-tudo", "Testar Conexões"), ("ligar", "Ligar Conta")):
@@ -187,8 +231,40 @@ def main():
         anota("os botoes do cabecalho nao tem seta sobrando (o icone ja basta)",
               setas == 0, f"{setas} seta(s) encontradas")
 
-        # LIGAR CONTA: so' conferimos o que o servidor devolve. Seguir o endereco
-        # levaria para o login do Instagram, e isso e' com o Gabriel.
+        # ------------------------------------------------ a janela da rede inteira
+        pag.click('[data-acao="testar-tudo"]')
+        pag.wait_for_timeout(700)
+        anota("Testar Conexoes abre a janela da rede",
+              pag.eval_on_selector("#ct-jan", "e => !e.hidden"))
+        pag.wait_for_timeout(9000)
+        linhas = pag.eval_on_selector_all(".ct-lin", "e => e.length")
+        anota("a janela da rede traz uma linha por conta", linhas == n,
+              f"{linhas} linha(s) para {n} conta(s)")
+        anota("a janela da rede diz quantas responderam",
+              "responderam" in pag.eval_on_selector("#ct-jan-corpo .ct-vered",
+                                                    "e => e.textContent")
+              or "respondeu" in pag.eval_on_selector("#ct-jan-corpo .ct-vered",
+                                                     "e => e.textContent"))
+        pag.click(".ct-lin")
+        pag.wait_for_timeout(5000)
+        anota("clicar numa linha abre o teste daquela conta",
+              "Teste De Conexão" in pag.eval_on_selector("#ct-jan-cab",
+                                                         "e => e.textContent"))
+        pag.keyboard.press("Escape")
+        pag.wait_for_timeout(500)
+
+        # ------------------------------------------------ a janela de ligar conta
+        # ELA E' A CORRECAO DO ERRO DE 29/08. O botao mandava direto para a Meta e a
+        # Meta respondeu "Invalid redirect_uri" sem dizer o que fazer. Nao existe
+        # rota que pergunte a ela se o endereco esta cadastrado, entao o que a tela
+        # deve e' mostrar o endereco exato, copiavel, e onde ele precisa estar.
+        pag.click('[data-acao="ligar"]')
+        pag.wait_for_timeout(2500)
+        anota("Ligar Conta abre o passo a passo, e nao o Instagram direto",
+              pag.eval_on_selector("#ct-jan", "e => !e.hidden")
+              and "instagram.com/oauth" not in pag.url, pag.url[:60])
+        passos = pag.eval_on_selector_all("#ct-jan-corpo .ct-pss", "e => e.length")
+        anota("a janela tem os quatro passos", passos == 4, f"{passos} passo(s)")
         d = pag.evaluate("""async () => {
             const r = await fetch('/contas/ligar', {cache: 'no-store'});
             return {codigo: r.status, corpo: await r.json()};
@@ -197,6 +273,27 @@ def main():
         anota("Ligar Conta monta a autorizacao do Instagram",
               "instagram.com/oauth/authorize" in url,
               (d.get("corpo") or {}).get("erro", "")[:80])
+        mostrado = pag.eval_on_selector("#ct-jan-corpo .ct-cod code",
+                                        "e => e.textContent.trim()")
+        anota("o endereco que a janela mostra e' o mesmo que vai para a Meta",
+              bool(mostrado) and mostrado in urllib.parse.unquote(url), mostrado)
+        anota("da para copiar o endereco sem digitar",
+              pag.eval_on_selector_all("#ct-jan-corpo [data-copiar]", "e => e.length") == 1)
+        texto_ligar = pag.eval_on_selector("#ct-jan-corpo", "e => e.textContent")
+        anota("a janela diz onde cadastrar o endereco na Meta",
+              "URIs de redirecionamento" in texto_ligar)
+        anota("a janela avisa do erro que a Meta devolve se faltar o cadastro",
+              "Invalid redirect_uri" in texto_ligar)
+        anota("a janela leva ao painel da Meta",
+              pag.eval_on_selector_all(
+                  '#ct-jan-corpo a[href*="developers.facebook.com"]', "e => e.length") >= 1)
+        anota("o botao de autorizar esta no pe da janela",
+              pag.eval_on_selector_all('#ct-jan-pe [data-acao="autorizar"]',
+                                       "e => e.length") == 1)
+        pag.screenshot(path=os.path.join(SAIDA, "contas-janela-ligar.png"))
+        pag.mouse.click(20, 20)
+        pag.wait_for_timeout(500)
+        anota("clicar fora fecha a janela", pag.eval_on_selector("#ct-jan", "e => e.hidden"))
 
         # --------------------------------------------- desligar: existe e avisa
         anota("o botao de desligar existe e pede confirmacao",

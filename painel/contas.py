@@ -574,6 +574,35 @@ def comecar_ligacao(base: str) -> dict:
     return {"url": url, "volta": endereco_de_volta(base)}
 
 
+def prontidao(base: str) -> dict:
+    """O que a tela precisa saber ANTES de mandar alguem para o Instagram.
+
+    NAO EXISTE ROTA NA META QUE RESPONDA "esse endereco de volta esta cadastrado?".
+    A unica forma de descobrir e' mandar uma pessoa autorizar e ver se a tela deles
+    reclama, e foi exatamente assim que o "Invalid redirect_uri" apareceu em 29/08:
+    o endereco que este painel manda e' legitimo, mas nao estava na lista do
+    aplicativo, que ate' entao so' conhecia o do Postiz.
+
+    Entao o que da' para provar daqui, esta funcao prova (o aplicativo esta
+    configurado, e este e' o endereco exato, letra por letra, que vai ser enviado), e
+    o que nao da', ela mostra por extenso para conferencia no painel da Meta. Meio
+    caminho dito com todas as letras vale mais que uma promessa inteira.
+    """
+    app = app_meta()
+    fb = str(app.get("fb_app_id") or "")
+    return {
+        "app_pronto": bool(app.get("app_id") and app.get("segredo")),
+        "app_id": str(app.get("app_id") or ""),
+        "volta": endereco_de_volta(base),
+        "permissoes": [p.strip() for p in
+                       (app.get("permissoes") or PERMISSOES).split(",") if p.strip()],
+        "console": (f"https://developers.facebook.com/apps/{fb}"
+                    "/instagram-business/API-Setup/"
+                    if fb else "https://developers.facebook.com/apps/"),
+        "ligadas": [c.get("arroba") for c in (cofre().get("contas") or [])],
+    }
+
+
 def terminar_ligacao(code: str, marca: str, base: str) -> dict:
     """Troca o codigo por um acesso de sessenta dias e guarda a conta no cofre."""
     app = app_meta()
@@ -680,6 +709,8 @@ def responder(rota: str, consulta: dict, corpo: dict | None, base: str = ""):
                 return ({"ok": deu, "detalhe": detalhe,
                          "vence_em": c.get("vence_em")}, 200 if deu else 400)
         return {"erro": "essa conta nao esta no cofre"}, 404
+    if rota == "contas/prontidao":
+        return prontidao(base), 200
     if rota == "contas/ligar":
         d = comecar_ligacao(base)
         return d, (400 if "erro" in d else 200)

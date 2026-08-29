@@ -391,6 +391,13 @@ class SemCache(http.server.SimpleHTTPRequestHandler):
         # recado no endereco, e nao num JSON que ninguem veria.
         if rota == "contas/voltar":
             q = urllib.parse.parse_qs(p.query)
+            # A SONDA E' A UNICA PARTE DO CAMINHO DE VOLTA QUE DA' PARA PROVAR DAQUI:
+            # que o Caddy encaminha este endereco e que o painel responde nele. Se a
+            # Meta aceita ou nao esse endereco, so' a Meta sabe, e nao ha rota que
+            # pergunte. Por isso a janela de ligar mostra o endereco por extenso.
+            if q.get("sonda"):
+                return self.responder({"pronto": True,
+                                       "volta": self.endereco_base() + "/contas/voltar"})
             recado = ""
             if q.get("error"):
                 recado = q.get("error_description", ["a autorização foi negada"])[0]

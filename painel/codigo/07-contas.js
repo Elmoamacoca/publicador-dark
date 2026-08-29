@@ -193,16 +193,26 @@
       (rotulo ? botao(rotulo, acao, 'mini') : '') + '</div>';
   }
 
-  /* o botao animado da casa, o mesmo gesto do Programar */
-  function botao(rotulo, acao, extra, simbolo){
+  /* o botao animado da casa, o mesmo gesto do Programar.
+
+     ICONE OU SETA, NUNCA OS DOIS. A regra e' dele, de 29/08: "no botao de ligar
+     conta, remova a seta... porque ambos ja tem icone, ai com essa seta ficaria
+     dois icones". Entao quem passa simbolo perde as setas, e quem nao passa fica
+     com o gesto completo. A regra mora aqui dentro para nao depender de alguem
+     lembrar dela na hora de escrever o proximo botao. */
+  function botao(rotulo, acao, extra, simbolo, arroba){
+    var seta = function(lado){
+      return '<svg class="seta seta-' + lado + '" viewBox="0 0 24 24">' +
+             '<use href="#i-seta"/></svg>';
+    };
     return '<button class="ct-bt ' + (extra || '') + '" type="button" data-acao="' +
-      acao + '">' +
-      '<svg class="seta seta-esq" viewBox="0 0 24 24"><use href="#i-seta"/></svg>' +
+      acao + '"' + (arroba ? ' data-arroba="' + seguro(arroba) + '"' : '') + '>' +
+      (simbolo ? '' : seta('esq')) +
       '<span class="txt">' +
         (simbolo ? '<svg class="mrc" viewBox="0 0 24 24">' + IC[simbolo] + '</svg>' : '') +
         rotulo + '</span>' +
       '<span class="circ"></span>' +
-      '<svg class="seta seta-dir" viewBox="0 0 24 24"><use href="#i-seta"/></svg>' +
+      (simbolo ? '' : seta('dir')) +
       '</button>';
   }
 
@@ -371,15 +381,29 @@
         'color:var(--soft)">' + seguro(c.ig_user_id || '') + '</b></div>';
   }
 
+  /* O ROSTO DA CONTA. Fica solto porque a ficha nao e' mais o unico lugar que o
+     usa: a janela de teste tambem mostra de quem ela fala, e retrato desenhado em
+     dois lugares diferentes vira dois retratos diferentes na primeira mudanca. */
+  function rosto(c, i){
+    var retrato = c.avatar || RETRATOS[String(c.arroba).toLowerCase()];
+    return retrato
+      ? '<img class="ct-av" src="' + retrato + '" alt="">'
+      : '<span class="ct-av" style="background:' + cores[(i || 0) % 5] + '">' +
+        seguro(String(c.arroba).slice(0, 2).toUpperCase()) + '</span>';
+  }
+  /* a cor do rosto vem da posicao na lista, entao ela precisa ser a mesma posicao
+     na ficha e na janela, senao a mesma conta muda de cor ao abrir */
+  function indiceDe(u){
+    var lista = DADOS.contas || [];
+    for (var i = 0; i < lista.length; i++) if (lista[i].arroba === u) return i;
+    return 0;
+  }
+
   function ficha(c, i){
     var qual = aba[c.arroba] || 'estado';
     var falhasNaTira = (c.tira || []).filter(function(t){
       return t.estado === 'caiu'; }).length;
-    var retrato = c.avatar || RETRATOS[String(c.arroba).toLowerCase()];
-    var face = retrato
-      ? '<img class="ct-av" src="' + retrato + '" alt="">'
-      : '<span class="ct-av" style="background:' + cores[i % 5] + '">' +
-        seguro(String(c.arroba).slice(0, 2).toUpperCase()) + '</span>';
+    var face = rosto(c, i);
     var corpo = qual === 'diario' ? corpoDiario(c)
       : (qual === 'identidade' ? corpoIdentidade(c) : corpoEstado(c));
 
@@ -472,6 +496,386 @@
       });
   }
 
+  /* ============================================================ A JANELA
+     Duas conversas cabem nela: o teste de conexao (uma por conta) e o passo a
+     passo de ligar conta. A casca e' a mesma; o que muda e' o recheio.
+
+     ELA MOSTRA O CAMINHO, e nao so' o fim. Um "deu certo" verde nao explica o que
+     foi perguntado nem em quanto tempo respondeu, e e' justamente isso que a
+     pessoa precisa quando alguma coisa para de funcionar. */
+  var JAN = document.getElementById('ct-jan');
+  var J_CAB = document.getElementById('ct-jan-cab');
+  var J_CORPO = document.getElementById('ct-jan-corpo');
+  var J_PE = document.getElementById('ct-jan-pe');
+  var focoAntes = null, relogioDaSaida = null;
+
+  function janelaAberta(){ return !!JAN && !JAN.hidden; }
+
+  function abrirJanela(cab, corpo, pe, larga){
+    if (!JAN) return;
+    clearTimeout(relogioDaSaida);
+    JAN.classList.remove('saindo');
+    JAN.classList.toggle('larga', !!larga);
+    J_CAB.innerHTML = cab;
+    J_CORPO.innerHTML = corpo;
+    J_PE.innerHTML = pe || '';
+    if (JAN.hidden){
+      focoAntes = document.activeElement;
+      JAN.hidden = false;
+    }
+    var x = JAN.querySelector('.ct-jan-x');
+    if (x) x.focus();
+  }
+  function trocarCorpo(corpo, pe, cab){
+    if (!janelaAberta()) return;
+    if (cab != null) J_CAB.innerHTML = cab;
+    J_CORPO.innerHTML = corpo;
+    if (pe != null) J_PE.innerHTML = pe;
+  }
+  function fecharJanela(){
+    if (!janelaAberta()) return;
+    JAN.classList.add('saindo');
+    relogioDaSaida = setTimeout(function(){
+      JAN.hidden = true;
+      JAN.classList.remove('saindo');
+      J_CAB.innerHTML = ''; J_CORPO.innerHTML = ''; J_PE.innerHTML = '';
+      if (focoAntes && focoAntes.focus) focoAntes.focus();
+    }, 160);
+  }
+
+  /* ------------------------------------------------------------- as pecas */
+  function fecharBt(){
+    return '<button class="ct-jan-x" type="button" data-ct-fechar aria-label="Fechar">' +
+      '<svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button>';
+  }
+  function cabConta(c, titulo){
+    return rosto(c, indiceDe(c.arroba)) +
+      '<div class="ct-jan-quem"><b id="ct-jan-tit">@' + seguro(c.arroba) + '</b>' +
+      '<span>' + seguro(titulo) +
+        (c.tipo ? ' · ' + seguro(tipoDe(c.tipo)) : '') + '</span></div>' +
+      (c.estado ? '<span class="ct-estado ' + c.estado + '"><i></i>' +
+        ROTULO[c.estado] + '</span>' : '') + fecharBt();
+  }
+  function cabSimples(simbolo, titulo, sub){
+    return '<span class="ct-av" style="background:var(--ink);color:var(--paper)">' +
+      '<svg class="ct-i s" viewBox="0 0 24 24">' + (IC[simbolo] || '') + '</svg></span>' +
+      '<div class="ct-jan-quem"><b id="ct-jan-tit">' + titulo + '</b>' +
+      '<span>' + sub + '</span></div>' + fecharBt();
+  }
+  function veredito(tom, simbolo, titulo, sub, direita, esperando){
+    return '<div class="ct-vered ' + (tom || '') + (esperando ? ' esperando' : '') + '">' +
+      '<span class="bolha"><svg viewBox="0 0 24 24">' + (IC[simbolo] || '') +
+      '</svg></span>' +
+      '<div class="c"><b>' + titulo + '</b><span>' + sub + '</span></div>' +
+      (direita || '') + '</div>';
+  }
+  function passo(tom, simbolo, titulo, texto, valor, tomValor){
+    return '<div class="ct-pas"><span class="ic ' + (tom || '') + '">' +
+      '<svg viewBox="0 0 24 24">' + (IC[simbolo] || '') + '</svg></span>' +
+      '<span class="c"><b>' + titulo + '</b><span>' + texto + '</span></span>' +
+      (valor ? '<span class="v ' + (tomValor || '') + '">' + valor + '</span>' : '') +
+      '</div>';
+  }
+
+  /* ------------------------------------------------- o teste de uma conta
+     A JANELA ABRE ANTES DA RESPOSTA, de proposito. A pergunta a Meta leva de 200
+     ms a alguns segundos, e botao que fica mudo nesse tempo parece quebrado. */
+  function corpoTeste(c, esperando){
+    if (esperando){
+      return veredito('neutro', 'girar', 'Perguntando à Meta…',
+        'Três perguntas seguidas: renovar se for a hora, quem é a conta e quanto ' +
+        'ainda cabe hoje.', '', true) +
+        passo('', 'ig', 'Identidade Da Conta', 'esperando a resposta', '') +
+        passo('', 'escudo', 'Validade Do Acesso', 'esperando a resposta', '') +
+        passo('', 'gauge', 'Teto De Publicação', 'esperando a resposta', '');
+    }
+    var caiu = c.estado === 'caiu';
+    var faltam = c.dias_para_vencer;
+    var linhas = '';
+
+    /* a renovacao so' aparece quando ela de fato aconteceu nesta rodada: linha que
+       diz "nao precisou" a cada teste vira ruido e some da vista quando importar */
+    var r = c.renovacao;
+    if (r && r.tentou){
+      linhas += passo(r.deu_certo ? 'ok' : 'mau', 'girar', 'Renovação Do Acesso',
+        r.deu_certo
+          ? 'O acesso estava a menos de 10 dias do fim e foi trocado por um novo ' +
+            'antes da pergunta.'
+          : seguro(r.detalhe || 'A Meta recusou a renovação.'),
+        r.deu_certo ? 'renovado' : 'falhou', r.deu_certo ? '' : 'mau');
+    }
+    linhas += passo(caiu ? 'mau' : 'ok', 'ig', 'Identidade Da Conta',
+      caiu ? seguro(c.detalhe || 'A Meta recusou o acesso desta conta.')
+           : 'A Meta devolveu o arroba, o tipo e o identificador ' +
+             seguro(c.ig_user_id || ''),
+      caiu ? 'recusou' : seguro(tipoDe(c.tipo)), caiu ? 'mau' : '');
+
+    linhas += passo(faltam == null ? '' : (faltam <= 0 ? 'mau'
+        : (faltam <= 14 ? 'aviso' : 'ok')), 'escudo', 'Validade Do Acesso',
+      faltam == null ? 'Este acesso não tem validade anotada no cofre.'
+        : (faltam <= 0 ? 'O acesso venceu. A conta precisa ser ligada de novo.'
+          : 'Vence em ' + dCurta(c.vence_em) +
+            (c.renovacoes ? ' · já renovado ' + c.renovacoes + 'x' : '') +
+            '. A renovação automática entra faltando 10 dias.'),
+      faltam == null ? '–' : faltam + (faltam === 1 ? ' dia' : ' dias'),
+      faltam == null ? '' : (faltam <= 0 ? 'mau' : (faltam <= 14 ? 'aviso' : '')));
+
+    var teto = c.teto_total || 0;
+    linhas += passo(teto ? 'ok' : '', 'gauge', 'Teto De Publicação',
+      teto ? 'A Meta deixa ' + teto + ' publicações por conta a cada 24 horas, e ' +
+             'já foram ' + (c.teto_usado || 0) + '.'
+           : 'A Meta não devolveu o teto desta conta nesta rodada.',
+      teto ? (teto - (c.teto_usado || 0)) + ' cabem' : '–');
+
+    return veredito(caiu ? 'mau' : (c.estado === 'vencendo' ? 'aviso' : ''),
+      caiu ? 'alerta' : 'check',
+      caiu ? 'A Meta recusou o acesso' : 'A Meta respondeu',
+      caiu ? seguro(c.detalhe || 'O acesso desta conta não vale mais.')
+           : 'A conta está de pé e pode publicar pelo publicador.',
+      (c.ms != null ? '<span class="ms">' + c.ms + '<small>ms</small></span>' : '')) +
+      linhas;
+  }
+  function peTeste(c, esperando){
+    return '<span class="nota">' + (esperando ? 'perguntando agora'
+        : (c.checada_em ? 'testada às ' + hora(c.checada_em) : '')) + '</span>' +
+      '<span class="dir">' +
+        (!esperando && c.dias_para_vencer != null && c.dias_para_vencer <= 30
+          ? botao('Renovar Acesso', 'renovar-um', 'mini', 'escudo', c.arroba) : '') +
+        (esperando ? '' : botao('Testar De Novo', 'testar-de-novo', 'mini', 'girar',
+                                c.arroba)) +
+        botao('Fechar', 'fechar', 'mini') +
+      '</span>';
+  }
+
+  function janelaTeste(arroba){
+    var c = achar(arroba) || {arroba: arroba};
+    abrirJanela(cabConta(c, 'Teste De Conexão'), corpoTeste(c, true), peTeste(c, true));
+    return pedir('/contas/testar', {arroba: arroba}).then(function(d){
+      DADOS = d || DADOS;
+      desenhar();
+      var novo = achar(arroba) || c;
+      trocarCorpo(corpoTeste(novo, false), peTeste(novo, false),
+                  cabConta(novo, 'Teste De Conexão'));
+    }).catch(function(){
+      trocarCorpo(veredito('mau', 'alerta', 'Não consegui falar com o painel',
+        'O pedido não chegou ao servidor. Recarregue a página e tente de novo.'),
+        peTeste(c, false));
+    });
+  }
+
+  /* ------------------------------------------------- o teste da rede inteira */
+  function linhaConta(c, esperando){
+    return '<button class="ct-lin" type="button" data-abrir-conta="' +
+      seguro(c.arroba) + '">' + rosto(c, indiceDe(c.arroba)) +
+      '<span class="c"><b>@' + seguro(c.arroba) + '</b><span>' +
+        (esperando ? 'perguntando…'
+          : (c.estado === 'caiu' ? seguro(c.detalhe || 'a Meta recusou o acesso')
+            : (c.dias_para_vencer != null
+              ? 'acesso vence em ' + c.dias_para_vencer + ' dias'
+              : 'acesso sem validade anotada'))) + '</span></span>' +
+      (esperando ? '' : '<span class="ct-estado ' + c.estado + '"><i></i>' +
+        ROTULO[c.estado] + '</span>') +
+      '<span class="ms">' + (esperando || c.ms == null ? '' : c.ms + ' ms') +
+      '</span></button>';
+  }
+  function corpoRede(lista, esperando){
+    var deram = lista.filter(function(c){ return c.estado !== 'caiu'; }).length;
+    var tempos = lista.map(function(c){ return c.ms; })
+                      .filter(function(m){ return m != null; });
+    var medio = tempos.length ? Math.round(tempos.reduce(function(a, b){
+      return a + b; }, 0) / tempos.length) : null;
+    var tom = esperando ? 'neutro'
+      : (deram === lista.length ? '' : (deram ? 'aviso' : 'mau'));
+    return veredito(tom, esperando ? 'girar' : (deram === lista.length ? 'check' : 'alerta'),
+      esperando ? 'Perguntando à Meta…'
+        : deram + ' de ' + lista.length +
+          (lista.length === 1 ? ' conta respondeu' : ' contas responderam'),
+      esperando ? 'Uma pergunta por conta, uma de cada vez.'
+        : (medio != null ? 'tempo médio de resposta ' + medio + ' ms'
+                         : 'a Meta não devolveu tempo de resposta'),
+      '', esperando) +
+      '<div style="margin-top:8px">' +
+        (lista.length ? lista.map(function(c){ return linhaConta(c, esperando); }).join('')
+          : '<div class="ct-sem">Nenhuma conta ligada ao publicador.</div>') +
+      '</div>';
+  }
+  function janelaRede(){
+    var lista = (DADOS.contas || []).slice();
+    abrirJanela(cabSimples('radio', 'Teste De Conexão Da Rede',
+        lista.length + (lista.length === 1 ? ' conta ligada' : ' contas ligadas')),
+      corpoRede(lista, true),
+      '<span class="nota">clique numa conta para ver o teste dela</span>' +
+      '<span class="dir">' + botao('Fechar', 'fechar', 'mini') + '</span>');
+    return pedir('/contas/testar', {}).then(function(d){
+      DADOS = d || DADOS;
+      desenhar();
+      trocarCorpo(corpoRede(DADOS.contas || [], false));
+    }).catch(function(){
+      trocarCorpo(veredito('mau', 'alerta', 'Não consegui falar com o painel',
+        'O pedido não chegou ao servidor. Recarregue a página e tente de novo.'));
+    });
+  }
+
+  /* --------------------------------------------------------- ligar conta
+     O PASSO A PASSO EXISTE PORQUE DOIS DOS TRES PASSOS NAO SAO AQUI DENTRO. Em
+     29/08 o botao mandava direto para o Instagram e a Meta respondeu na cara dele
+     "Solicitacao invalida: Invalid redirect_uri", sem dizer o que fazer. O motivo:
+     o endereco de volta deste painel nao estava na lista do aplicativo, que so'
+     conhecia o do Postiz.
+
+     E NAO EXISTE ROTA QUE PERGUNTE ISSO A META. Entao a janela mostra o endereco
+     exato, por extenso e copiavel, e diz onde ele precisa estar cadastrado. O que
+     da' para provar daqui (o aplicativo configurado e o endereco respondendo neste
+     painel) ela prova de verdade, com dois pedidos ao servidor. */
+  function passoNum(tom, numero, titulo, corpo){
+    return '<div class="ct-pss"><span class="n ' + (tom || '') + '">' +
+      (tom === 'ok' ? '<svg viewBox="0 0 24 24"><path d="m5 12 5 5L20 7"/></svg>'
+                    : numero) + '</span>' +
+      '<div class="c"><b>' + titulo + '</b>' + corpo + '</div></div>';
+  }
+  function item(t){
+    return '<li><svg viewBox="0 0 24 24"><path d="m5 12 5 5L20 7"/></svg>' + t + '</li>';
+  }
+  function corpoLigar(p, sonda){
+    p = p || {};
+    var volta = (sonda && sonda.volta) || p.volta ||
+                (location.origin + '/contas/voltar');
+    var permissoes = (p.permissoes || []).map(function(x){
+      return x === 'instagram_business_content_publish' ? 'publicar vídeo'
+        : (x === 'instagram_business_basic' ? 'ler o básico do perfil' : x);
+    }).join(' e ');
+
+    return passoNum(p.app_pronto ? 'ok' : '', '1', 'O Aplicativo Da Meta',
+        p.app_pronto
+          ? '<p>Configurado neste painel: aplicativo <b>' + seguro(p.app_id) +
+            '</b>, pedindo permissão para ' + seguro(permissoes) + '.</p>'
+          : '<p>Falta o número e o segredo do aplicativo em ' +
+            '<code>dados/app_meta.json</code>. Sem eles o Instagram nem abre.</p>') +
+
+      passoNum('', '2', 'A Conta No Instagram',
+        '<p>Antes de autorizar, confira do lado do Instagram:</p><ul>' +
+        item('A conta precisa ser <b>profissional</b>, Empresa ou Criador. Conta ' +
+             'pessoal não publica por aplicativo.') +
+        item('Você precisa estar logado nela <b>neste navegador</b>. O Instagram ' +
+             'liga a conta que estiver na sessão.') +
+        item('Ligar de novo uma conta que já está aqui não duplica: o acesso novo ' +
+             'toma o lugar do antigo.') + '</ul>') +
+
+      passoNum(sonda ? 'ok' : '', '3', 'O Endereço De Volta',
+        '<p>Depois que você autorizar, o Instagram devolve o navegador para este ' +
+        'endereço. Ele precisa estar cadastrado no aplicativo da Meta <b>letra por ' +
+        'letra</b>, senão a resposta é <i>Solicitação inválida: Invalid ' +
+        'redirect_uri</i> e a conta não entra.</p>' +
+        '<div class="ct-cod"><code>' + seguro(volta) + '</code>' +
+        '<button class="ct-copiar" type="button" data-copiar="' + seguro(volta) +
+        '">Copiar</button></div>' +
+        '<p>No painel da Meta: <b>Instagram</b> → <b>Configuração da API com login ' +
+        'do Instagram</b> → <b>Configurações de login da empresa</b> → <b>URIs de ' +
+        'redirecionamento do OAuth</b>. Cole o endereço, salve e volte aqui. ' +
+        '<a href="' + seguro(p.console || 'https://developers.facebook.com/apps/') +
+        '" target="_blank" rel="noopener">Abrir o painel da Meta</a></p>' +
+        (sonda ? '<p>Conferido agora: este painel responde nesse endereço. O que ' +
+                 'falta é a Meta aceitá-lo, e isso só o cadastro resolve.</p>'
+               : '<p>Não consegui confirmar que este painel responde nesse ' +
+                 'endereço. Confira se o site está no ar.</p>')) +
+
+      passoNum('', '4', 'O Que Acontece Depois',
+        '<p>Você aprova no Instagram e volta para esta aba. O acesso vale ' +
+        '<b>60 dias</b>: o painel avisa faltando 14 e renova sozinho faltando 10, ' +
+        'todo dia, pela vigilância. Nada disso pede senha de novo.</p>');
+  }
+  function peLigar(pronto){
+    return '<span class="nota">o Instagram abre nesta mesma aba</span>' +
+      '<span class="dir">' + botao('Fechar', 'fechar', 'mini') +
+      (pronto === false ? '' :
+        botao('Autorizar No Instagram', 'autorizar', 'verde', 'ig')) + '</span>';
+  }
+  function sondarVolta(){
+    return fetch('/contas/voltar?sonda=1', {cache: 'no-store'})
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .catch(function(){ return null; });
+  }
+  function janelaLigar(){
+    abrirJanela(cabSimples('mais', 'Ligar Conta Ao Publicador',
+        'quatro passos, e dois deles são do lado da Meta'),
+      '<div class="ct-sem">Conferindo o que já está pronto…</div>',
+      peLigar(false), true);
+    return Promise.all([pedir('/contas/prontidao'), sondarVolta()])
+      .then(function(r){
+        trocarCorpo(corpoLigar(r[0], r[1]),
+                    peLigar(!!(r[0] && r[0].app_pronto)));
+      }).catch(function(){
+        trocarCorpo(veredito('mau', 'alerta', 'Não consegui falar com o painel',
+          'O pedido não chegou ao servidor. Recarregue a página e tente de novo.'),
+          peLigar(false));
+      });
+  }
+
+  /* --------------------------------------------------------- os cliques dela
+     A JANELA MORA FORA DA ABA, entao ela precisa do proprio ouvinte: o da pagina
+     nao alcanca o que esta' fora dela. */
+  if (JAN) JAN.addEventListener('click', function(e){
+    if (e.target.closest('[data-ct-fechar]')) return fecharJanela();
+
+    var copiar = e.target.closest('[data-copiar]');
+    if (copiar){
+      var texto = copiar.dataset.copiar;
+      var avisar = function(){
+        copiar.textContent = 'Copiado';
+        copiar.classList.add('feito');
+        setTimeout(function(){
+          copiar.textContent = 'Copiar';
+          copiar.classList.remove('feito');
+        }, 1800);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(texto).then(avisar, function(){});
+      } else {
+        /* o caminho velho ainda serve: a area de transferencia moderna so' existe
+           em pagina segura, e o painel local roda em http */
+        var campo = document.createElement('textarea');
+        campo.value = texto;
+        document.body.appendChild(campo);
+        campo.select();
+        try { document.execCommand('copy'); avisar(); } catch (err){}
+        document.body.removeChild(campo);
+      }
+      return;
+    }
+
+    var linha = e.target.closest('[data-abrir-conta]');
+    if (linha) return janelaTeste(linha.dataset.abrirConta);
+
+    var bt = e.target.closest('[data-acao]');
+    if (!bt) return;
+    var qual = bt.dataset.acao;
+    if (qual === 'fechar') return fecharJanela();
+    if (qual === 'testar-de-novo') return janelaTeste(bt.dataset.arroba);
+    if (qual === 'renovar-um'){
+      var quem = bt.dataset.arroba;
+      var solta = ocupado(bt, 'Renovando…');
+      pedir('/contas/renovar', {arroba: quem})
+        .then(function(){ solta(); return janelaTeste(quem); })
+        .catch(solta);
+      return;
+    }
+    if (qual === 'autorizar'){
+      var soltar = ocupado(bt, 'Abrindo O Instagram…');
+      pedir('/contas/ligar').then(function(d){
+        if (d && d.url){ location.href = d.url; return; }
+        soltar();
+        trocarCorpo(veredito('mau', 'alerta', 'Não dá para ligar conta ainda',
+          seguro((d && d.erro) || 'o servidor não devolveu o endereço')),
+          peLigar(false));
+      }).catch(function(){ soltar(); });
+      return;
+    }
+  });
+
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && janelaAberta()) fecharJanela();
+  });
+
   /* ============================================================ as acoes
      TODAS FALAM COM A META DE VERDADE. Nenhum botao desta tela finge. */
   function ocupado(b, texto){
@@ -517,16 +921,12 @@
       return desenhar();
     }
 
-    /* ----------------------------------------- testar a conexao, de verdade */
+    /* ----------------------------------------- testar a conexao, de verdade
+       O RESULTADO ABRE EM JANELA, uma por conta. Antes ele so' mexia nos numeros
+       da ficha, e ficha que muda sozinha nao conta o que foi perguntado nem o que
+       a Meta respondeu. Pedido dele em 29/08. */
     var testar = e.target.closest('[data-testar]');
-    if (testar){
-      testar.classList.add('girando');
-      pedir('/contas/testar', {arroba: testar.dataset.testar}).then(function(d){
-        DADOS = d || DADOS;
-        desenhar();
-      }).catch(function(){ testar.classList.remove('girando'); });
-      return;
-    }
+    if (testar) return janelaTeste(testar.dataset.testar);
     var renovar = e.target.closest('[data-renovar]');
     if (renovar){
       renovar.classList.add('girando');
@@ -553,27 +953,14 @@
     if (!acao) return;
     var qual = acao.dataset.acao;
 
-    if (qual === 'testar-tudo'){
-      var solta = ocupado(acao, 'Perguntando À Meta…');
-      pedir('/contas/testar', {}).then(function(d){
-        DADOS = d || DADOS; solta(); desenhar();
-      }).catch(solta);
-      return;
-    }
+    if (qual === 'testar-tudo') return janelaRede();
     if (qual === 'ligar'){
-      var solta2 = ocupado(acao, 'Abrindo O Instagram…');
-      /* LIGAR CONTA E DE VERDADE: o servidor monta o endereco de autorizacao do
-         Instagram com o numero do aplicativo e um `state` sorteado, e a pessoa
-         autoriza no site deles. A volta cai em `/contas/voltar`. */
-      pedir('/contas/ligar').then(function(d){
-        solta2();
-        if (d.erro){
-          alert('Não dá para ligar conta ainda.\n\n' + d.erro);
-          return;
-        }
-        location.href = d.url;
-      }).catch(function(){ solta2(); });
-      return;
+      /* LIGAR CONTA ABRE O PASSO A PASSO, e nao o Instagram direto. Mandar direto
+         foi o que produziu o "Invalid redirect_uri" na cara dele: a Meta cobra
+         coisas que so' ela sabe, e a tela precisa dizer quais sao antes. Quem
+         autoriza continua sendo ele, no site do Instagram, pelo botao do pé da
+         janela. */
+      return janelaLigar();
     }
     if (qual === 'renovar-tudo'){
       var solta3 = ocupado(acao, 'Renovando…');

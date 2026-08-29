@@ -140,7 +140,7 @@ d.setAttribute("data-menu",localStorage.getItem("pub-menu")||"fechado");})();</s
          numero sobe a cada entrega: se ele nao subiu na tela dele, e' cache, e nao ha o
          que discutir sobre o desenho. -->
     <div class="pe-linha">
-      <span class="pp" style="font-weight:700;font-variant-numeric:tabular-nums">v58</span>
+      <span class="pp" style="font-weight:700;font-variant-numeric:tabular-nums">v59</span>
       <span class="pe-rot">29/08 · no ar</span>
     </div>
     <div class="pe-linha">
@@ -906,13 +906,28 @@ pode perder o lugar a cada pergunta.</p>
 
 <h3>Os botões fazem o que dizem</h3>
 <ol>
-  <li><b>Testar Conexões</b> pergunta à Meta na hora, a rede inteira ou uma conta só.</li>
-  <li><b>Ligar Conta</b> abre a autorização do Instagram. Você autoriza no site deles e
+  <li><b>Testar Conexões</b> pergunta à Meta na hora e abre uma <b>janela por conta</b>
+      com o caminho inteiro: quem a conta é, quantos dias o acesso ainda tem, quanto
+      ainda cabe hoje e em quantos milissegundos a Meta respondeu.</li>
+  <li><b>Ligar Conta</b> abre o passo a passo. Você autoriza no site do Instagram e
       volta para cá; o publicador troca o código por um acesso de 60 dias e guarda.</li>
   <li><b>Renovar</b> troca o acesso agora, sem esperar o prazo.</li>
   <li><b>Desligar</b> apaga o acesso desta máquina. <b>O diário e o histórico ficam:</b>
       desligar é dizer "não opere mais por aqui", não "apague o que aconteceu".</li>
 </ol>
+
+<div class="nota">
+  <span class="nota-rot">Ligar conta depende de um cadastro do lado da Meta</span>
+  <p>Depois que você autoriza, o Instagram devolve o navegador para
+  <code>https://postador.borusa.com.br/contas/voltar</code>. Esse endereço precisa estar
+  cadastrado no aplicativo da Meta, <b>letra por letra</b>, em Instagram → Configuração da
+  API com login do Instagram → Configurações de login da empresa → URIs de
+  redirecionamento do OAuth.</p>
+  <p>Sem ele, a resposta é <i>Solicitação inválida: Invalid redirect_uri</i> e a conta não
+  entra. <b>Não existe rota que pergunte isso à Meta</b>, então a janela de Ligar Conta
+  mostra o endereço por extenso, com botão de copiar, em vez de prometer que está tudo
+  certo.</p>
+</div>
 
 <h3>Onde o acesso mora</h3>
 <p>Em <code>dados/contas.json</code>, no servidor, com permissão fechada. <b>Ele nunca
@@ -969,6 +984,24 @@ para quem já entrou.</p>
      UMA CONTA POR LOTE, de proposito. Ritmo e pasta sao decisoes da conta, nao da rede:
      misturar duas contas no mesmo lote esconde qual delas ficou sem fila. -->
 <script src="codigo/06-programar.js"></script>
+
+<!-- ============================================== A JANELA DA ABA DE CONTAS
+     Uma so' para as duas conversas da aba, preenchida na hora de abrir: o teste de
+     conexao (uma janela por conta, com o que a Meta respondeu agora) e o passo a
+     passo de ligar conta.
+
+     ELA E' UMA JANELA DE VERDADE, e nao o `alert` do navegador. O `alert` trava a
+     pagina, nao tem entrada, nao tem a letra da casa e nao cabe uma lista dentro.
+     Pedido dele em 29/08: "quando eu clico no botao de testar conexao, eu deveria
+     receber um pop-up, e cada pop-up seria referente a uma conta". -->
+<div class="ct-jan ct" id="ct-jan" hidden>
+  <div class="ct-jan-fundo" data-ct-fechar></div>
+  <div class="ct-jan-cx" role="dialog" aria-modal="true" aria-labelledby="ct-jan-tit">
+    <div class="ct-jan-cab" id="ct-jan-cab"></div>
+    <div class="ct-jan-rolo" id="ct-jan-corpo"></div>
+    <div class="ct-jan-pe" id="ct-jan-pe"></div>
+  </div>
+</div>
 
 <!-- ================================================================== CONTAS
      Uma ficha por conta, no desenho da sala de controle do Portal.
