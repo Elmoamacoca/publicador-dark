@@ -740,56 +740,16 @@
     });
   });
 
-  /* --------------------------------------------------- dados de rascunho */
-  /* AS DUAS PRIMEIRAS SAO REAIS, lidas da API do Instagram em 17/08/2026 com os tokens
-     que estao no Postiz. As oito de baixo continuam sendo rascunho, e ficam ai so para
-     dar volume e a gente julgar a tabela cheia. */
-  var RASCUNHO = [
-    { ini:'BD', cor:'var(--chart-1)', arroba:'@borusaof', nicho:'IA e negócios',
-      ativa:true, publicando:false,
-      fase:'madura',   teto:3, hoje:0, ultimo:'21/06',   fila:0,  con:['ok','de pé'] },
-    { ini:'ED', cor:'var(--chart-2)', arroba:'@eduardo_devereux', nicho:'trading e investimentos',
-      ativa:true, publicando:true,
-      fase:'dia 1/21', teto:1, hoje:1, ultimo:'hoje',    fila:0,  con:['ok','de pé'] },
-    { ini:'AO', cor:'var(--chart-3)', arroba:'@arquivo.oculto',   nicho:'curiosidades',
-      ativa:true, publicando:true,
-      fase:'madura',   teto:3, hoje:2, ultimo:'há 41min', fila:24, con:['ok','de pé'] },
-    { ini:'RS', cor:'var(--chart-4)', arroba:'@rotina.severa',    nicho:'rotina · foco',
-      ativa:true, publicando:true,
-      fase:'dia 9/21', teto:1, hoje:1, ultimo:'há 2h07', fila:12, con:['ok','de pé'] },
-    { ini:'DF', cor:'var(--chart-5)', arroba:'@dossie.frio',      nicho:'negócios',
-      ativa:true, publicando:true,
-      fase:'semana 6', teto:2, hoje:1, ultimo:'há 3h32', fila:16, con:['ok','de pé'] },
-    { ini:'LD', cor:'var(--chart-1)', arroba:'@linha.dagua',      nicho:'rotina · foco',
-      ativa:true, publicando:true,
-      fase:'madura',   teto:3, hoje:1, ultimo:'há 5h',   fila:3,  con:['aviso','fila acabando'] },
-    { ini:'VT', cor:'var(--chart-2)', arroba:'@verso.tardio',     nicho:'poesia · cortes',
-      ativa:true, publicando:false,
-      fase:'semana 9', teto:2, hoje:0, ultimo:'ontem',   fila:14, con:['ruim','2 recusas'] },
-    { ini:'ND', cor:'var(--chart-3)', arroba:'@nuvem.densa',      nicho:'curiosidades',
-      ativa:false, publicando:false,
-      fase:'semana 5', teto:2, hoje:0, ultimo:'16/08',   fila:9,  con:['ruim','caiu'] },
-    { ini:'PT', cor:'var(--chart-4)', arroba:'@passo.torto',      nicho:'cortes · motivação',
-      ativa:true, publicando:true,
-      fase:'dia 3/21', teto:1, hoje:1, ultimo:'há 6h18', fila:11, con:['ok','de pé'] },
-    { ini:'CB', cor:'var(--chart-5)', arroba:'@campo.baixo',      nicho:'negócios',
-      ativa:false, publicando:false,
-      fase:'pausada',  teto:0, hoje:0, ultimo:'10/08',   fila:0,  con:['','pausada'] }
-  ];
+  /* AS DUAS LISTAS CHUMBADAS SAIRAM EM 29/08/2026.
 
-  /* AS CONTAS SAO REAIS, sem rascunho nenhum: lidas em 17/08/2026 da API do
-     Instagram (avatar, arroba, total de publicacoes) e do banco do Postiz
-     (programadas, erros nas ultimas 24 horas, se a conta esta desligada).
-     O avatar vem embutido em base64 porque o endereco que a Meta devolve vence em
-     algumas horas: linkar direto daria retrato quebrado amanha. */
-  var CONTAS = window.CONTAS = [
-    { arroba:"borusaof", nome:"Borusa Digital", avatar:"data:image/jpeg;base64,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",
-      ativa:true, publicando:false, conexao:true, vence:"14/10",
-      publicacoes:7, programadas:0, erros24h:0 },
-    { arroba:"eduardo_devereux", nome:"Eduardo Devereux", avatar:"data:image/jpeg;base64,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",
-      ativa:true, publicando:false, conexao:true, vence:"14/10",
-      publicacoes:1, programadas:0, erros24h:0 }
-  ];
+     Eram `RASCUNHO`, com dez contas das quais OITO ERAM INVENTADAS (@dossie.frio,
+     @linha.dagua e companhia), e `CONTAS`, com o retrato das duas contas reais
+     congelado em 17/08 e mais de dez mil caracteres de imagem em base64. Nenhuma das
+     duas era lida por ninguem: a tabela de Contas ja vinha de `/painel/rede` e o
+     assistente de programar monta a lista dele. Ficavam sendo baixadas em toda
+     visita, e dado inventado a um passo de aparecer na tela por engano.
+
+     Quem responde hoje: `/contas/estado`, que pergunta a Meta de verdade. */
 
   /* Com retrato usa o retrato; sem retrato, as iniciais. As telas de rascunho ainda
      nao tem foto, e nao ha porque ter dois desenhos de perfil por causa disso. */
@@ -914,36 +874,77 @@
     }
   });
 
-  var corpoContas = document.getElementById('tab-contas');
-function desenharContas(lista){
-    corpoContas.innerHTML = '';
-    (lista || []).forEach(function(c){
-      var tr = document.createElement('tr');
-      
-      var c_ini = c.arroba ? c.arroba[0].toUpperCase() : '?';
-      if(c.arroba && c.arroba.startsWith('@') && c.arroba.length > 1) {
-          c_ini = c.arroba[1].toUpperCase();
-      }
-      var fakeC = {
-          avatar: c.avatar, 
-          ini: c_ini, 
-          cor: '#333', 
-          arroba: c.arroba, 
-          nome: c.nome
-      };
+  /* ============================================================ a aba de Contas
+     DUAS COLUNAS MENTIAM ATE 29/08/2026. "Conexao" repetia o campo "esta ligada", que
+     e' outra pergunta, e "Publicacoes" era um traco escrito no codigo. Uma conta com o
+     acesso morto apareceria como viva ate' o dia em que uma publicacao falhasse.
 
+     Agora quem responde e' `/contas/estado`: chamada de verdade a Meta, feita pelo
+     `contas.py`, que tambem renova o acesso sozinho antes de vencer. Cada coluna abaixo
+     tem uma fonte, e a que nao tiver fonte nao entra na tela.  */
+  var ACESSO = {};          // arroba -> a ficha que a Meta devolveu
+
+  function fichaDe(a){
+    return ACESSO[String(a).replace('@','').toLowerCase()] || null;
+  }
+
+  /* O ESTADO DA CONEXAO E O DA CHAMADA, e nao o de um selo guardado. */
+  function celulaConexao(c){
+    var f = fichaDe(c.arroba);
+    if (!f) return '<span class="pino off">Sem acesso aqui</span>';
+    var classe = {viva:'ok', vencendo:'', caiu:'ruim'}[f.estado] || 'off';
+    var rotulo = {viva:'Viva', vencendo:'Vencendo', caiu:'Caiu'}[f.estado] || 'Sem acesso';
+    return '<span class="pino ' + classe + '" title="' + (f.detalhe || '') + '">' +
+           rotulo + '</span>';
+  }
+
+  /* A VALIDADE E O AVISO. Sessenta dias e a janela; a barra mostra quanto dela ja
+     correu, e o numero diz quantos dias sobram. */
+  function celulaAcesso(c){
+    var f = fichaDe(c.arroba);
+    if (!f || f.dias_para_vencer === null || f.dias_para_vencer === undefined)
+      return '<span class="pp">sem validade anotada</span>';
+    var faltam = f.dias_para_vencer;
+    var pct = Math.max(0, Math.min(100, Math.round((60 - faltam) / 60 * 100)));
+    var tom = faltam <= 7 ? ' class="ruim"' : (faltam <= 14 ? ' class="meio"' : '');
+    var quando = String(f.vence_em || '').slice(0, 10).split('-').reverse().join('/');
+    return '<div class="acesso"><span class="quanto">' + faltam + ' dias</span>' +
+           '<div class="barra"><i' + tom + ' style="width:' + pct + '%"></i></div>' +
+           '<span class="quando">até ' + (quando.slice(0, 5) || '?') +
+           (f.renovacoes ? ' · renovado ' + f.renovacoes + 'x' : '') + '</span></div>';
+  }
+
+  var corpoContas = document.getElementById('tab-contas');
+  var avisoContas = document.getElementById('contas-aviso');
+
+  function desenharContas(lista){
+    corpoContas.innerHTML = '';
+    if (!(lista || []).length){
+      corpoContas.innerHTML = '<tr><td colspan="11"><div class="vazio">' +
+        'Nenhuma conta ligada ao publicador.</div></td></tr>';
+      return;
+    }
+    (lista || []).forEach(function(c){
+      var f = fichaDe(c.arroba) || {};
+      var tr = document.createElement('tr');
+      var quem = String(c.arroba || '').replace('@', '');
       tr.innerHTML =
-        '<td>' + perfil(fakeC) + '</td>' +
+        '<td>' + perfil({avatar: c.avatar, ini: (quem[0] || '?').toUpperCase(),
+                         cor: 'var(--soft)', arroba: c.arroba, nome: c.nome}) + '</td>' +
         '<td>' + celulaMercado(c.arroba) + '</td>' +
         '<td>' + celulaEtiquetas(c.arroba) + '</td>' +
         '<td><span class="pino ' + (c.ligada ? 'ok' : 'off') + '">' +
           (c.ligada ? 'Ativa' : 'Desligada') + '</span></td>' +
-        '<td><span class="pino ' + (c.publicando ? 'ok' : 'off') + '">' +
-          (c.publicando ? 'Publicando' : 'Parada') + '</span></td>' +
-        '<td><span class="pino ' + (c.ligada ? 'ok' : 'ruim') + '">' +
-          (c.ligada ? 'Ativa' : 'Caiu') + '</span></td>' +
-        '<td class="n">-</td>' +
-        '<td class="n">' + (c.fila || '<span class="pp">0</span>') + '</td>' +
+        '<td>' + celulaConexao(c) + '</td>' +
+        '<td>' + celulaAcesso(c) + '</td>' +
+        '<td class="n">' + (f.seguidores === null || f.seguidores === undefined
+            ? '<span class="pp">–</span>' : f.seguidores) + '</td>' +
+        '<td class="n">' + (f.publicacoes === null || f.publicacoes === undefined
+            ? '<span class="pp">–</span>' : f.publicacoes) + '</td>' +
+        '<td class="n">' + (f.teto_total
+            ? '<b>' + (f.teto_usado || 0) + '</b> <span class="pp">de ' +
+              f.teto_total + '</span>'
+            : '<span class="pp">–</span>') + '</td>' +
         '<td class="n">' + (c.erros24h
             ? '<span class="pino ruim">' + c.erros24h + '</span>'
             : '<span class="pp">0</span>') + '</td>' +
@@ -951,13 +952,75 @@ function desenharContas(lista){
       corpoContas.appendChild(tr);
     });
   }
-  fetch('/contas/meta', {cache:'no-store'})
-    .then(function(r){ return r.json(); })
-    .then(function(d){ META = d.contas || {}; })
-    .then(function(){ return fetch('/painel/rede'); })
-    .then(function(r){ return r.json(); })
-    .then(function(d){ desenharContas(d.contas || []); })
-    .catch(function(){});
+
+  /* O AVISO SO APARECE QUANDO HA O QUE AVISAR. Painel limpo e a rede de pe. */
+  function desenharAviso(d){
+    if (!avisoContas) return;
+    var caidas = d.caidas || 0, vencendo = d.vencendo || 0;
+    if (!caidas && !vencendo && !d.aviso){
+      avisoContas.innerHTML = '';
+      return;
+    }
+    var texto;
+    if (d.aviso) texto = d.aviso;
+    else if (caidas) texto = caidas === 1
+      ? '<b>Uma conta está com o acesso morto</b> e precisa ser religada pelo Instagram.'
+      : '<b>' + caidas + ' contas estão com o acesso morto</b> e precisam ser religadas.';
+    else texto = vencendo === 1
+      ? '<b>Uma conta vence em menos de duas semanas.</b> A renovação automática entra' +
+        ' faltando 10 dias.'
+      : '<b>' + vencendo + ' contas vencem em menos de duas semanas.</b> A renovação' +
+        ' automática entra faltando 10 dias.';
+    avisoContas.innerHTML =
+      '<div class="aviso ' + (caidas ? 'grave' : '') + '">' +
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4"/>' +
+      '<circle cx="12" cy="16.6" r=".7" fill="currentColor" stroke="none"/>' +
+      '<path d="M10.3 3.9 2.4 17.5A1.9 1.9 0 0 0 4 20.4h16a1.9 1.9 0 0 0 1.6-2.9L13.7' +
+      ' 3.9a1.9 1.9 0 0 0-3.4 0Z"/></svg><span>' + texto + '</span></div>';
+  }
+
+  function lerAcesso(forcar){
+    var pedido = forcar
+      ? fetch('/contas/testar', {method:'POST',
+          headers:{'Content-Type':'application/json'}, body:'{}'})
+      : fetch('/contas/estado', {cache:'no-store'});
+    return pedido.then(function(r){ return r.json(); }).then(function(d){
+      ACESSO = {};
+      (d.contas || []).forEach(function(f){
+        ACESSO[String(f.arroba).replace('@','').toLowerCase()] = f;
+      });
+      desenharAviso(d);
+      var carimbo = document.getElementById('contas-lido');
+      if (carimbo) carimbo.textContent = d.contas && d.contas.length
+        ? 'conexão conferida ' + (d.do_guardado ? 'há pouco' : 'agora')
+        : '';
+      return d;
+    }).catch(function(){ return {}; });
+  }
+
+  function carregarContas(forcar){
+    return fetch('/contas/meta', {cache:'no-store'})
+      .then(function(r){ return r.json(); })
+      .then(function(d){ META = d.contas || {}; })
+      .then(function(){ return lerAcesso(forcar); })
+      .then(function(){ return fetch('/painel/rede'); })
+      .then(function(r){ return r.json(); })
+      .then(function(d){ desenharContas(d.contas || []); })
+      .catch(function(){ desenharContas([]); });
+  }
+
+  var botaoTestar = document.getElementById('contas-testar');
+  if (botaoTestar) botaoTestar.addEventListener('click', function(){
+    var antes = botaoTestar.textContent;
+    botaoTestar.textContent = 'Perguntando À Meta…';
+    botaoTestar.disabled = true;
+    carregarContas(true).then(function(){
+      botaoTestar.textContent = antes;
+      botaoTestar.disabled = false;
+    });
+  });
+
+  carregarContas(false);
 
 
   /* A TABELA DE AGENDA SAIU DAQUI em 18/08: o calendario de verdade ocupou o lugar do

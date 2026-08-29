@@ -1,10 +1,15 @@
 name: publicar
 
-# Roda a cada 5 minutos, 24 horas por dia, na infraestrutura do GitHub.
-# Nao depende do PC do Gabriel estar ligado.
+# RELOGIO DESLIGADO EM 29/08/2026. Continua disparavel na mao, e so'.
+#
+# Por que: rodava de 5 em 5 minutos, 24 horas por dia, sobre `dados/agenda.json`, que
+# nao tem saida marcada nenhuma, com segredos que nao existem no repositorio. Ou seja:
+# 288 rodadas por dia sem publicar nada. Quem vai publicar de verdade e' a esteira, na
+# VPS, quando a Ferramenta 1 entregar o lote.
+#
+# A decisao de arquitetura que isso obedece: o GitHub e' repositorio e deploy, nao
+# e' runtime.
 on:
-  schedule:
-    - cron: "*/5 * * * *"
   workflow_dispatch:
 
 permissions:

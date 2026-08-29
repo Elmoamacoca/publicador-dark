@@ -24,6 +24,7 @@ import urllib.parse
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
+import contas
 import midia
 
 PORTA = int(sys.argv[1] if len(sys.argv) > 1 else os.environ.get("PAINEL_PORTA", 4173))
@@ -182,16 +183,23 @@ class SemCache(http.server.SimpleHTTPRequestHandler):
         return self.responder({"erro": "usuario ou senha errados"}, 401)
 
     def rota_de_midia(self, p, corpo=None):
-        """A aba de Midia responde por `midia.py`. Aqui so' passa o pedido adiante.
+        """As abas respondem pelos seus modulos. Aqui so' passa o pedido adiante.
 
         Fica separado de proposito: a Midia vai crescer (ligar pasta, reler, desligar,
-        depois programar), e nada disso tem a ver com servir arquivo estatico."""
+        depois programar), e nada disso tem a ver com servir arquivo estatico.
+
+        SAO DOIS MODULOS, NA ORDEM. `contas.py` cuida do acesso das contas (perguntar
+        a Meta, avisar do vencimento, renovar) e `midia.py` cuida do resto, inclusive
+        do `contas/meta`, que e' o mercado e as etiquetas que o Gabriel digita. Quem
+        nao reconhece a rota devolve None, e a vez passa para o proximo."""
         rota = p.path.strip("/")
         if not (rota.startswith("midia/") or rota.startswith("contas/")
                 or rota.startswith("painel/")):
             return False
         try:
-            r = midia.responder(rota, urllib.parse.parse_qs(p.query), corpo)
+            r = contas.responder(rota, urllib.parse.parse_qs(p.query), corpo)
+            if r is None:
+                r = midia.responder(rota, urllib.parse.parse_qs(p.query), corpo)
         except Exception as e:
             # A tela precisa do motivo escrito, senao vira "deu erro" e ninguem sabe o que
             # fazer. O texto do erro nao carrega credencial: as fontes nunca a colocam na

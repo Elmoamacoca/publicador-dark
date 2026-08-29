@@ -1,10 +1,21 @@
 name: vigia
 
-# De hora em hora pergunta a Meta se cada conta ainda responde.
-# Token morto ou permissao negada vira alarme vermelho no painel.
+# APOSENTADO EM 29/08/2026. O RELOGIO FOI DESLIGADO, o arquivo fica so' como historia.
+#
+# Por que: este vigia rodava de hora em hora contra `dados/contas.json`, que e' um
+# arquivo de EXEMPLO (@exemplo1, @exemplo2), procurando tokens em segredos que nunca
+# foram cadastrados (a API do GitHub confirmou: zero segredos no repositorio). Ele
+# concluia "sem token", gravava o mesmo resultado de volta e comitava. Resultado
+# medido em 29/08: 43 dos 51 ultimos commits eram dele, e o painel nunca leu esse
+# arquivo.
+#
+# Quem vigia agora: `painel/contas.py`, na VPS, com os tokens de verdade. Ele
+# pergunta a Meta, RENOVA o acesso sozinho antes de vencer e grava o resultado onde
+# a tela le. Roda por cron na propria maquina, sem passar pelo GitHub.
+#
+# A decisao de arquitetura que isso obedece: o GitHub e' repositorio e deploy, nao
+# e' runtime.
 on:
-  schedule:
-    - cron: "17 * * * *"
   workflow_dispatch:
 
 permissions:

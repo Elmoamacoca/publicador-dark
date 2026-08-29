@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light" data-menu="fechado">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Contas · Proposta C · Publicador</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="painel.css">
+<style>
+/* --------------------------------------------- PROPOSTA C: lista mestre e dossiê
+   A lista à esquerda responde "quais contas e como elas estão"; o dossiê à direita
+   responde tudo sobre a conta escolhida, sem trocar de tela e sem abrir janela. */
+.sala{display:grid;grid-template-columns:336px minmax(0,1fr);gap:16px;align-items:start}
+@media(max-width:1080px){.sala{grid-template-columns:minmax(0,1fr)}}
+
+.lista-cab{padding:12px;border-bottom:1px solid var(--rule-solid)}
+.lista-cab .ac{max-width:none}
+.lista-rolo{max-height:calc(100vh - 250px);overflow-y:auto;scrollbar-width:none}
+.lista-rolo::-webkit-scrollbar{width:0;display:none}
+
+.item{display:flex;align-items:center;gap:11px;width:100%;padding:12px 14px;border:0;
+      background:none;font:inherit;text-align:left;cursor:pointer;position:relative;
+      border-bottom:1px solid color-mix(in srgb,var(--rule-solid) 55%,transparent);
+      transition:background .14s}
+.item:hover{background:var(--paper-2)}
+.item.on{background:var(--accent-tint)}
+.item.on::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+                 background:var(--accent)}
+.item .av{width:38px;height:38px;font-size:13px}
+.item .quem{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.item .arroba{display:block;font-size:14px;font-weight:700;white-space:nowrap;
+              overflow:hidden;text-overflow:ellipsis}
+.item.on .arroba{color:var(--link)}
+.item .sub{display:block;font-size:11.5px;color:var(--soft);white-space:nowrap;
+           overflow:hidden;text-overflow:ellipsis}
+.bolha{width:9px;height:9px;border-radius:999px;flex:none;background:var(--verde)}
+.bolha.aviso{background:var(--ambar)} .bolha.mau{background:var(--vermelho)}
+.item.simulada .arroba::after{content:"sim";margin-left:6px;font-size:9px;font-weight:800;
+  text-transform:uppercase;color:var(--ambar);
+  background:color-mix(in srgb,var(--ambar) 13%,transparent);padding:1px 5px;
+  border-radius:999px;vertical-align:middle}
+
+.dossie-cab{display:flex;align-items:center;gap:16px;padding:20px;
+            border-bottom:1px solid var(--rule-solid)}
+.dossie-cab .av{width:64px;height:64px;font-size:20px}
+.dossie-cab h2{font-size:21px;letter-spacing:-.4px}
+.dossie-cab .dir{margin-left:auto;display:flex;gap:9px;align-items:center}
+
+.blocos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0}
+@media(max-width:820px){.blocos{grid-template-columns:minmax(0,1fr)}}
+.bloco{padding:20px;border-bottom:1px solid var(--rule-solid);
+       border-right:1px solid var(--rule-solid)}
+.bloco:nth-child(2n){border-right:0}
+.bloco.inteiro{grid-column:1 / -1;border-right:0}
+.bloco h3{margin-bottom:14px;display:flex;align-items:center;gap:9px}
+.bloco h3 .dir{margin-left:auto;font-size:11.5px;font-weight:500;color:var(--soft)}
+
+.medida{display:flex;align-items:baseline;gap:7px;margin-bottom:10px}
+.medida b{font-size:30px;font-weight:700;letter-spacing:-1.1px;line-height:1;
+          font-variant-numeric:tabular-nums}
+.medida span{font-size:14px;color:var(--muted);font-weight:600}
+.barra i.ruim{background:var(--vermelho)}
+
+/* O log da checagem: cada linha aparece quando a chamada correspondente volta. */
+.log{display:flex;flex-direction:column;gap:8px;margin-top:12px;font-size:12.5px}
+.log div{display:flex;align-items:center;gap:9px;color:var(--muted);opacity:0;
+         transform:translateY(4px);transition:.3s}
+.log div.mostra{opacity:1;transform:none}
+.log b{color:var(--ink);font-weight:700}
+.log .ok{width:15px;height:15px;flex:none;border-radius:999px;background:var(--accent-tint);
+         color:var(--link);display:grid;place-items:center;font-size:9px;font-weight:800}
+
+.saidas{display:flex;flex-direction:column}
+.saida{display:flex;align-items:center;gap:13px;padding:12px 0;
+       border-top:1px solid color-mix(in srgb,var(--rule-solid) 50%,transparent)}
+.saida:first-child{border-top:0}
+.saida .cap{width:34px;height:44px;border-radius:6px;flex:none;background:var(--paper-2);
+            border:1px solid var(--rule-solid);display:grid;place-items:center;
+            font-size:9px;font-weight:700;color:var(--soft)}
+.saida .txt{flex:1;min-width:0}
+.saida .txt b{display:block;font-size:13.5px;font-weight:600;white-space:nowrap;
+              overflow:hidden;text-overflow:ellipsis}
+.saida .txt span{font-size:11.5px;color:var(--soft)}
+.saida .nums{display:flex;gap:16px;text-align:right}
+.saida .nums div b{display:block;font-size:15px;font-weight:700;
+                   font-variant-numeric:tabular-nums;line-height:1}
+.saida .nums div span{font-size:10.5px;color:var(--soft)}
+
+.campo{border:1px dashed transparent;border-radius:8px;padding:4px 8px;margin:-4px -8px;
+       cursor:text;font-size:14px;color:var(--ink);display:inline-flex;align-items:center;
+       min-height:26px}
+.campo:hover{border-color:var(--rule-solid);background:var(--paper-2)}
+.campo.vazio{color:var(--soft)}
+.campo input{border:0;background:none;font:inherit;color:var(--ink);outline:none;
+             width:170px;padding:0}
+.etqs{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:12px}
+.etq{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;
+     background:var(--accent-tint);color:var(--link);border-radius:999px;padding:5px 11px}
+.etq button{border:0;background:none;color:inherit;cursor:pointer;padding:0;font:inherit;
+            opacity:.6;line-height:1}
+.etq button:hover{opacity:1}
+.etq-mais{border:1px dashed var(--rule-solid);background:none;color:var(--soft);
+          border-radius:999px;padding:5px 12px;font:inherit;font-size:12px;cursor:pointer}
+.etq-mais:hover{border-color:var(--soft);color:var(--ink)}
+.rot-campo{font-size:11.5px;color:var(--soft);display:block;margin-bottom:6px}
+
+.ic{width:36px;height:36px;border-radius:999px;border:1px solid var(--rule-solid);
+    background:var(--branco);color:var(--muted);cursor:pointer;display:grid;
+    place-items:center;padding:0;transition:.15s}
+.ic:hover{border-color:var(--soft);color:var(--ink)}
+.ic svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.9;
+        stroke-linecap:round;stroke-linejoin:round}
+.ic.girando svg{animation:gira .8s linear infinite}
+@keyframes gira{to{transform:rotate(360deg)}}
+.pe-lista{display:flex;align-items:center;gap:12px;padding:12px 14px;
+          border-top:1px solid var(--rule-solid)}
+.pe-lista .dir{margin-left:auto}
+</style>
+</head>
+<body>
+
+<svg class="tinta" aria-hidden="true">
+  <symbol id="i-seta" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></symbol>
+  <symbol id="i-ig" viewBox="0 0 24 24">
+    <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+       stroke-linejoin="round"><rect x="2.6" y="2.6" width="18.8" height="18.8" rx="5.4"/>
+      <circle cx="12" cy="12" r="4.2"/></g>
+    <circle cx="17.4" cy="6.6" r="1.35" fill="currentColor" stroke="none"/>
+  </symbol>
+  <symbol id="i-agenda" viewBox="0 0 24 24">
+    <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+       stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2.5"/>
+      <path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/></g>
+  </symbol>
+</svg>
+
+<aside class="menu" aria-label="Menu do Publicador">
+  <div class="menu-marca">
+    <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true">
+      <circle cx="14" cy="14" r="12" fill="none" stroke="var(--ink)" stroke-width="2.4"/>
+      <circle cx="14" cy="14" r="4.6" fill="var(--accent)"/>
+    </svg>
+    <span class="menu-nome">Publicador</span>
+  </div>
+  <button class="menu-botao" id="botao-menu" aria-expanded="false"
+          aria-label="Abrir ou fechar o menu">
+    <svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+  </button>
+  <nav class="menu-rolo">
+    <button class="mi" data-pag="painel">
+      <svg class="mi-ic" viewBox="0 0 24 24"><rect x="3" y="3.5" width="7.5" height="9" rx="1.6"/><rect x="13.5" y="3.5" width="7.5" height="5" rx="1.6"/><rect x="3" y="15.5" width="7.5" height="5" rx="1.6"/><rect x="13.5" y="11.5" width="7.5" height="9" rx="1.6"/></svg>
+      <span class="mi-rot">Painel</span>
+    </button>
+    <button class="mi" data-pag="calendario">
+      <svg class="mi-ic" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+      <span class="mi-rot">Calendário</span>
+    </button>
+    <button class="mi" data-pag="midia">
+      <svg class="mi-ic" viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M7 5 6 9M13 5l-1 4M21.5 9h-19"/></svg>
+      <span class="mi-rot">Mídia</span>
+    </button>
+    <button class="mi" data-pag="analytics">
+      <svg class="mi-ic" viewBox="0 0 24 24"><path d="M4 4v16h16"/><path d="M8 16v-5M13 16V7M18 16v-8"/></svg>
+      <span class="mi-rot">Analytics</span>
+    </button>
+    <button class="mi ativo" data-pag="contas">
+      <svg class="mi-ic" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.5 20c0-3.7 3.3-6 7.5-6s7.5 2.3 7.5 6"/></svg>
+      <span class="mi-rot">Contas</span>
+    </button>
+  </nav>
+  <div class="menu-acao" style="padding:8px">
+    <button class="btn brasa" type="button" aria-label="Programar publicações">
+      <svg class="seta seta-esq" viewBox="0 0 24 24"><use href="#i-seta"/></svg>
+      <span class="txt"><svg class="ig-selo" aria-hidden="true"><use href="#i-agenda"/></svg>
+        <span class="ag-rot">Programar</span></span>
+      <span class="circ"></span>
+      <svg class="seta seta-dir" viewBox="0 0 24 24"><use href="#i-seta"/></svg>
+    </button>
+  </div>
+  <div class="menu-pe">
+    <button class="mi" data-pag="ajuda">
+      <svg class="mi-ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.2a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4"/><circle cx="12" cy="17" r=".6" fill="currentColor"/></svg>
+      <span class="mi-rot">Ajuda</span>
+    </button>
+    <div class="pe-linha">
+      <span class="pp" style="font-weight:700">C</span>
+      <span class="pe-rot">proposta</span>
+    </div>
+    <div class="pe-linha">
+      <svg class="tema-icone" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/>
+        <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg>
+      <span class="pe-rot">tema</span>
+      <button class="chave" id="chave" role="switch" aria-checked="false"
+              aria-label="Trocar tema"><i></i></button>
+    </div>
+  </div>
+</aside>
+
+<main class="palco">
+<section class="pagina ativa" id="pag-contas">
+
+  <div class="cab">
+    <div>
+      <h1>Contas</h1>
+      <p class="p">A rede à esquerda, a conta escolhida à direita.</p>
+    </div>
+    <div class="dir">
+      <span class="pp" id="lido">conferido agora</span>
+      <button class="bt mini" id="testar-todas">Testar Conexões</button>
+      <button class="bt forte" id="ligar">Ligar Conta</button>
+    </div>
+  </div>
+
+  <div class="sala">
+    <div class="caixa solta">
+      <div class="lista-cab">
+        <div class="ac">
+          <div class="ac-campo">
+            <svg class="ac-lupa" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/>
+                 <path d="M20 20l-3.5-3.5"/></svg>
+            <input id="busca" type="text" autocomplete="off" spellcheck="false"
+                   placeholder="Buscar conta">
+            <button class="ac-limpar" id="limpar" type="button" hidden aria-label="Limpar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="lista-rolo" id="lista"></div>
+      <div class="pe-lista">
+        <span class="pp" id="conta-linhas"></span>
+        <div class="dir">
+          <button class="bt mini" id="simular">Simular 24</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="caixa solta" id="dossie"></div>
+  </div>
+
+</section>
+</main>
+
+<script src="dados.js"></script>
+<script>
+(function(){
+  var raiz = document.documentElement;
+  document.getElementById('botao-menu').addEventListener('click', function(){
+    var aberto = raiz.getAttribute('data-menu') === 'aberto';
+    raiz.setAttribute('data-menu', aberto ? 'fechado' : 'aberto');
+    this.setAttribute('aria-expanded', String(!aberto));
+  });
+  var chave = document.getElementById('chave');
+  chave.addEventListener('click', function(){
+    var escuro = raiz.getAttribute('data-theme') === 'dark';
+    raiz.classList.add('trocando-tema');
+    raiz.setAttribute('data-theme', escuro ? 'light' : 'dark');
+    chave.setAttribute('aria-checked', String(!escuro));
+    setTimeout(function(){ raiz.classList.remove('trocando-tema'); }, 340);
+  });
+
+  var HOJE = new Date(window.DADOS.hoje);
+  var POSTS = window.DADOS.posts || {};
+  var LINHAS = window.DADOS.contas.map(function(c){ return Object.assign({}, c); });
+  var SIMULADAS = [];
+  var mercados = ['corte de podcast','notícia','curiosidades','negócios','rotina','trading'];
+  var etqs = ['principal','teste','aquecimento','volume'];
+  for (var i = 0; i < 22; i++){
+    var nasce = new Date(2026, 5 + (i % 3), 1 + (i * 3) % 27);
+    var venc = new Date(nasce.getTime() + 60 * 864e5);
+    var caiu = i % 7 === 3, quase = i % 7 === 5;
+    if (quase) venc = new Date(HOJE.getTime() + (3 + i % 4) * 864e5);
+    SIMULADAS.push({
+      u:'conta.exemplo' + (i+1), nome:'Conta De Exemplo ' + (i+1), avatar:'',
+      seguidores:[0,3,18,140,612,2400][i%6], publicacoes:(i*7)%61,
+      mercado:mercados[i%mercados.length],
+      etiquetas: i%3===0 ? [etqs[i%etqs.length]] : [],
+      ligada:!caiu, conexao: caiu ? 'caiu' : 'viva',
+      tetoUsado: caiu ? 0 : (i*11)%101, tetoTotal:100,
+      ligadaEm:nasce.toISOString(), vence:venc.toISOString(),
+      fila:(i*5)%37, erros24h: i%9===4 ? (i%3)+1 : 0,
+      ultimo:new Date(HOJE.getTime() - ((i*4)%40)*864e5).toISOString(),
+      tipo:'Criador De Mídia', simulada:true
+    });
+  }
+
+  function dias(a,b){ return Math.round((new Date(b) - new Date(a)) / 864e5); }
+  function dataCurta(d){ var x = new Date(d);
+    return String(x.getDate()).padStart(2,'0') + '/' + String(x.getMonth()+1).padStart(2,'0'); }
+  function dataLonga(d){ var x = new Date(d);
+    var m = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+    return x.getDate() + ' de ' + m[x.getMonth()] + ' de ' + x.getFullYear(); }
+  function faz(d){ var n = dias(d, HOJE);
+    if (n <= 0) return 'hoje'; if (n === 1) return 'ontem';
+    if (n < 30) return 'há ' + n + ' dias'; return 'há ' + Math.round(n/30) + ' meses'; }
+  function num(n){ return (n||0).toLocaleString('pt-BR'); }
+  var cores = ['var(--chart-1)','var(--chart-2)','var(--chart-3)','var(--chart-4)','var(--chart-5)'];
+
+  function estadoConexao(c){
+    if (c.conexao === 'caiu') return {classe:'ruim', bolha:'mau', texto:'Caiu'};
+    if (dias(HOJE, c.vence) <= 14) return {classe:'', bolha:'aviso', texto:'Vencendo'};
+    return {classe:'ok', bolha:'', texto:'Viva'};
+  }
+  function face(c, i, tam){
+    return c.avatar
+      ? '<img class="av" src="' + c.avatar + '" alt="">'
+      : '<span class="av" style="background:' + cores[i % 5] + '">' +
+        c.u.replace('@','').slice(0,2).toUpperCase() + '</span>';
+  }
+
+  var comSimuladas = false, busca = '', escolhida = LINHAS[0].u;
+  function todas(){ return comSimuladas ? LINHAS.concat(SIMULADAS) : LINHAS; }
+  function achaC(u){ return todas().filter(function(c){ return c.u === u; })[0]; }
+  function filtradas(){
+    return todas().filter(function(c){
+      return !busca || (c.u + ' ' + c.nome).toLowerCase().indexOf(busca) !== -1;
+    });
+  }
+
+  /* ------------------------------------------------------------------ a lista */
+  function desenharLista(){
+    var lista = filtradas();
+    var alvo = document.getElementById('lista');
+    if (!lista.length){
+      alvo.innerHTML = '<div class="vazio">Nenhuma conta com esse nome.</div>';
+    } else {
+      alvo.innerHTML = lista.map(function(c, i){
+        var con = estadoConexao(c);
+        return '<button class="item' + (c.u === escolhida ? ' on' : '') +
+          (c.simulada ? ' simulada' : '') + '" data-ir="' + c.u + '">' +
+          face(c, i) +
+          '<span class="quem"><span class="arroba">@' + c.u + '</span>' +
+          '<span class="sub">' + (c.mercado || 'sem mercado') + ' · ' +
+          (c.fila ? c.fila + ' na fila' : 'sem fila') + '</span></span>' +
+          '<span class="bolha ' + con.bolha + '" title="' + con.texto + '"></span></button>';
+      }).join('');
+    }
+    document.getElementById('conta-linhas').textContent =
+      lista.length + (lista.length === 1 ? ' conta' : ' contas');
+    if (lista.length && !lista.some(function(c){ return c.u === escolhida; })){
+      escolhida = lista[0].u; desenharDossie();
+    }
+  }
+
+  /* ------------------------------------------------------------------ o dossiê */
+  function desenharDossie(){
+    var c = achaC(escolhida);
+    if (!c) return;
+    var i = todas().indexOf(c);
+    var con = estadoConexao(c);
+    var faltam = dias(HOJE, c.vence);
+    var total = Math.max(dias(c.ligadaEm, c.vence), 1);
+    var pctAcesso = Math.max(0, Math.min(100, Math.round((total - faltam) / total * 100)));
+    var corAcesso = faltam <= 7 ? ' class="ruim"' : (faltam <= 14 ? ' class="meio"' : '');
+    var pctTeto = Math.round(c.tetoUsado / c.tetoTotal * 100);
+    var corTeto = pctTeto >= 80 ? ' class="ruim"' : (pctTeto >= 50 ? ' class="meio"' : '');
+    var posts = (POSTS[c.u] || []).slice(0, 5);
+
+    document.getElementById('dossie').innerHTML =
+      '<div class="dossie-cab">' + face(c, i) +
+        '<div><h2>@' + c.u + '</h2><p class="p">' + (c.nome || '') + ' · ' +
+        (c.tipo || 'Criador De Mídia') + '</p></div>' +
+        '<div class="dir">' +
+          '<button class="bt mini" data-programar="' + c.u + '">Programar</button>' +
+          '<a class="btn brasa" href="https://www.instagram.com/' + c.u + '/" ' +
+            'target="_blank" rel="noopener">' +
+            '<svg class="seta seta-esq" viewBox="0 0 24 24"><use href="#i-seta"/></svg>' +
+            '<span class="txt"><svg class="ig-selo" aria-hidden="true"><use href="#i-ig"/></svg>' +
+            'Instagram</span><span class="circ"></span>' +
+            '<svg class="seta seta-dir" viewBox="0 0 24 24"><use href="#i-seta"/></svg></a>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="blocos">' +
+        '<div class="bloco"><h3>Conexão Com A Meta' +
+          '<span class="dir" data-checada>testada agora</span></h3>' +
+          '<div style="display:flex;align-items:center;gap:12px">' +
+            '<span class="pino ' + con.classe + '">' + con.texto + '</span>' +
+            '<button class="bt mini" data-testar="' + c.u + '">Testar Agora</button></div>' +
+          '<div class="log" id="log">' +
+            '<div><span class="ok">1</span>Identidade confirmada: <b>@' + c.u + '</b></div>' +
+            '<div><span class="ok">2</span>Teto de publicação lido: <b>' + c.tetoUsado +
+              ' de ' + c.tetoTotal + '</b> nas últimas 24 horas</div>' +
+            '<div><span class="ok">3</span>Perfil devolveu <b>' + num(c.seguidores) +
+              '</b> seguidores e <b>' + num(c.publicacoes) + '</b> publicações</div>' +
+          '</div>' +
+        '</div>' +
+
+        '<div class="bloco"><h3>Acesso' +
+          '<span class="dir">vence em ' + dataLonga(c.vence) + '</span></h3>' +
+          '<div class="medida"><b>' + faltam + '</b><span>dias restantes</span></div>' +
+          '<div class="barra"><i' + corAcesso + ' style="width:' + pctAcesso + '%"></i></div>' +
+          '<div class="log"><div class="mostra"><span class="ok">·</span>' +
+            'Ligada em <b>' + dataLonga(c.ligadaEm) + '</b>, janela de 60 dias</div></div>' +
+          '<button class="bt mini" style="margin-top:14px" data-renovar="' + c.u +
+            '">Renovar Acesso</button>' +
+        '</div>' +
+
+        '<div class="bloco"><h3>Publicação De Hoje' +
+          '<span class="dir">teto da Meta por 24 horas</span></h3>' +
+          '<div class="medida"><b>' + c.tetoUsado + '</b><span>de ' + c.tetoTotal +
+            ' usadas</span></div>' +
+          '<div class="barra"><i' + corTeto + ' style="width:' + pctTeto + '%"></i></div>' +
+          '<div class="log"><div class="mostra"><span class="ok">·</span>' +
+            'Sobram <b>' + (c.tetoTotal - c.tetoUsado) + '</b> saídas para hoje</div></div>' +
+        '</div>' +
+
+        '<div class="bloco"><h3>Fila E Erros</h3>' +
+          '<div style="display:flex;gap:30px">' +
+            '<div><div class="medida"><b>' + num(c.fila) + '</b></div>' +
+              '<span class="pp">Vídeos Marcados</span></div>' +
+            '<div><div class="medida"><b style="' +
+              (c.erros24h ? 'color:var(--vermelho)' : '') + '">' + num(c.erros24h) +
+              '</b></div><span class="pp">Erros Em 24 Horas</span></div>' +
+            '<div><div class="medida"><b style="font-size:20px">' + faz(c.ultimo) +
+              '</b></div><span class="pp">Última Saída</span></div>' +
+          '</div>' +
+          (c.rascunho
+            ? '<div class="log"><div class="mostra"><span class="ok">!</span>' +
+              'Há um lote começado e não terminado para esta conta</div></div>' : '') +
+        '</div>' +
+
+        '<div class="bloco inteiro"><h3>Identidade No Publicador' +
+          '<span class="dir">só o Gabriel digita isto, a Meta não sabe</span></h3>' +
+          '<span class="rot-campo">Mercado</span>' +
+          '<span class="campo' + (c.mercado ? '' : ' vazio') + '" data-mercado="' + c.u +
+            '">' + (c.mercado || 'definir') + '</span>' +
+          '<span class="rot-campo" style="margin-top:16px">Etiquetas</span>' +
+          '<span class="etqs" data-etqs="' + c.u + '">' +
+            c.etiquetas.map(function(t){
+              return '<span class="etq">' + t + '<button data-tirar="' + t +
+                     '" aria-label="Tirar ' + t + '">×</button></span>'; }).join('') +
+            '<button class="etq-mais" data-por="' + c.u + '">+ etiqueta</button></span>' +
+        '</div>' +
+
+        '<div class="bloco inteiro" style="border-bottom:0"><h3>Últimas Saídas' +
+          '<span class="dir">' + (posts.length ? posts.length + ' publicações lidas da Meta'
+            : 'nenhuma publicação lida') + '</span></h3>' +
+          (posts.length
+            ? '<div class="saidas">' + posts.map(function(p){
+                var capa = p.capa
+                  ? '<span class="cap" style="background-image:url(' + p.capa + ');' +
+                    'background-size:cover;background-position:center"></span>'
+                  : '<span class="cap">' + (p.fmt || 'reel') + '</span>';
+                return '<div class="saida">' + capa +
+                  '<span class="txt"><b>' + (p.legenda || 'Publicação sem legenda') + '</b>' +
+                  '<span>' + dataCurta(p.quando) + ' · ' + faz(p.quando) + '</span></span>' +
+                  '<span class="nums">' +
+                    '<div><b>' + num(p.views) + '</b><span>vistas</span></div>' +
+                    '<div><b>' + num(p.cur) + '</b><span>curtidas</span></div>' +
+                    '<div><b>' + num(p.com) + '</b><span>comentários</span></div>' +
+                  '</span></div>';
+              }).join('') + '</div>'
+            : '<div class="vazio">Esta conta ainda não publicou pelo publicador.</div>') +
+        '</div>' +
+      '</div>';
+  }
+
+  /* ------------------------------------------------------------------ interação */
+  document.getElementById('lista').addEventListener('click', function(e){
+    var b = e.target.closest('[data-ir]');
+    if (!b) return;
+    escolhida = b.dataset.ir;
+    desenharLista(); desenharDossie();
+  });
+
+  var campoBusca = document.getElementById('busca'), limpar = document.getElementById('limpar');
+  campoBusca.addEventListener('input', function(){
+    busca = campoBusca.value.trim().toLowerCase();
+    limpar.hidden = !campoBusca.value; desenharLista();
+  });
+  limpar.addEventListener('click', function(){
+    campoBusca.value = ''; busca = ''; limpar.hidden = true; desenharLista(); campoBusca.focus();
+  });
+
+  document.getElementById('dossie').addEventListener('click', function(e){
+    var m = e.target.closest('[data-mercado]');
+    if (m && !m.querySelector('input')){
+      var c = achaC(m.dataset.mercado);
+      m.classList.remove('vazio');
+      m.innerHTML = '<input value="' + (c.mercado || '').replace(/"/g,'&quot;') +
+                    '" placeholder="mercado">';
+      var campo = m.querySelector('input'); campo.focus(); campo.select();
+      campo.addEventListener('blur', function(){
+        c.mercado = campo.value.trim(); desenharDossie(); desenharLista(); });
+      campo.addEventListener('keydown', function(ev){
+        if (ev.key === 'Enter') campo.blur();
+        if (ev.key === 'Escape'){ campo.value = c.mercado || ''; campo.blur(); }
+      });
+      return;
+    }
+    var tirar = e.target.closest('[data-tirar]');
+    if (tirar){
+      var cx = tirar.closest('[data-etqs]'), conta = achaC(cx.dataset.etqs);
+      conta.etiquetas = conta.etiquetas.filter(function(t){ return t !== tirar.dataset.tirar; });
+      return desenharDossie();
+    }
+    var por = e.target.closest('[data-por]');
+    if (por){
+      var cc = por.closest('[data-etqs]'), qual = achaC(cc.dataset.etqs);
+      por.outerHTML = '<input class="etq-novo" placeholder="etiqueta">';
+      var novo = cc.querySelector('.etq-novo');
+      novo.style.cssText = 'border:1px dashed var(--rule-solid);border-radius:999px;' +
+        'padding:5px 12px;font:inherit;font-size:12px;width:120px;outline:none;' +
+        'background:none;color:var(--ink)';
+      novo.focus();
+      novo.addEventListener('blur', function(){
+        var v = novo.value.trim().toLowerCase();
+        if (v && qual.etiquetas.indexOf(v) === -1) qual.etiquetas.push(v);
+        desenharDossie();
+      });
+      novo.addEventListener('keydown', function(ev){
+        if (ev.key === 'Enter') novo.blur();
+        if (ev.key === 'Escape'){ novo.value = ''; novo.blur(); }
+      });
+      return;
+    }
+    var testar = e.target.closest('[data-testar]');
+    if (testar){
+      var b = testar, antes = b.textContent;
+      b.textContent = 'Perguntando…'; b.disabled = true;
+      var linhas = document.querySelectorAll('#log div');
+      linhas.forEach(function(l){ l.classList.remove('mostra'); });
+      linhas.forEach(function(l, k){
+        setTimeout(function(){ l.classList.add('mostra'); }, 320 * (k + 1));
+      });
+      setTimeout(function(){
+        b.textContent = antes; b.disabled = false;
+        var quando = document.querySelector('[data-checada]');
+        if (quando) quando.textContent = 'testada agora';
+      }, 320 * linhas.length + 260);
+      return;
+    }
+    var renovar = e.target.closest('[data-renovar]');
+    if (renovar){
+      var alvo = achaC(renovar.dataset.renovar);
+      renovar.textContent = 'Renovando…';
+      setTimeout(function(){
+        alvo.ligadaEm = HOJE.toISOString();
+        alvo.vence = new Date(HOJE.getTime() + 60 * 864e5).toISOString();
+        desenharDossie(); desenharLista();
+      }, 900);
+      return;
+    }
+    var prog = e.target.closest('[data-programar]');
+    if (prog){
+      var t = prog.textContent;
+      prog.textContent = 'Abrindo O Assistente…';
+      setTimeout(function(){ prog.textContent = t; }, 1100);
+    }
+  });
+
+  document.getElementById('testar-todas').addEventListener('click', function(){
+    var b = this, antes = b.textContent;
+    b.textContent = 'Perguntando À Meta…'; b.disabled = true;
+    setTimeout(function(){
+      b.textContent = antes; b.disabled = false;
+      document.getElementById('lido').textContent = 'conferido agora';
+      var quando = document.querySelector('[data-checada]');
+      if (quando) quando.textContent = 'testada agora';
+    }, 1400);
+  });
+  document.getElementById('ligar').addEventListener('click', function(){
+    var b = this; b.textContent = 'Abrindo O Instagram…';
+    setTimeout(function(){ b.textContent = 'Ligar Conta'; }, 1200);
+  });
+  document.getElementById('simular').addEventListener('click', function(){
+    comSimuladas = !comSimuladas;
+    this.textContent = comSimuladas ? 'Só Reais' : 'Simular 24';
+    desenharLista();
+  });
+
+  desenharLista();
+  desenharDossie();
+  setTimeout(function(){
+    document.querySelectorAll('#log div').forEach(function(l, k){
+      setTimeout(function(){ l.classList.add('mostra'); }, 220 * (k + 1));
+    });
+  }, 300);
+})();
+</script>
+</body>
+</html>

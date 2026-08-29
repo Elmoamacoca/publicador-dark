@@ -13,3 +13,7 @@ dev.log
 npm-debug.log
 *.bak
 *.orig
+
+# gerados do build das propostas de layout (o dados.js leva capa e retrato das contas)
+docs/propostas/**/painel.css
+docs/propostas/**/dados.js

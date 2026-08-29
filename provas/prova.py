@@ -37,6 +37,10 @@ ROTAS = [
     ("midia/estado", ("fonte", "pronta")),
     ("midia/ligadas", ("pastas",)),
     ("contas/meta", ("contas",)),
+    # O ACESSO DAS CONTAS. Esta rota pergunta a Meta e devolve o estado de cada
+    # conexao, com a validade e a contagem de renovacoes. Ela entra na prova porque
+    # e' ela que sustenta o aviso de vencimento: se calar, a tela volta a mentir.
+    ("contas/estado", ("contas", "vivas", "vencendo", "caidas")),
     ("painel/rascunho", ("rascunhos",)),
     ("painel/pulso", ("pulso",)),
 ]

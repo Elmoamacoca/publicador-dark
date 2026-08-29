@@ -375,7 +375,18 @@ d.setAttribute("data-menu",localStorage.getItem("pub-menu")||"fechado");})();</s
       <div><h1>Contas</h1>
         <p class="p">Os perfis ligados ao publicador. Tudo nesta tela é dado de verdade,
           lido da API do Instagram e do banco do publicador.</p></div>
+      <div class="dir">
+        <span class="pp" id="contas-lido"></span>
+        <!-- O BOTAO PERGUNTA A META NA HORA. Sem ele, o unico jeito de saber se uma
+             conta caiu seria esperar uma publicacao falhar. -->
+        <button class="bt mini" id="contas-testar">Testar Conexões</button>
+      </div>
     </div>
+
+    <!-- O aviso do acesso. Vazio quando nao ha o que avisar: painel limpo e a rede
+         de pe, e o dia em que ele aparecer alguem precisa agir. -->
+    <div id="contas-aviso"></div>
+
     <div class="caixa solta">
       <div class="rolagem">
         <table>
@@ -384,10 +395,11 @@ d.setAttribute("data-menu",localStorage.getItem("pub-menu")||"fechado");})();</s
             <th>Mercado</th>
             <th>Etiquetas</th>
             <th>No publicador</th>
-            <th>Publicando</th>
             <th>Conexão</th>
+            <th>Acesso Vence</th>
+            <th class="n">Seguidores</th>
             <th class="n">Publicações</th>
-            <th class="n">Programadas</th>
+            <th class="n">Teto De Hoje</th>
             <th class="n">Erros 24h</th>
             <th class="n"></th>
           </tr></thead>
