@@ -1,0 +1,365 @@
+/* =====================================================================
+   A ABA DE CONTAS
+
+   O desenho nao foi inventado aqui: ele e' o da sala de controle do Portal
+   (`portal.borusa.com.br/rastreamento`), que o Gabriel apontou como regua em
+   29/08 depois de reprovar a primeira versao desta tela: "ta tudo muito
+   chapado", "os filtros estao bem feiozinhos", "aquele botao que nao foi
+   aprovado por mim". Vieram de la, peca por peca: o cartao com sombra dupla,
+   as tres receitas de rotulo, o numero grande, a pilula de variacao, o
+   segmentado, o seletor proprio, a fita de eventos e o pulso do ao vivo.
+
+   E O ASSUNTO MUDOU JUNTO. Seguidor e publicacao SAIRAM: isso e' desempenho,
+   e desempenho mora em Analytics. Aqui a pergunta e' uma so, "esta conta esta
+   de pe?", e a tela responde por tres caminhos: a conexao medida agora, o
+   acesso que vence, e o que trava a operacao.
+
+   TODA CLASSE COMECA COM `ct-`. Esta folha divide a pagina com as outras doze
+   e a colisao de nome ja' custou tela quebrada tres vezes nesta casa (a
+   classe `.chave` quebrou um KPI, `.mat` e `.cabeca` quebraram o portal).
+
+   O BOTAO E' SEMPRE O ANIMADO DA CASA, o mesmo gesto do Programar. Botao
+   chapado nesta tela foi reprovado por escrito.
+   ===================================================================== */
+
+.ct{
+  /* a familia de cor de DADO, a mesma da sala. A casa tem uma cor de acao so',
+     e grafico com categoria precisa distinguir categoria. */
+  --ct-1:#3F7D53; --ct-2:#2F6E9E; --ct-3:#6D4AA8; --ct-4:#B07D22; --ct-5:#1C7E76;
+  --ct-1t:rgba(63,125,83,.12);
+  --ct-pos:#3F7D53; --ct-neg:#B23A3A; --ct-alerta:#B07D22;
+  --ct-pos-t:rgba(63,125,83,.11); --ct-neg-t:rgba(178,58,58,.10);
+  --ct-alerta-t:rgba(176,125,34,.12);
+  --ct-trilho:#EAECEF; --ct-linha2:#D8DBDF;
+  --ct-sombra:0 1px 2px rgba(14,14,14,.05), 0 8px 24px rgba(14,14,14,.07);
+  --ct-sombra-g:0 20px 52px rgba(14,14,14,.18);
+  --ct-n1:34px; --ct-n2:24px; --ct-n3:18px;
+  --ct-r:12px; --ct-rg:16px;
+}
+/* O EMPILHAMENTO SO VALE COM A PAGINA ABERTA, e o seletor precisa das duas
+   classes: `.pagina` esconde com UMA classe e `.ct` mostraria com uma tambem,
+   entao a aba ficaria visivel por cima do painel o tempo todo. Quem chega
+   depois na folha ganha quando a forca e' igual. */
+.pagina.ativa.ct{display:flex;flex-direction:column;gap:18px}
+/* OS SELETORES SAO QUALIFICADOS UM A UM. Numa lista, a condicao do primeiro
+   nao se estende aos outros, e isso ja' deixou a gaveta do portal sempre
+   escura. */
+:root[data-theme="dark"] .ct,
+:root[data-theme="dark"] .ct-balao{
+  --ct-1:#5AAE78; --ct-2:#4C8FD0; --ct-3:#A07BD8; --ct-4:#C98B3A; --ct-5:#4FB0A5;
+  --ct-1t:rgba(90,174,120,.16);
+  --ct-pos:#5FC28A; --ct-neg:#E2716A; --ct-alerta:#E0A33E;
+  --ct-pos-t:rgba(95,194,138,.14); --ct-neg-t:rgba(226,113,106,.14);
+  --ct-alerta-t:rgba(224,163,62,.14);
+  --ct-trilho:#24262A; --ct-linha2:#34373D;
+  --ct-sombra:0 1px 2px rgba(0,0,0,.45), 0 10px 28px rgba(0,0,0,.38);
+  --ct-sombra-g:0 24px 60px rgba(0,0,0,.6);
+}
+
+.ct-tn{font-variant-numeric:tabular-nums}
+.ct svg.ct-i{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.9;
+  stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ct svg.ct-i.s{width:15px;height:15px}
+.ct svg.ct-i.xs{width:13px;height:13px}
+
+/* tres receitas de rotulo, nunca mais que tres */
+.ct-rot1{font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;
+  color:var(--soft)}
+.ct-rot2{font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;
+  color:var(--soft)}
+.ct-rot3{font-size:12px;font-weight:700;color:var(--muted)}
+
+/* -------------------------------------------------------------- o topo */
+.ct-topo{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;
+  flex-wrap:wrap}
+.ct-topo .ct-dir{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ct-vivo{display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 14px;
+  border-radius:999px;background:var(--branco);border:1px solid var(--rule-solid);
+  font-size:12.5px;font-weight:700;color:var(--ink)}
+.ct-pulso{width:7px;height:7px;border-radius:50%;background:var(--ct-pos);position:relative;
+  flex:none}
+.ct-pulso::after{content:"";position:absolute;inset:-4px;border-radius:50%;
+  background:var(--ct-pos);opacity:.3;animation:ct-pp 2s ease-out infinite}
+.ct-vivo.mau .ct-pulso, .ct-vivo.mau .ct-pulso::after{background:var(--ct-neg)}
+@keyframes ct-pp{0%{transform:scale(.5);opacity:.45}100%{transform:scale(2.2);opacity:0}}
+
+/* O BOTAO DA CASA nesta tela. A casca e' daqui; o movimento (as duas setas, o
+   texto que desliza e o circulo que engole) e' o mesmo `.btn` do painel. */
+.ct-bt{position:relative;display:inline-flex;align-items:center;gap:8px;height:40px;
+  padding:0 20px;overflow:hidden;border-radius:100px;background:transparent;
+  border:1.5px solid color-mix(in srgb,var(--ink) 34%,transparent);
+  font:inherit;font-size:13px;font-weight:700;color:var(--ink);cursor:pointer;
+  text-decoration:none;
+  transition:border-color .6s cubic-bezier(.23,1,.32,1),
+             color .6s cubic-bezier(.23,1,.32,1),
+             border-radius .6s cubic-bezier(.23,1,.32,1)}
+.ct-bt:hover:not(:disabled){border-color:transparent;color:var(--paper);border-radius:13px}
+.ct-bt:active:not(:disabled){transform:scale(.97)}
+.ct-bt:disabled{opacity:.55;cursor:default}
+.ct-bt .seta{position:absolute;width:14px;height:14px;stroke:var(--ink);fill:none;z-index:9;
+  stroke-width:2;stroke-linecap:round;stroke-linejoin:round;
+  transition:left .8s cubic-bezier(.34,1.56,.64,1),
+             right .8s cubic-bezier(.34,1.56,.64,1),
+             stroke .8s cubic-bezier(.34,1.56,.64,1)}
+.ct-bt .seta-esq{left:-25%}
+.ct-bt .seta-dir{right:11px}
+.ct-bt:hover:not(:disabled) .seta-esq{left:11px;stroke:var(--paper)}
+.ct-bt:hover:not(:disabled) .seta-dir{right:-25%;stroke:var(--paper)}
+.ct-bt .txt{position:relative;z-index:1;white-space:nowrap;display:inline-flex;
+  align-items:center;gap:8px;transform:translateX(-7px);transition:transform .8s ease-out}
+.ct-bt:hover:not(:disabled) .txt{transform:translateX(7px)}
+.ct-bt .circ{position:absolute;top:50%;left:50%;width:16px;height:16px;z-index:0;
+  transform:translate(-50%,-50%);background:var(--ink);border-radius:50%;opacity:0;
+  transition:all .8s cubic-bezier(.19,1,.22,1)}
+.ct-bt:hover:not(:disabled) .circ{width:calc(100% + 80px);height:calc(100% + 180px);opacity:1}
+.ct-bt.verde{border-color:color-mix(in srgb,var(--accent) 38%,transparent);color:var(--accent)}
+.ct-bt.verde .seta{stroke:var(--accent)}
+.ct-bt.verde .circ{background:var(--accent)}
+.ct-bt.verde:hover:not(:disabled){color:#fff}
+.ct-bt.verde:hover:not(:disabled) .seta{stroke:#fff}
+.ct-bt.mini{height:32px;padding:0 15px;font-size:12px}
+.ct-bt.mini .txt{transform:translateX(-5px)}
+.ct-bt.mini:hover:not(:disabled) .txt{transform:translateX(5px)}
+.ct-bt.mini .seta{width:12px;height:12px}
+.ct-bt.mini .seta-dir{right:9px}
+.ct-bt.mini:hover:not(:disabled) .seta-esq{left:9px}
+.ct-bt .mrc{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* ------------------------------------------------------------- avisos */
+.ct-aviso{display:flex;align-items:center;gap:11px;padding:13px 16px;
+  border-radius:var(--ct-r);font-size:13.5px;color:var(--ink);
+  background:var(--ct-alerta-t);
+  border:1px solid color-mix(in srgb,var(--ct-alerta) 32%,transparent)}
+.ct-aviso svg{width:18px;height:18px;flex:none;fill:none;stroke:var(--ct-alerta);
+  stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ct-aviso .ct-bt{margin-left:auto;height:32px;padding:0 15px;font-size:12px}
+.ct-aviso.grave{background:var(--ct-neg-t);
+  border-color:color-mix(in srgb,var(--ct-neg) 32%,transparent)}
+.ct-aviso.grave svg{stroke:var(--ct-neg)}
+.ct-aviso.bom{background:var(--ct-pos-t);
+  border-color:color-mix(in srgb,var(--ct-pos) 32%,transparent)}
+.ct-aviso.bom svg{stroke:var(--ct-pos)}
+
+/* ------------------------------------------------------------ cartoes */
+.ct-grade{display:grid;gap:14px}
+.ct-g4{grid-template-columns:repeat(4,1fr)}
+.ct-g21{grid-template-columns:1.6fr 1fr}
+@media(max-width:1180px){.ct-g4{grid-template-columns:repeat(2,1fr)}
+  .ct-g21{grid-template-columns:minmax(0,1fr)}}
+.ct-cd{background:var(--branco);border:1px solid var(--rule-solid);
+  border-radius:var(--ct-rg);overflow:hidden;box-shadow:var(--ct-sombra)}
+.ct-cd-h{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:14px 17px 11px;flex-wrap:wrap}
+.ct-cd-h h3{font-size:14px;font-weight:800;line-height:1.3}
+.ct-cd-b{padding:0 17px 16px}
+.ct-kpi{padding:15px 17px 14px;display:flex;flex-direction:column;position:relative}
+.ct-kpi .cab{display:flex;align-items:center;gap:7px}
+.ct-kpi .cab svg{color:var(--soft)}
+.ct-kpi .num{font-size:var(--ct-n2);font-weight:800;letter-spacing:-.03em;margin-top:8px;
+  line-height:1.1}
+.ct-kpi .num small{font-size:15px;font-weight:700;color:var(--soft);margin-left:3px}
+.ct-kpi .lin{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;
+  margin-top:8px}
+.ct-kpi .pe{font-size:11px;font-weight:600;color:var(--soft)}
+.ct-selo-n{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;
+  padding:3px 8px;border-radius:99px;background:var(--paper-2);color:var(--muted)}
+.ct-selo-n.bom{background:var(--ct-pos-t);color:var(--ct-pos)}
+.ct-selo-n.aviso{background:var(--ct-alerta-t);color:var(--ct-alerta)}
+.ct-selo-n.mau{background:var(--ct-neg-t);color:var(--ct-neg)}
+
+/* o quadro do grafico so' reserva a altura: quem desenha e' a biblioteca */
+.ct-ec{width:100%;height:230px}
+.ct-ec.baixo{height:200px}
+.ct-ec-leg{display:flex;gap:16px;flex-wrap:wrap;padding-top:4px;font-size:11.5px;
+  font-weight:700;color:var(--muted)}
+.ct-ec-leg span{display:inline-flex;align-items:center;gap:7px}
+.ct-ec-leg i{width:13px;height:3px;border-radius:2px;display:block}
+.ct-ec-leg i.bl{width:9px;height:11px;border-radius:2px}
+
+/* ------------------------------------------------------- a linha de filtros */
+.ct-filtros{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ct-seg{display:flex;background:var(--branco);border:1px solid var(--rule-solid);
+  border-radius:12px;padding:3px;gap:2px}
+.ct-seg button{padding:7px 13px;border:0;background:none;border-radius:8px;font:inherit;
+  font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap}
+.ct-seg button:hover{color:var(--ink)}
+.ct-seg button.on{background:var(--paper-2);color:var(--ink)}
+.ct-seg button .n{margin-left:6px;font-size:10.5px;opacity:.65}
+
+/* o seletor de mercado, feito na casa: o nativo entrega a caixa cinza do sistema */
+.ct-dd{position:relative}
+.ct-dd-bt{display:inline-flex;align-items:center;gap:9px;height:38px;padding:0 10px 0 12px;
+  border-radius:999px;background:var(--branco);border:1px solid var(--rule-solid);
+  font:inherit;font-size:12.5px;font-weight:700;color:var(--ink);cursor:pointer}
+.ct-dd-bt:hover{border-color:var(--soft)}
+.ct-dd-bt[aria-expanded="true"]{border-color:var(--accent)}
+.ct-dd-bt .cv{color:var(--soft);transition:transform .18s}
+.ct-dd-bt[aria-expanded="true"] .cv{transform:rotate(180deg)}
+.ct-dd-bt .pt{width:8px;height:8px;border-radius:3px;flex:none}
+.ct-dd-m{position:absolute;top:calc(100% + 7px);left:0;min-width:230px;z-index:30;
+  background:var(--branco);border:1px solid var(--rule-solid);border-radius:14px;
+  box-shadow:var(--ct-sombra-g);padding:6px;display:flex;flex-direction:column;gap:2px;
+  animation:ct-balao .16s cubic-bezier(.22,1,.36,1)}
+.ct-dd-m[hidden]{display:none}
+@keyframes ct-balao{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.ct-dd-o{display:flex;align-items:center;gap:10px;padding:8px 10px;border:0;
+  border-radius:10px;background:transparent;font:inherit;font-size:13px;font-weight:600;
+  color:var(--muted);text-align:left;width:100%;cursor:pointer}
+.ct-dd-o:hover{background:var(--paper-2);color:var(--ink)}
+.ct-dd-o[aria-selected="true"]{background:var(--accent-tint);color:var(--link);font-weight:700}
+.ct-dd-o .pt{width:9px;height:9px;border-radius:3px;flex:none}
+.ct-dd-o .ck{margin-left:auto;color:var(--accent);opacity:0;display:flex}
+.ct-dd-o[aria-selected="true"] .ck{opacity:1}
+
+.ct-busca{display:flex;align-items:center;gap:9px;height:38px;padding:0 13px;
+  flex:1 1 220px;max-width:320px;border:1px solid var(--rule-solid);border-radius:999px;
+  background:var(--branco);transition:border-color .18s,box-shadow .18s}
+.ct-busca:focus-within{border-color:var(--accent);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
+.ct-busca input{flex:1;min-width:0;border:0;outline:0;background:none;font:inherit;
+  font-size:13.5px;color:var(--ink)}
+.ct-busca svg{width:16px;height:16px;flex:none;color:var(--soft);fill:none;
+  stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.ct-quantas{margin-left:auto;font-size:12px;font-weight:700;color:var(--soft)}
+
+/* -------------------------------------------------------------- a ficha */
+.ct-fichas{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(398px,1fr))}
+@media(max-width:900px){.ct-fichas{grid-template-columns:minmax(0,1fr)}}
+.ct-f{display:flex;flex-direction:column;position:relative;
+  transition:box-shadow .2s,border-color .2s}
+.ct-f:hover{box-shadow:var(--ct-sombra-g)}
+/* A BORDA DE CIMA E O ESTADO: uma linha de 3px acesa diz de longe como a conta
+   esta, sem roubar espaco de dado nenhum. */
+.ct-f::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;
+  background:var(--ct-1);border-radius:var(--ct-rg) var(--ct-rg) 0 0;z-index:1}
+.ct-f.vencendo::before{background:var(--ct-alerta)}
+.ct-f.caiu::before{background:var(--ct-neg)}
+
+.ct-f-cab{display:flex;align-items:center;gap:13px;padding:17px 17px 13px}
+.ct-av{width:46px;height:46px;border-radius:50%;flex:none;object-fit:cover;
+  border:1px solid var(--rule-solid);background:var(--paper-2);display:grid;
+  place-items:center;font-size:15px;font-weight:800;color:#fff}
+.ct-quem{flex:1;min-width:0}
+.ct-arroba{font-size:15.5px;font-weight:800;letter-spacing:-.2px;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.ct-sub{font-size:11.5px;color:var(--soft);margin-top:2px;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.ct-estado{display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 11px;
+  border-radius:999px;font-size:11.5px;font-weight:800;flex:none;
+  background:var(--ct-pos-t);color:var(--ct-pos)}
+.ct-estado.vencendo{background:var(--ct-alerta-t);color:var(--ct-alerta)}
+.ct-estado.caiu{background:var(--ct-neg-t);color:var(--ct-neg)}
+.ct-estado i{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none;
+  position:relative}
+.ct-estado.viva i::after{content:"";position:absolute;inset:-3px;border-radius:50%;
+  background:currentColor;opacity:.3;animation:ct-pp 2s ease-out infinite}
+
+/* A TIRA E O HISTORICO DA VIGILANCIA, um traco por dia. E' por ela que se
+   enxerga "esta de pe agora" e "esteve de pe ate agora" na mesma olhada, que e'
+   o que um selo sozinho nunca conta. */
+.ct-vig{padding:0 17px 14px;display:flex;flex-direction:column;gap:8px}
+.ct-vig-l{display:flex;align-items:center;gap:8px}
+.ct-vig-l .ct-rot1{flex:1}
+.ct-ms{font-size:11px;font-weight:800;color:var(--muted);font-variant-numeric:tabular-nums}
+.ct-tira{display:flex;gap:2px;height:26px;align-items:flex-end}
+.ct-tira i{flex:1;border-radius:2px;background:var(--ct-trilho);cursor:default;
+  transition:transform .12s,filter .12s}
+.ct-tira i.viva{background:var(--ct-1);height:100%}
+.ct-tira i.vencendo{background:var(--ct-alerta);height:100%}
+.ct-tira i.caiu{background:var(--ct-neg);height:100%}
+.ct-tira i.sem{height:9px}
+.ct-tira i:hover{transform:scaleX(1.9);filter:brightness(1.15)}
+.ct-tira i.nova{animation:ct-nasce .5s cubic-bezier(.22,1,.36,1)}
+@keyframes ct-nasce{from{transform:scaleY(.2);opacity:0}to{transform:none;opacity:1}}
+.ct-tira-pe{display:flex;justify-content:space-between;font-size:10.5px;font-weight:700;
+  color:var(--soft)}
+
+/* as tres medidas */
+.ct-med{display:grid;grid-template-columns:repeat(3,1fr);
+  border-top:1px solid color-mix(in srgb,var(--rule-solid) 60%,transparent);
+  border-bottom:1px solid color-mix(in srgb,var(--rule-solid) 60%,transparent)}
+.ct-m{padding:13px 15px;min-width:0;
+  border-left:1px solid color-mix(in srgb,var(--rule-solid) 60%,transparent)}
+.ct-m:first-child{border-left:0}
+.ct-m .cab{display:flex;align-items:center;gap:6px;color:var(--soft)}
+.ct-m .cab span{font-size:9.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ct-m .val{display:flex;align-items:baseline;gap:4px;margin-top:7px}
+.ct-m .val b{font-size:var(--ct-n3);font-weight:800;letter-spacing:-.03em;line-height:1;
+  font-variant-numeric:tabular-nums}
+.ct-m .val b.mau{color:var(--ct-neg)}
+.ct-m .val small{font-size:11px;font-weight:700;color:var(--soft)}
+.ct-barra{height:5px;background:var(--ct-trilho);border-radius:99px;margin-top:9px;
+  overflow:hidden}
+.ct-barra i{display:block;height:100%;border-radius:99px;background:var(--ct-1);
+  transition:width .5s cubic-bezier(.22,1,.36,1)}
+.ct-barra i.meio{background:var(--ct-alerta)} .ct-barra i.mau{background:var(--ct-neg)}
+.ct-m .pe{font-size:10.5px;font-weight:700;color:var(--soft);margin-top:7px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* AS ABAS DE DENTRO. Auditar nao pode exigir outra tela: o diario da conta abre
+   no proprio cartao. */
+.ct-abas{margin:13px 15px 0;align-self:flex-start}
+.ct-abas button{padding:6px 12px;font-size:11.5px}
+.ct-corpo{padding:12px 15px 4px;min-height:150px}
+.ct-par{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;
+  border-top:1px solid color-mix(in srgb,var(--rule-solid) 55%,transparent);font-size:12.5px}
+.ct-par:first-child{border-top:0}
+.ct-par .rot{color:var(--muted);display:flex;align-items:center;gap:8px}
+.ct-par .rot svg{color:var(--soft)}
+.ct-par b{font-weight:800;font-variant-numeric:tabular-nums;text-align:right}
+.ct-par b.alerta{color:var(--ct-alerta)} .ct-par b.mau{color:var(--ct-neg)}
+
+.ct-diario{max-height:214px;overflow-y:auto;margin:0 -6px;scrollbar-width:none}
+.ct-diario::-webkit-scrollbar{width:0;display:none}
+.ct-ev{display:flex;align-items:center;gap:11px;padding:8px 6px;border-radius:10px;width:100%}
+.ct-ev:hover{background:var(--paper-2)}
+.ct-ev .ic{width:29px;height:29px;border-radius:10px;display:grid;place-items:center;
+  flex:none;background:var(--ct-trilho);color:var(--muted)}
+.ct-ev .ic.ok{background:var(--ct-1t);color:var(--ct-1)}
+.ct-ev .ic.aviso{background:var(--ct-alerta-t);color:var(--ct-alerta)}
+.ct-ev .ic.falha{background:var(--ct-neg-t);color:var(--ct-neg)}
+.ct-ev .c{flex:1;min-width:0}
+.ct-ev .c b{display:block;font-size:12.3px;font-weight:700}
+.ct-ev .c span{display:block;font-size:11px;color:var(--muted);white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.ct-ev .q{font-size:10.5px;font-weight:700;color:var(--soft);white-space:nowrap;flex:none}
+.ct-diario-topo{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.ct-diario-topo .ct-rot1{flex:1}
+.ct-so-falhas{border:1px solid var(--rule-solid);background:var(--branco);border-radius:999px;
+  padding:4px 11px;font:inherit;font-size:10.5px;font-weight:800;color:var(--muted);
+  cursor:pointer;text-transform:uppercase;letter-spacing:.5px}
+.ct-so-falhas:hover{border-color:var(--soft);color:var(--ink)}
+.ct-so-falhas.on{background:var(--ct-neg-t);border-color:transparent;color:var(--ct-neg)}
+
+.ct-campo{border:1px dashed transparent;border-radius:9px;padding:5px 9px;margin:-5px -9px;
+  cursor:text;font-size:13px;font-weight:600;color:var(--ink);display:inline-flex;
+  align-items:center;min-height:26px}
+.ct-campo:hover{border-color:var(--rule-solid);background:var(--paper-2)}
+.ct-campo.vazio{color:var(--soft);font-weight:500}
+.ct-campo input{border:0;background:none;font:inherit;color:var(--ink);outline:none;width:150px}
+.ct-etqs{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:10px}
+.ct-etq{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;
+  background:var(--accent-tint);color:var(--link);border-radius:999px;padding:5px 11px}
+.ct-etq button{border:0;background:none;color:inherit;cursor:pointer;padding:0;font:inherit;
+  opacity:.55;line-height:1}
+.ct-etq button:hover{opacity:1}
+.ct-etq-mais{border:1px dashed var(--rule-solid);background:none;color:var(--soft);
+  border-radius:999px;padding:5px 12px;font:inherit;font-size:11.5px;cursor:pointer}
+.ct-etq-mais:hover{border-color:var(--soft);color:var(--ink)}
+
+.ct-f-pe{display:flex;align-items:center;gap:9px;padding:13px 15px;margin-top:auto;
+  border-top:1px solid color-mix(in srgb,var(--rule-solid) 55%,transparent)}
+.ct-f-pe .dir{margin-left:auto;display:flex;gap:7px}
+.ct-ic{width:34px;height:34px;border-radius:999px;border:1px solid var(--rule-solid);
+  background:var(--branco);color:var(--muted);cursor:pointer;display:grid;place-items:center;
+  padding:0;transition:.15s;text-decoration:none}
+.ct-ic:hover{border-color:var(--ink);color:var(--ink);transform:translateY(-1px)}
+.ct-ic svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.9;
+  stroke-linecap:round;stroke-linejoin:round}
+.ct-ic.girando svg{animation:ct-gira .8s linear infinite}
+@keyframes ct-gira{to{transform:rotate(360deg)}}
+
+.ct-vazio{padding:56px 20px;text-align:center;color:var(--soft);font-size:13px}
+.ct-sem{font-size:12.5px;color:var(--soft);padding:22px 2px;text-align:center}

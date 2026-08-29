@@ -121,6 +121,19 @@ class SemCache(http.server.SimpleHTTPRequestHandler):
             return xff.split(",")[0].strip()
         return self.client_address[0]
 
+    def endereco_base(self):
+        """O endereco publico desta casa, do jeito que o navegador chegou aqui.
+
+        Serve para UMA coisa: montar o endereco de volta que o Instagram exige na
+        hora de ligar uma conta. Ele tem que bater LETRA POR LETRA com o que esta
+        cadastrado no aplicativo da Meta, entao ele nasce do pedido de verdade, e nao
+        de uma constante escrita a mao que envelhece quando o dominio muda.
+        """
+        esquema = self.headers.get("X-Forwarded-Proto") or "http"
+        casa = self.headers.get("X-Forwarded-Host") or self.headers.get("Host") \
+            or f"{ENDERECO}:{PORTA}"
+        return f"{esquema}://{casa}"
+
     def sessao_ok(self):
         acesso = _acesso()
         if not acesso:
@@ -197,7 +210,8 @@ class SemCache(http.server.SimpleHTTPRequestHandler):
                 or rota.startswith("painel/")):
             return False
         try:
-            r = contas.responder(rota, urllib.parse.parse_qs(p.query), corpo)
+            r = contas.responder(rota, urllib.parse.parse_qs(p.query), corpo,
+                                 self.endereco_base())
             if r is None:
                 r = midia.responder(rota, urllib.parse.parse_qs(p.query), corpo)
         except Exception as e:
@@ -371,6 +385,26 @@ class SemCache(http.server.SimpleHTTPRequestHandler):
             self.send_header("Location", "/entrar")
             self.end_headers()
             return
+        # A VOLTA DO INSTAGRAM. Ela e' de TELA, e nao de dado: quem chega aqui e' o
+        # navegador do Gabriel, trazido de volta pelo Instagram depois de ele
+        # autorizar a conta. Por isso termina em desvio para a aba de Contas, com o
+        # recado no endereco, e nao num JSON que ninguem veria.
+        if rota == "contas/voltar":
+            q = urllib.parse.parse_qs(p.query)
+            recado = ""
+            if q.get("error"):
+                recado = q.get("error_description", ["a autorização foi negada"])[0]
+            else:
+                d = contas.terminar_ligacao(q.get("code", [""])[0],
+                                            q.get("state", [""])[0],
+                                            self.endereco_base())
+                recado = ("ligada:" + d["arroba"]) if d.get("ok") else d.get("erro", "")
+            self.send_response(302)
+            self.send_header("Location", "/?aba=contas&ligacao="
+                             + urllib.parse.quote(recado[:200]))
+            self.end_headers()
+            return
+
         if self.rota_de_midia(p):
             return
         if rota == "painel/rede":

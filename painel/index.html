@@ -33,6 +33,7 @@ d.setAttribute("data-menu",localStorage.getItem("pub-menu")||"fechado");})();</s
 <link rel="stylesheet" href="estilo/10-painel.css">
 <link rel="stylesheet" href="estilo/11-programar.css">
 <link rel="stylesheet" href="estilo/12-foco.css">
+<link rel="stylesheet" href="estilo/13-contas.css">
 </head>
 <body>
 
@@ -370,43 +371,88 @@ d.setAttribute("data-menu",localStorage.getItem("pub-menu")||"fechado");})();</s
     </div>
   </section>
 
-  <section class="pagina" id="pag-contas">
-    <div class="cab">
-      <div><h1>Contas</h1>
-        <p class="p">Os perfis ligados ao publicador. Tudo nesta tela é dado de verdade,
-          lido da API do Instagram e do banco do publicador.</p></div>
-      <div class="dir">
-        <span class="pp" id="contas-lido"></span>
-        <!-- O BOTAO PERGUNTA A META NA HORA. Sem ele, o unico jeito de saber se uma
-             conta caiu seria esperar uma publicacao falhar. -->
-        <button class="bt mini" id="contas-testar">Testar Conexões</button>
+  <!-- ------------------------------------------------------------ Contas
+       A tela responde UMA pergunta, de tres maneiras: esta conta esta de pe? Pela
+       conexao (medida agora na Meta), pelo acesso (que vence em 60 dias) e pelo que
+       trava a operacao. Seguidor e publicacao NAO moram aqui: isso e' desempenho, e
+       desempenho e' a aba de Analytics.
+
+       O desenho e' o da sala de controle do Portal, e o motor esta em
+       `codigo/07-contas.js`. -->
+  <section class="pagina ct" id="pag-contas">
+    <div class="cab ct-topo">
+      <div>
+        <h1>Contas</h1>
+        <p class="p">O estado de cada perfil ligado ao publicador, medido na Meta.</p>
+      </div>
+      <div class="ct-dir">
+        <span class="ct-vivo"><i class="ct-pulso"></i><span id="ct-relogio">vigiando</span></span>
+        <!-- OS DOIS BOTOES SAO DE VERDADE: um pergunta a Meta agora, o outro abre a
+             autorizacao do Instagram. Nenhum deles finge. -->
+        <button class="ct-bt" type="button" data-acao="testar-tudo">
+          <svg class="seta seta-esq" viewBox="0 0 24 24"><use href="#i-seta"/></svg>
+          <span class="txt">
+            <svg class="mrc" viewBox="0 0 24 24"><path d="M16.247 7.761a6 6 0 0 1 0 8.478"/><path d="M19.075 4.933a10 10 0 0 1 0 14.134"/><path d="M4.925 19.067a10 10 0 0 1 0-14.134"/><path d="M7.753 16.239a6 6 0 0 1 0-8.478"/><circle cx="12" cy="12" r="2"/></svg>
+            Testar Conexões</span>
+          <span class="circ"></span>
+          <svg class="seta seta-dir" viewBox="0 0 24 24"><use href="#i-seta"/></svg>
+        </button>
+        <button class="ct-bt verde" type="button" data-acao="ligar">
+          <svg class="seta seta-esq" viewBox="0 0 24 24"><use href="#i-seta"/></svg>
+          <span class="txt">
+            <svg class="mrc" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+            Ligar Conta</span>
+          <span class="circ"></span>
+          <svg class="seta seta-dir" viewBox="0 0 24 24"><use href="#i-seta"/></svg>
+        </button>
       </div>
     </div>
 
-    <!-- O aviso do acesso. Vazio quando nao ha o que avisar: painel limpo e a rede
-         de pe, e o dia em que ele aparecer alguem precisa agir. -->
-    <div id="contas-aviso"></div>
+    <!-- O aviso. Vazio quando nao ha o que avisar: painel limpo e a rede de pe, e o
+         dia em que ele aparecer alguem precisa agir. -->
+    <div id="ct-aviso"></div>
 
-    <div class="caixa solta">
-      <div class="rolagem">
-        <table>
-          <thead><tr>
-            <th>Conta</th>
-            <th>Mercado</th>
-            <th>Etiquetas</th>
-            <th>No publicador</th>
-            <th>Conexão</th>
-            <th>Acesso Vence</th>
-            <th class="n">Seguidores</th>
-            <th class="n">Publicações</th>
-            <th class="n">Teto De Hoje</th>
-            <th class="n">Erros 24h</th>
-            <th class="n"></th>
-          </tr></thead>
-          <tbody id="tab-contas"></tbody>
-        </table>
+    <div class="ct-grade ct-g4" id="ct-kpis"></div>
+
+    <div class="ct-grade ct-g21">
+      <div class="ct-cd">
+        <div class="ct-cd-h"><h3>Conexão Da Rede</h3>
+          <span class="ct-rot3">os últimos 30 dias</span></div>
+        <div class="ct-cd-b">
+          <div class="ct-ec" id="ct-graf-rede"></div>
+          <div class="ct-ec-leg">
+            <span><i style="background:var(--ct-1)"></i>Responderam</span>
+            <span><i class="bl" style="background:var(--ct-neg)"></i>Recusaram</span>
+          </div>
+        </div>
+      </div>
+      <div class="ct-cd">
+        <div class="ct-cd-h"><h3>Acesso Por Conta</h3>
+          <span class="ct-rot3">dias até vencer</span></div>
+        <div class="ct-cd-b"><div class="ct-ec" id="ct-graf-acesso"></div></div>
       </div>
     </div>
+
+    <div class="ct-filtros">
+      <div class="ct-seg" id="ct-seg"></div>
+      <div class="ct-dd">
+        <button class="ct-dd-bt" id="ct-dd-bt" type="button" aria-expanded="false"
+                aria-haspopup="listbox">
+          <span class="pt" style="background:var(--soft)"></span>
+          <span id="ct-dd-v">Todos Os Mercados</span>
+          <svg class="ct-i xs cv" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div class="ct-dd-m" id="ct-dd-m" role="listbox" hidden></div>
+      </div>
+      <label class="ct-busca">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <input id="ct-busca" type="text" placeholder="Buscar conta" autocomplete="off"
+               spellcheck="false">
+      </label>
+      <span class="ct-quantas" id="ct-quantas"></span>
+    </div>
+
+    <div class="ct-fichas" id="ct-fichas"></div>
   </section>
 
   <!-- ------------------------------------------------------------- Mídia -->
@@ -916,5 +962,11 @@ chegar perto, a conta precisa ser religada, e a coluna de conexão é quem avisa
      UMA CONTA POR LOTE, de proposito. Ritmo e pasta sao decisoes da conta, nao da rede:
      misturar duas contas no mesmo lote esconde qual delas ficou sem fila. -->
 <script src="codigo/06-programar.js"></script>
+
+<!-- ================================================================== CONTAS
+     Uma ficha por conta, no desenho da sala de controle do Portal. Os graficos
+     sao ECharts, servido por esta casa em `vendor/` e carregado SO quando esta
+     aba abre: sao 500 KB que as outras cinco telas nao precisam pagar. -->
+<script src="codigo/07-contas.js"></script>
 </body>
 </html>

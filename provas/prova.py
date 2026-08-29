@@ -24,6 +24,7 @@ import socket
 import subprocess
 import sys
 import time
+import urllib.parse
 import urllib.request
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
@@ -40,7 +41,7 @@ ROTAS = [
     # O ACESSO DAS CONTAS. Esta rota pergunta a Meta e devolve o estado de cada
     # conexao, com a validade e a contagem de renovacoes. Ela entra na prova porque
     # e' ela que sustenta o aviso de vencimento: se calar, a tela volta a mentir.
-    ("contas/estado", ("contas", "vivas", "vencendo", "caidas")),
+    ("contas/estado", ("contas", "vivas", "vencendo", "caidas", "app_pronto")),
     ("painel/rascunho", ("rascunhos",)),
     ("painel/pulso", ("pulso",)),
 ]
@@ -129,6 +130,57 @@ def provar_rotas(base, cookie, falhas):
             print("  pagina inicial: ok")
     except Exception as e:
         falhas.append(f"pagina inicial: {e}")
+
+
+def provar_contas(base, cookie, falhas):
+    """A ABA DE CONTAS POR INTEIRO: o estado com a tira e o diario, e o caminho de
+    ligar conta.
+
+    LIGAR CONTA TEM DUAS RESPOSTAS CERTAS, e por isso ela nao entra na lista comum:
+    200 com o endereco do Instagram (aplicativo configurado) ou 400 dizendo que falta
+    configurar. O que nao pode e' a rota sumir, ou devolver endereco que nao seja do
+    Instagram com o nosso endereco de volta.
+    """
+    try:
+        codigo, corpo, _ = pedir(base + "/contas/estado", cookie)
+        d = json.loads(corpo)
+        for c in d.get("contas", []):
+            if "token" in c:
+                falhas.append("contas/estado: A RESPOSTA CARREGA TOKEN")
+            if len(c.get("tira") or []) != 30:
+                falhas.append(f"contas/estado: @{c.get('arroba')} sem a tira de 30 dias")
+            if "diario" not in c:
+                falhas.append(f"contas/estado: @{c.get('arroba')} sem diario")
+        print(f"  contas/estado: {len(d.get('contas', []))} conta(s), tira e diario ok, "
+              f"sem token na resposta")
+    except Exception as e:
+        falhas.append(f"contas/estado: {type(e).__name__}: {e}")
+
+    try:
+        codigo, corpo, _ = pedir(base + "/contas/ligar", cookie)
+        d = json.loads(corpo)
+        # o endereco de volta viaja CODIFICADO dentro da URL, entao a conferencia
+        # desfaz a codificacao antes de procurar
+        url = urllib.parse.unquote(d.get("url") or "")
+        if codigo == 400 and d.get("erro"):
+            print("  contas/ligar: sem aplicativo configurado (resposta honesta)")
+        elif codigo == 200 and "instagram.com/oauth/authorize" in url \
+                and "/contas/voltar" in url and "client_id=" in url:
+            print("  contas/ligar: monta a autorizacao do Instagram com a volta certa")
+        else:
+            falhas.append(f"contas/ligar: resposta inesperada ({codigo}) {url[:90]}")
+    except Exception as e:
+        falhas.append(f"contas/ligar: {type(e).__name__}: {e}")
+
+    # O COFRE E O CODIGO NAO SE SERVEM, nem para quem ja entrou.
+    for caminho in ("dados/contas.json", "dados/vigia.json", "contas.py"):
+        try:
+            codigo, _, _ = pedir(base + "/" + caminho, cookie)
+            if codigo == 200:
+                falhas.append(f"{caminho}: SE SERVE POR HTTP, e nao deveria")
+        except Exception:
+            pass
+    print("  cofre e codigo: barrados por http")
 
 
 def provar_derivadas(base, cookie, falhas):
@@ -285,6 +337,8 @@ def main():
                 raise SystemExit(1)
         print("rotas:")
         provar_rotas(base, cookie, falhas)
+        print("contas:")
+        provar_contas(base, cookie, falhas)
         print("derivadas e escrita:")
         provar_derivadas(base, cookie, falhas)
         if not a.sem_telas:

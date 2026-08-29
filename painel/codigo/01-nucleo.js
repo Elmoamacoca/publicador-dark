@@ -49,6 +49,7 @@
     if (nome === 'analytics' && window.abrirAnalytics) window.abrirAnalytics();
     if (nome === 'midia' && window.abrirMidia) window.abrirMidia();
     if (nome === 'calendario' && window.abrirCalendario) window.abrirCalendario();
+    if (nome === 'contas' && window.abrirContas) window.abrirContas();
     scrollTo({ top:0, behavior:'instant' });
   }
   menu.addEventListener('click', function(e){
@@ -780,10 +781,11 @@
   }
 
 
-  /* ------------------------------------------------ mercado e etiquetas por conta
-     Dado que so' existe porque o Gabriel digitou: nem a API do Instagram nem o motor
-     sabem em que mercado uma conta joga. Fica no mesmo banco do livro-caixa, e e' o que
-     alimenta os filtros do calendário. */
+  /* ---------------------------------------- mercado e etiquetas por conta
+     Dado que so existe porque o Gabriel digitou: nem a API do Instagram nem o
+     motor sabem em que mercado uma conta joga. Mora no mesmo banco do
+     livro-caixa, e e o que alimenta os filtros do calendario E os da aba de
+     Contas. Por isso ele fica AQUI, no nucleo, e nao na folha de uma aba so. */
   var META = {};
   function metaDe(a){
     a = String(a).replace('@','').toLowerCase();
@@ -803,228 +805,19 @@
         return d;
       });
   }
-  function celulaMercado(a){
-    var m = metaDe(a).mercado;
-    return '<span class="campo' + (m ? '' : ' vazio') + '" data-mercado="' +
-           String(a).replace('@','') + '">' + (m || 'definir') + '</span>';
-  }
-  function celulaEtiquetas(a){
-    var e = metaDe(a).etiquetas, u = String(a).replace('@','');
-    return '<span class="etqs" data-etqs="' + u + '">' +
-      e.map(function(t){
-        return '<span class="etq">' + t + '<button data-tirar="' + t +
-               '" aria-label="Tirar ' + t + '">×</button></span>';
-      }).join('') +
-      '<button class="etq-mais" data-por="' + u + '">+ etiqueta</button></span>';
-  }
-
-  /* A edição acontece na própria célula: clicou, virou campo; Enter ou sair, gravou. */
-  document.getElementById('pag-contas').addEventListener('click', function(e){
-    var m = e.target.closest('[data-mercado]');
-    if (m && !m.querySelector('input')){
-      var atual = metaDe(m.dataset.mercado).mercado;
-      m.classList.remove('vazio');
-      m.innerHTML = '<input value="' + atual.replace(/"/g,'&quot;') +
-                    '" placeholder="mercado">';
-      var campo = m.querySelector('input');
-      campo.focus(); campo.select();
-      var fim = function(){
-        var v = campo.value.trim();
-        gravarMeta(m.dataset.mercado, {mercado: v}).then(function(){
-          m.outerHTML = celulaMercado(m.dataset.mercado);
-        });
-      };
-      campo.addEventListener('blur', fim);
-      campo.addEventListener('keydown', function(ev){
-        if (ev.key === 'Enter') campo.blur();
-        if (ev.key === 'Escape'){ campo.value = atual; campo.blur(); }
-      });
-      return;
-    }
-    var tirar = e.target.closest('[data-tirar]');
-    if (tirar){
-      var caixa = tirar.closest('[data-etqs]'), u = caixa.dataset.etqs;
-      var lista = metaDe(u).etiquetas.filter(function(t){ return t !== tirar.dataset.tirar; });
-      return gravarMeta(u, {etiquetas: lista}).then(function(){
-        caixa.outerHTML = celulaEtiquetas(u);
-      });
-    }
-    var por = e.target.closest('[data-por]');
-    if (por){
-      var cx = por.closest('[data-etqs]'), uu = cx.dataset.etqs;
-      por.outerHTML = '<input class="etq-novo" placeholder="nome da etiqueta">';
-      var novo = cx.querySelector('.etq-novo');
-      novo.style.cssText = 'border:1px dashed var(--rule-solid);border-radius:999px;' +
-        'padding:4px 10px;font:inherit;font-size:12px;width:110px;outline:none;' +
-        'background:none;color:var(--ink)';
-      novo.focus();
-      var fechar = function(){
-        var v = novo.value.trim().toLowerCase();
-        var lista2 = metaDe(uu).etiquetas.slice();
-        if (v && lista2.indexOf(v) === -1) lista2.push(v);
-        gravarMeta(uu, {etiquetas: lista2}).then(function(){
-          cx.outerHTML = celulaEtiquetas(uu);
-        });
-      };
-      novo.addEventListener('blur', fechar);
-      novo.addEventListener('keydown', function(ev){
-        if (ev.key === 'Enter') novo.blur();
-        if (ev.key === 'Escape'){ novo.value = ''; novo.blur(); }
-      });
-    }
-  });
-
-  /* ============================================================ a aba de Contas
-     DUAS COLUNAS MENTIAM ATE 29/08/2026. "Conexao" repetia o campo "esta ligada", que
-     e' outra pergunta, e "Publicacoes" era um traco escrito no codigo. Uma conta com o
-     acesso morto apareceria como viva ate' o dia em que uma publicacao falhasse.
-
-     Agora quem responde e' `/contas/estado`: chamada de verdade a Meta, feita pelo
-     `contas.py`, que tambem renova o acesso sozinho antes de vencer. Cada coluna abaixo
-     tem uma fonte, e a que nao tiver fonte nao entra na tela.  */
-  var ACESSO = {};          // arroba -> a ficha que a Meta devolveu
-
-  function fichaDe(a){
-    return ACESSO[String(a).replace('@','').toLowerCase()] || null;
-  }
-
-  /* O ESTADO DA CONEXAO E O DA CHAMADA, e nao o de um selo guardado. */
-  function celulaConexao(c){
-    var f = fichaDe(c.arroba);
-    if (!f) return '<span class="pino off">Sem acesso aqui</span>';
-    var classe = {viva:'ok', vencendo:'', caiu:'ruim'}[f.estado] || 'off';
-    var rotulo = {viva:'Viva', vencendo:'Vencendo', caiu:'Caiu'}[f.estado] || 'Sem acesso';
-    return '<span class="pino ' + classe + '" title="' + (f.detalhe || '') + '">' +
-           rotulo + '</span>';
-  }
-
-  /* A VALIDADE E O AVISO. Sessenta dias e a janela; a barra mostra quanto dela ja
-     correu, e o numero diz quantos dias sobram. */
-  function celulaAcesso(c){
-    var f = fichaDe(c.arroba);
-    if (!f || f.dias_para_vencer === null || f.dias_para_vencer === undefined)
-      return '<span class="pp">sem validade anotada</span>';
-    var faltam = f.dias_para_vencer;
-    var pct = Math.max(0, Math.min(100, Math.round((60 - faltam) / 60 * 100)));
-    var tom = faltam <= 7 ? ' class="ruim"' : (faltam <= 14 ? ' class="meio"' : '');
-    var quando = String(f.vence_em || '').slice(0, 10).split('-').reverse().join('/');
-    return '<div class="acesso"><span class="quanto">' + faltam + ' dias</span>' +
-           '<div class="barra"><i' + tom + ' style="width:' + pct + '%"></i></div>' +
-           '<span class="quando">até ' + (quando.slice(0, 5) || '?') +
-           (f.renovacoes ? ' · renovado ' + f.renovacoes + 'x' : '') + '</span></div>';
-  }
-
-  var corpoContas = document.getElementById('tab-contas');
-  var avisoContas = document.getElementById('contas-aviso');
-
-  function desenharContas(lista){
-    corpoContas.innerHTML = '';
-    if (!(lista || []).length){
-      corpoContas.innerHTML = '<tr><td colspan="11"><div class="vazio">' +
-        'Nenhuma conta ligada ao publicador.</div></td></tr>';
-      return;
-    }
-    (lista || []).forEach(function(c){
-      var f = fichaDe(c.arroba) || {};
-      var tr = document.createElement('tr');
-      var quem = String(c.arroba || '').replace('@', '');
-      tr.innerHTML =
-        '<td>' + perfil({avatar: c.avatar, ini: (quem[0] || '?').toUpperCase(),
-                         cor: 'var(--soft)', arroba: c.arroba, nome: c.nome}) + '</td>' +
-        '<td>' + celulaMercado(c.arroba) + '</td>' +
-        '<td>' + celulaEtiquetas(c.arroba) + '</td>' +
-        '<td><span class="pino ' + (c.ligada ? 'ok' : 'off') + '">' +
-          (c.ligada ? 'Ativa' : 'Desligada') + '</span></td>' +
-        '<td>' + celulaConexao(c) + '</td>' +
-        '<td>' + celulaAcesso(c) + '</td>' +
-        '<td class="n">' + (f.seguidores === null || f.seguidores === undefined
-            ? '<span class="pp">–</span>' : f.seguidores) + '</td>' +
-        '<td class="n">' + (f.publicacoes === null || f.publicacoes === undefined
-            ? '<span class="pp">–</span>' : f.publicacoes) + '</td>' +
-        '<td class="n">' + (f.teto_total
-            ? '<b>' + (f.teto_usado || 0) + '</b> <span class="pp">de ' +
-              f.teto_total + '</span>'
-            : '<span class="pp">–</span>') + '</td>' +
-        '<td class="n">' + (c.erros24h
-            ? '<span class="pino ruim">' + c.erros24h + '</span>'
-            : '<span class="pp">0</span>') + '</td>' +
-        '<td class="n">' + botaoIg(c.arroba) + '</td>';
-      corpoContas.appendChild(tr);
-    });
-  }
-
-  /* O AVISO SO APARECE QUANDO HA O QUE AVISAR. Painel limpo e a rede de pe. */
-  function desenharAviso(d){
-    if (!avisoContas) return;
-    var caidas = d.caidas || 0, vencendo = d.vencendo || 0;
-    if (!caidas && !vencendo && !d.aviso){
-      avisoContas.innerHTML = '';
-      return;
-    }
-    var texto;
-    if (d.aviso) texto = d.aviso;
-    else if (caidas) texto = caidas === 1
-      ? '<b>Uma conta está com o acesso morto</b> e precisa ser religada pelo Instagram.'
-      : '<b>' + caidas + ' contas estão com o acesso morto</b> e precisam ser religadas.';
-    else texto = vencendo === 1
-      ? '<b>Uma conta vence em menos de duas semanas.</b> A renovação automática entra' +
-        ' faltando 10 dias.'
-      : '<b>' + vencendo + ' contas vencem em menos de duas semanas.</b> A renovação' +
-        ' automática entra faltando 10 dias.';
-    avisoContas.innerHTML =
-      '<div class="aviso ' + (caidas ? 'grave' : '') + '">' +
-      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4"/>' +
-      '<circle cx="12" cy="16.6" r=".7" fill="currentColor" stroke="none"/>' +
-      '<path d="M10.3 3.9 2.4 17.5A1.9 1.9 0 0 0 4 20.4h16a1.9 1.9 0 0 0 1.6-2.9L13.7' +
-      ' 3.9a1.9 1.9 0 0 0-3.4 0Z"/></svg><span>' + texto + '</span></div>';
-  }
-
-  function lerAcesso(forcar){
-    var pedido = forcar
-      ? fetch('/contas/testar', {method:'POST',
-          headers:{'Content-Type':'application/json'}, body:'{}'})
-      : fetch('/contas/estado', {cache:'no-store'});
-    return pedido.then(function(r){ return r.json(); }).then(function(d){
-      ACESSO = {};
-      (d.contas || []).forEach(function(f){
-        ACESSO[String(f.arroba).replace('@','').toLowerCase()] = f;
-      });
-      desenharAviso(d);
-      var carimbo = document.getElementById('contas-lido');
-      if (carimbo) carimbo.textContent = d.contas && d.contas.length
-        ? 'conexão conferida ' + (d.do_guardado ? 'há pouco' : 'agora')
-        : '';
-      return d;
-    }).catch(function(){ return {}; });
-  }
-
-  function carregarContas(forcar){
+  function lerMeta(){
     return fetch('/contas/meta', {cache:'no-store'})
       .then(function(r){ return r.json(); })
-      .then(function(d){ META = d.contas || {}; })
-      .then(function(){ return lerAcesso(forcar); })
-      .then(function(){ return fetch('/painel/rede'); })
-      .then(function(r){ return r.json(); })
-      .then(function(d){ desenharContas(d.contas || []); })
-      .catch(function(){ desenharContas([]); });
+      .then(function(d){ META = d.contas || {}; return META; })
+      .catch(function(){ return META; });
   }
 
-  var botaoTestar = document.getElementById('contas-testar');
-  if (botaoTestar) botaoTestar.addEventListener('click', function(){
-    var antes = botaoTestar.textContent;
-    botaoTestar.textContent = 'Perguntando À Meta…';
-    botaoTestar.disabled = true;
-    carregarContas(true).then(function(){
-      botaoTestar.textContent = antes;
-      botaoTestar.disabled = false;
-    });
-  });
-
-  carregarContas(false);
-
-
-  /* A TABELA DE AGENDA SAIU DAQUI em 18/08: o calendario de verdade ocupou o lugar do
-     rascunho, e o pedaco que enchia aquela tabela ficou apontando para um elemento que
-     nao existe mais. Elemento faltando derruba o resto do arquivo, entao ele sai junto. */
+  /* O QUE O RESTO DA CASA PODE USAR. A aba de Contas mora em `07-contas.js` e
+     precisa destas quatro pecas; expor e mais honesto que copiar. */
+  window.perfilDe = perfil;
+  window.botaoIg = botaoIg;
+  window.metaDe = metaDe;
+  window.gravarMeta = gravarMeta;
+  window.lerMeta = lerMeta;
 
 })();
