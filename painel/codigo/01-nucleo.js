@@ -915,36 +915,49 @@
   });
 
   var corpoContas = document.getElementById('tab-contas');
-  function desenharContas(){
-  corpoContas.innerHTML = '';
-  CONTAS.forEach(function(c){
-    var tr = document.createElement('tr');
-    tr.innerHTML =
-      '<td>' + perfil(c) + '</td>' +
-      '<td>' + celulaMercado(c.arroba) + '</td>' +
-      '<td>' + celulaEtiquetas(c.arroba) + '</td>' +
-      '<td><span class="pino ' + (c.ativa ? 'ok' : 'off') + '">' +
-        (c.ativa ? 'Ativa' : 'Desligada') + '</span></td>' +
-      '<td><span class="pino ' + (c.publicando ? 'ok' : 'off') + '">' +
-        (c.publicando ? 'Publicando' : 'Parada') + '</span></td>' +
-      '<td><span class="pino ' + (c.conexao ? 'ok' : 'ruim') + '">' +
-        (c.conexao ? 'Ativa' : 'Caiu') + '</span>' +
-        (c.conexao ? '<div class="pp" style="margin-top:4px">vence em ' + c.vence +
-                     '</div>' : '') + '</td>' +
-      '<td class="n">' + c.publicacoes + '</td>' +
-      '<td class="n">' + (c.programadas || '<span class="pp">0</span>') + '</td>' +
-      '<td class="n">' + (c.erros24h
-          ? '<span class="pino ruim">' + c.erros24h + '</span>'
-          : '<span class="pp">0</span>') + '</td>' +
-      '<td class="n">' + botaoIg(c.arroba) + '</td>';
-    corpoContas.appendChild(tr);
-  });
+function desenharContas(lista){
+    corpoContas.innerHTML = '';
+    (lista || []).forEach(function(c){
+      var tr = document.createElement('tr');
+      
+      var c_ini = c.arroba ? c.arroba[0].toUpperCase() : '?';
+      if(c.arroba && c.arroba.startsWith('@') && c.arroba.length > 1) {
+          c_ini = c.arroba[1].toUpperCase();
+      }
+      var fakeC = {
+          avatar: c.avatar, 
+          ini: c_ini, 
+          cor: '#333', 
+          arroba: c.arroba, 
+          nome: c.nome
+      };
+
+      tr.innerHTML =
+        '<td>' + perfil(fakeC) + '</td>' +
+        '<td>' + celulaMercado(c.arroba) + '</td>' +
+        '<td>' + celulaEtiquetas(c.arroba) + '</td>' +
+        '<td><span class="pino ' + (c.ligada ? 'ok' : 'off') + '">' +
+          (c.ligada ? 'Ativa' : 'Desligada') + '</span></td>' +
+        '<td><span class="pino ' + (c.publicando ? 'ok' : 'off') + '">' +
+          (c.publicando ? 'Publicando' : 'Parada') + '</span></td>' +
+        '<td><span class="pino ' + (c.ligada ? 'ok' : 'ruim') + '">' +
+          (c.ligada ? 'Ativa' : 'Caiu') + '</span></td>' +
+        '<td class="n">-</td>' +
+        '<td class="n">' + (c.fila || '<span class="pp">0</span>') + '</td>' +
+        '<td class="n">' + (c.erros24h
+            ? '<span class="pino ruim">' + c.erros24h + '</span>'
+            : '<span class="pp">0</span>') + '</td>' +
+        '<td class="n">' + botaoIg(c.arroba) + '</td>';
+      corpoContas.appendChild(tr);
+    });
   }
   fetch('/contas/meta', {cache:'no-store'})
     .then(function(r){ return r.json(); })
     .then(function(d){ META = d.contas || {}; })
-    .catch(function(){})
-    .then(desenharContas);
+    .then(function(){ return fetch('/painel/rede'); })
+    .then(function(r){ return r.json(); })
+    .then(function(d){ desenharContas(d.contas || []); })
+    .catch(function(){});
 
 
   /* A TABELA DE AGENDA SAIU DAQUI em 18/08: o calendario de verdade ocupou o lugar do
