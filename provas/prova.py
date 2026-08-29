@@ -195,6 +195,29 @@ def provar_contas(base, cookie, falhas):
     except Exception as e:
         falhas.append(f"contas/prontidao: {type(e).__name__}: {e}")
 
+    # COLAR TOKEN E O CAMINHO CURTO DE LIGAR CONTA. Ele so' pode aceitar token que a
+    # META reconhece, e a recusa tem que chegar ESCRITA na tela: rota que engole erro
+    # de token vira conta ligada pela metade, com o cofre gravado e nada funcionando.
+    for rotulo, envio, espera in (
+            ("vazio", {"token": ""}, "cole o token"),
+            ("curto demais", {"token": "abc123"}, "curto demais"),
+            ("inventado", {"token": "IG" + "Q" * 70}, None)):
+        try:
+            codigo, corpo, _ = pedir(base + "/contas/colar", cookie, corpo=envio)
+            d = json.loads(corpo)
+            if codigo != 400 or not d.get("erro"):
+                falhas.append(f"contas/colar ({rotulo}): devia recusar e nao recusou "
+                              f"({codigo}) {corpo[:100]}")
+            elif espera and espera not in d["erro"]:
+                falhas.append(f"contas/colar ({rotulo}): recusou pelo motivo errado: "
+                              f"{d['erro'][:80]}")
+            else:
+                print(f"  contas/colar: recusa token {rotulo} | {d['erro'][:60]}")
+            if "access_token" in corpo.decode("utf-8", "replace"):
+                falhas.append(f"contas/colar ({rotulo}): A RESPOSTA CARREGA TOKEN")
+        except Exception as e:
+            falhas.append(f"contas/colar ({rotulo}): {type(e).__name__}: {e}")
+
     # A SONDA DA VOLTA. Ela e' o unico pedaco do caminho de retorno que da' para
     # provar sem a Meta: que o endereco existe neste painel e responde.
     try:

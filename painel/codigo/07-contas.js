@@ -580,7 +580,9 @@
   /* ------------------------------------------------- o teste de uma conta
      A JANELA ABRE ANTES DA RESPOSTA, de proposito. A pergunta a Meta leva de 200
      ms a alguns segundos, e botao que fica mudo nesse tempo parece quebrado. */
-  function corpoTeste(c, esperando){
+  /* `semVeredito` serve a janela de conta recem-ligada, que ja' tem o proprio
+     veredito em cima e so' quer as linhas do que a Meta respondeu. */
+  function corpoTeste(c, esperando, semVeredito){
     if (esperando){
       return veredito('neutro', 'girar', 'Perguntando à Meta…',
         'Três perguntas seguidas: renovar se for a hora, quem é a conta e quanto ' +
@@ -627,6 +629,7 @@
            : 'A Meta não devolveu o teto desta conta nesta rodada.',
       teto ? (teto - (c.teto_usado || 0)) + ' cabem' : '–');
 
+    if (semVeredito) return linhas;
     return veredito(caiu ? 'mau' : (c.estado === 'vencendo' ? 'aviso' : ''),
       caiu ? 'alerta' : 'check',
       caiu ? 'A Meta recusou o acesso' : 'A Meta respondeu',
@@ -741,6 +744,62 @@
     return '<li><svg viewBox="0 0 24 24"><path d="m5 12 5 5L20 7"/></svg>' +
            '<span>' + t + '</span></li>';
   }
+  /* SAO DOIS CAMINHOS, e o curto vem primeiro.
+
+     O CURTO e' colar o token que a propria Meta gera na tela de configuracao do
+     aplicativo. Ele nao precisa de endereco de volta cadastrado, nao precisa do
+     vaivem do OAuth e nao precisa de convite de conta de teste. E' o caminho que
+     o Gabriel ja' usava no n8n, e ele funciona hoje, sem depender de ninguem.
+
+     O DE TELA e' o OAuth, mais bonito no dia a dia (uma conta nova vira um clique),
+     mas ele exige o cadastro do endereco de volta uma vez. */
+  var caminhoLigar = 'colar';
+  var PRONTIDAO = null, SONDA = null;
+
+  function abasDoLigar(){
+    return '<div class="ct-seg" id="ct-cam" style="margin-bottom:14px">' +
+      '<button data-cam="colar"' + (caminhoLigar === 'colar' ? ' class="on"' : '') +
+        '>Colar Token</button>' +
+      '<button data-cam="oauth"' + (caminhoLigar === 'oauth' ? ' class="on"' : '') +
+        '>Autorizar Na Tela</button></div>';
+  }
+
+  function corpoColar(p){
+    p = p || {};
+    var console_ = p.console || 'https://developers.facebook.com/apps/';
+    return abasDoLigar() +
+      passoNum('', '1', 'Abrir A Configuração Do Aplicativo',
+        '<p>É na página do aplicativo, em <b>Instagram → Configuração da API com ' +
+        'login do Instagram</b>. ' +
+        '<a href="' + seguro(console_) + '" target="_blank" rel="noopener">Abrir ' +
+        'agora</a></p>') +
+
+      passoNum('', '2', 'Gerar O Token Da Conta',
+        '<p>No bloco <b>Gerar token de acesso</b>, clique em conectar conta, entre ' +
+        'na conta do Instagram que vai publicar e clique em <b>Gerar token</b>. ' +
+        'A Meta mostra o token uma vez só.</p>' +
+        '<ul>' +
+        item('A conta precisa ser <b>profissional</b>, Empresa ou Criador.') +
+        item('Não precisa de Página do Facebook nem de convite de conta de teste ' +
+             'neste caminho.') +
+        '</ul>') +
+
+      passoNum('', '3', 'Colar Aqui',
+        '<p>Cole o token no campo abaixo. O publicador pergunta à Meta de quem ele ' +
+        'é, guarda no cofre do servidor e liga a conta. <b>Você não digita o arroba:</b> ' +
+        'quem diz é a Meta, para não existir conta trocada com token trocado.</p>' +
+        '<textarea class="ct-token" id="ct-token" rows="3" spellcheck="false" ' +
+        'autocomplete="off" placeholder="IGAAx..."></textarea>' +
+        '<p>O token vale <b>60 dias</b> e nunca sai do servidor. Faltando 10, o ' +
+        'painel troca por um novo sozinho, todo dia às 7h07. <b>Não existe token ' +
+        'eterno nesta API</b>: o que faz a conta não cair é essa troca.</p>');
+  }
+  function peColar(){
+    return '<span class="nota">o token fica só no servidor, nunca na tela</span>' +
+      '<span class="dir">' + botao('Fechar', 'fechar', 'mini') +
+      botao('Ligar Conta', 'colar', 'verde', 'mais') + '</span>';
+  }
+
   function corpoLigar(p, sonda){
     p = p || {};
     var volta = (sonda && sonda.volta) || p.volta ||
@@ -750,7 +809,8 @@
         : (x === 'instagram_business_basic' ? 'ler o básico do perfil' : x);
     }).join(' e ');
 
-    return passoNum(p.app_pronto ? 'ok' : '', '1', 'O Aplicativo Da Meta',
+    return abasDoLigar() +
+      passoNum(p.app_pronto ? 'ok' : '', '1', 'O Aplicativo Da Meta',
         p.app_pronto
           ? '<p>Configurado neste painel: aplicativo <b>' + seguro(p.app_id) +
             '</b>, pedindo permissão para ' + seguro(permissoes) + '.</p>'
@@ -809,15 +869,25 @@
       .then(function(r){ return r.ok ? r.json() : null; })
       .catch(function(){ return null; });
   }
+  function desenharLigar(){
+    if (caminhoLigar === 'colar'){
+      trocarCorpo(corpoColar(PRONTIDAO), peColar());
+      var campo = document.getElementById('ct-token');
+      if (campo) campo.focus();
+    } else {
+      trocarCorpo(corpoLigar(PRONTIDAO, SONDA),
+                  peLigar(!!(PRONTIDAO && PRONTIDAO.app_pronto)));
+    }
+  }
   function janelaLigar(){
     abrirJanela(cabSimples('mais', 'Ligar Conta Ao Publicador',
-        'quatro passos, e dois deles são do lado da Meta'),
+        'dois caminhos: colar o token ou autorizar na tela'),
       '<div class="ct-sem">Conferindo o que já está pronto…</div>',
       peLigar(false), true);
     return Promise.all([pedir('/contas/prontidao'), sondarVolta()])
       .then(function(r){
-        trocarCorpo(corpoLigar(r[0], r[1]),
-                    peLigar(!!(r[0] && r[0].app_pronto)));
+        PRONTIDAO = r[0]; SONDA = r[1];
+        desenharLigar();
       }).catch(function(){
         trocarCorpo(veredito('mau', 'alerta', 'Não consegui falar com o painel',
           'O pedido não chegou ao servidor. Recarregue a página e tente de novo.'),
@@ -860,6 +930,9 @@
     var linha = e.target.closest('[data-abrir-conta]');
     if (linha) return janelaTeste(linha.dataset.abrirConta);
 
+    var cam = e.target.closest('#ct-cam button');
+    if (cam){ caminhoLigar = cam.dataset.cam; return desenharLigar(); }
+
     var bt = e.target.closest('[data-acao]');
     if (!bt) return;
     var qual = bt.dataset.acao;
@@ -871,6 +944,41 @@
       pedir('/contas/renovar', {arroba: quem})
         .then(function(){ solta(); return janelaTeste(quem); })
         .catch(solta);
+      return;
+    }
+    if (qual === 'colar'){
+      var campo = document.getElementById('ct-token');
+      var valor = campo ? campo.value.trim() : '';
+      if (!valor){
+        if (campo) campo.focus();
+        return;
+      }
+      var largar = ocupado(bt, 'Perguntando À Meta…');
+      pedir('/contas/colar', {token: valor}).then(function(d){
+        largar();
+        if (!d || d.erro){
+          /* O ERRO FICA DENTRO DA JANELA, junto do campo. Erro que some com o
+             passo a passo obriga a pessoa a refazer tudo para ler de novo. */
+          var onde = document.getElementById('ct-token');
+          if (onde) onde.insertAdjacentHTML('afterend',
+            '<div class="ct-erro">' + seguro((d && d.erro) || 'não deu certo') +
+            '</div>');
+          return;
+        }
+        return carregar(false).then(function(){
+          var c = achar(d.arroba) || {arroba: d.arroba};
+          trocarCorpo(
+            veredito('', 'check', '@' + seguro(d.arroba) + ' entrou no publicador',
+              d.renovou
+                ? 'O acesso foi trocado por um novo de 60 dias na hora de ligar.'
+                : 'O acesso vale 60 dias e o painel troca sozinho faltando 10.') +
+            corpoTeste(c, false, true),
+            '<span class="nota">ligada agora</span><span class="dir">' +
+            botao('Testar Conexão', 'testar-de-novo', 'mini', 'girar', d.arroba) +
+            botao('Fechar', 'fechar', 'mini') + '</span>',
+            cabConta(c, 'Conta Ligada'));
+        });
+      }).catch(function(){ largar(); });
       return;
     }
     if (qual === 'autorizar'){

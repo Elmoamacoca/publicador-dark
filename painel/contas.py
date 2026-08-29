@@ -664,6 +664,79 @@ def terminar_ligacao(code: str, marca: str, base: str) -> dict:
     return {"ok": True, "arroba": arroba}
 
 
+def colar_token(token: str) -> dict:
+    """Liga uma conta a partir do token gerado NA PROPRIA TELA DA META.
+
+    ESTE E O CAMINHO CURTO, e ele existe porque a Meta tem um botao "Gerar token"
+    dentro da configuracao do aplicativo. O token que sai dali ja' e' de sessenta
+    dias ("Access tokens from the App Dashboard are long-lived and are valid for 60
+    days", na documentacao deles), e nao passa por autorizacao de tela nenhuma.
+
+    O QUE ISSO ECONOMIZA: nao precisa de endereco de volta cadastrado, nao precisa
+    do vaivem do OAuth, nao precisa de convite de conta de teste. E o mesmo caminho
+    que o Gabriel ja' usava no n8n.
+
+    O que ele NAO da' e' token eterno: eterno nao existe em lugar nenhum desta API.
+    O que faz a conta nunca cair e' a renovacao automatica, que ja' roda aqui.
+    """
+    token = (token or "").strip()
+    if not token:
+        return {"erro": "cole o token gerado no painel da Meta"}
+    if len(token) < 40:
+        return {"erro": "isso não parece um token da Meta (curto demais)"}
+
+    # 1. A META E QUEM DIZ DE QUEM E O TOKEN. Nada de pedir o arroba para quem cola:
+    #    campo digitado erra, e conta trocada com token trocado e' um estrago mudo.
+    perfil, erro = identidade(token)
+    if erro:
+        return {"erro": erro}
+    arroba = perfil.get("username") or ""
+    ig_id = str(perfil.get("user_id") or "")
+    if not arroba:
+        return {"erro": "a Meta respondeu sem o arroba da conta"}
+
+    # 2. A VALIDADE. A Meta nao conta quantos dias faltam, entao a saida honesta e'
+    #    perguntar renovando: se ela renovar, o `expires_in` e' o numero de verdade.
+    #    Token recem-gerado costuma ser recusado (ela exige 24 horas de vida), e ai'
+    #    valem os sessenta dias que a documentacao promete.
+    provisoria = {"token": token}
+    renovou, detalhe = renovar(provisoria)
+    if renovou:
+        token = provisoria["token"]
+        vence = provisoria["vence_em"]
+        nota = "acesso trocado por um novo na hora de ligar"
+    else:
+        vence = (datetime.now(timezone.utc)
+                 + timedelta(days=60)).isoformat(timespec="seconds")
+        nota = ("validade contada como 60 dias, que e' o que a Meta da' no token do "
+                "painel dela")
+
+    dados = cofre()
+    contas = dados.setdefault("contas", [])
+    nova = {
+        "arroba": arroba, "ig_user_id": ig_id, "token": token,
+        "nome": arroba,
+        "ligada_em": agora(), "vence_em": vence,
+        "renovado_em": agora() if renovou else None,
+        "renovacoes": 0,
+        "origem": "token colado do painel da Meta em " + hoje(),
+    }
+    for i, c in enumerate(contas):
+        if limpo(c.get("arroba")) == limpo(arroba):
+            # RELIGAR NAO ZERA O PASSADO: a contagem de renovacoes e o dia em que a
+            # conta entrou sao historia, e historia nao se apaga por troca de token.
+            nova["renovacoes"] = int(c.get("renovacoes") or 0)
+            nova["ligada_em"] = c.get("ligada_em") or nova["ligada_em"]
+            contas[i] = nova
+            break
+    else:
+        contas.append(nova)
+    gravar_cofre(dados)
+    anotar(arroba, "marco", "Conta ligada por token colado", nota)
+    vigiar(renovar_se_preciso=False, so=arroba)
+    return {"ok": True, "arroba": arroba, "renovou": renovou}
+
+
 def desligar(arroba: str) -> dict:
     """Tira a conta do publicador. O DIARIO E O HISTORICO FICAM: desligar e' dizer
     'nao opere mais por aqui', e nao 'apague o que aconteceu'."""
@@ -711,6 +784,9 @@ def responder(rota: str, consulta: dict, corpo: dict | None, base: str = ""):
         return {"erro": "essa conta nao esta no cofre"}, 404
     if rota == "contas/prontidao":
         return prontidao(base), 200
+    if rota == "contas/colar" and corpo is not None:
+        d = colar_token(corpo.get("token", ""))
+        return d, (400 if "erro" in d else 200)
     if rota == "contas/ligar":
         d = comecar_ligacao(base)
         return d, (400 if "erro" in d else 200)

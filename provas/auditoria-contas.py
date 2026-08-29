@@ -263,8 +263,35 @@ def main():
         anota("Ligar Conta abre o passo a passo, e nao o Instagram direto",
               pag.eval_on_selector("#ct-jan", "e => !e.hidden")
               and "instagram.com/oauth" not in pag.url, pag.url[:60])
+
+        # SAO DOIS CAMINHOS, e o curto (colar o token que a Meta gera na tela dela)
+        # abre primeiro, porque e' o unico que funciona sem cadastro nenhum.
+        abas = pag.eval_on_selector_all("#ct-cam button", "e => e.length")
+        anota("a janela oferece os dois caminhos", abas == 2, f"{abas} aba(s)")
+        anota("o caminho curto abre primeiro",
+              pag.eval_on_selector('#ct-cam [data-cam="colar"]',
+                                   "e => e.classList.contains('on')"))
+        anota("o caminho curto tem onde colar o token",
+              pag.eval_on_selector_all("#ct-token", "e => e.length") == 1)
+        anota("o caminho curto tem o botao de ligar",
+              pag.eval_on_selector_all('#ct-jan-pe [data-acao="colar"]',
+                                       "e => e.length") == 1)
+        texto_colar = pag.eval_on_selector("#ct-jan-corpo", "e => e.textContent")
+        anota("o caminho curto diz onde a Meta gera o token",
+              "Gerar token de acesso" in texto_colar)
+        anota("o caminho curto nao promete token eterno",
+              "Não existe token eterno" in texto_colar)
+        # botao de ligar sem token nenhum nao pode disparar pedido
+        antes_pedidos = len([u for u in rede if "/contas/colar" in u])
+        pag.click('#ct-jan-pe [data-acao="colar"]')
+        pag.wait_for_timeout(700)
+        anota("ligar sem token nao chama o servidor",
+              len([u for u in rede if "/contas/colar" in u]) == antes_pedidos)
+
+        pag.click('#ct-cam [data-cam="oauth"]')
+        pag.wait_for_timeout(600)
         passos = pag.eval_on_selector_all("#ct-jan-corpo .ct-pss", "e => e.length")
-        anota("a janela tem os quatro passos", passos == 4, f"{passos} passo(s)")
+        anota("o caminho de tela tem os quatro passos", passos == 4, f"{passos} passo(s)")
         # NEGRITO NO MEIO DA FRASE TEM QUE CONTINUAR NO MEIO DA FRASE. A regra do
         # titulo do passo (`b` em bloco) pegava tambem os negritos do texto, e o
         # passo saia picado em cinco pedacos, um por palavra grifada.

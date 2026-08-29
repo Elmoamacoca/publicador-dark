@@ -525,6 +525,18 @@
 .ct-copiar:hover{border-color:var(--ink);color:var(--ink)}
 .ct-copiar.feito{background:var(--ct-pos-t);border-color:transparent;color:var(--ct-pos)}
 
+/* o campo do token. E' um segredo passando pela tela, entao ele tem a letra de
+   maquina (para conferir caractere a caractere) e nada de autocompletar */
+.ct-token{width:100%;margin-top:9px;padding:10px 12px;border-radius:10px;
+  border:1px solid var(--rule-solid);background:var(--paper-2);color:var(--ink);
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;
+  line-height:1.55;resize:vertical;outline:none;word-break:break-all}
+.ct-token:focus{border-color:var(--accent);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
+.ct-erro{margin-top:9px;padding:10px 12px;border-radius:10px;font-size:12.5px;
+  background:var(--ct-neg-t);color:var(--ct-neg);font-weight:600;line-height:1.5;
+  border:1px solid color-mix(in srgb,var(--ct-neg) 30%,transparent)}
+
 @media(max-width:560px){
   .ct-jan{padding:12px}
   .ct-jan-pe{flex-wrap:wrap}

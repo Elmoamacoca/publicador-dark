@@ -140,7 +140,7 @@ d.setAttribute("data-menu",localStorage.getItem("pub-menu")||"fechado");})();</s
          numero sobe a cada entrega: se ele nao subiu na tela dele, e' cache, e nao ha o
          que discutir sobre o desenho. -->
     <div class="pe-linha">
-      <span class="pp" style="font-weight:700;font-variant-numeric:tabular-nums">v59</span>
+      <span class="pp" style="font-weight:700;font-variant-numeric:tabular-nums">v60</span>
       <span class="pe-rot">29/08 · no ar</span>
     </div>
     <div class="pe-linha">
@@ -909,24 +909,40 @@ pode perder o lugar a cada pergunta.</p>
   <li><b>Testar Conexões</b> pergunta à Meta na hora e abre uma <b>janela por conta</b>
       com o caminho inteiro: quem a conta é, quantos dias o acesso ainda tem, quanto
       ainda cabe hoje e em quantos milissegundos a Meta respondeu.</li>
-  <li><b>Ligar Conta</b> abre o passo a passo. Você autoriza no site do Instagram e
-      volta para cá; o publicador troca o código por um acesso de 60 dias e guarda.</li>
+  <li><b>Ligar Conta</b> abre o passo a passo, com <b>dois caminhos</b>. O curto é
+      colar o token que a própria Meta gera na tela de configuração do aplicativo. O
+      outro é autorizar no site do Instagram e voltar para cá.</li>
   <li><b>Renovar</b> troca o acesso agora, sem esperar o prazo.</li>
   <li><b>Desligar</b> apaga o acesso desta máquina. <b>O diário e o histórico ficam:</b>
       desligar é dizer "não opere mais por aqui", não "apague o que aconteceu".</li>
 </ol>
 
+<h3>Os dois caminhos de ligar uma conta</h3>
+<ol>
+  <li><b>Colar token (o curto).</b> No aplicativo da Meta, em Instagram → Configuração da
+      API com login do Instagram, o bloco <b>Gerar token de acesso</b> conecta a conta e
+      entrega o token. Você cola aqui, o publicador pergunta à Meta de quem ele é e liga.
+      <b>Não precisa de endereço cadastrado, nem de Página do Facebook, nem de convite de
+      conta de teste.</b></li>
+  <li><b>Autorizar na tela (o OAuth).</b> Mais confortável no dia a dia, porque cada conta
+      nova vira um clique. Em troca, exige um cadastro único: o endereço
+      <code>https://postador.borusa.com.br/contas/voltar</code> precisa estar em
+      Configurações de login da empresa → URIs de redirecionamento do OAuth,
+      <b>letra por letra</b>. Sem ele a resposta é <i>Solicitação inválida: Invalid
+      redirect_uri</i>.</li>
+</ol>
+
 <div class="nota">
-  <span class="nota-rot">Ligar conta depende de um cadastro do lado da Meta</span>
-  <p>Depois que você autoriza, o Instagram devolve o navegador para
-  <code>https://postador.borusa.com.br/contas/voltar</code>. Esse endereço precisa estar
-  cadastrado no aplicativo da Meta, <b>letra por letra</b>, em Instagram → Configuração da
-  API com login do Instagram → Configurações de login da empresa → URIs de
-  redirecionamento do OAuth.</p>
-  <p>Sem ele, a resposta é <i>Solicitação inválida: Invalid redirect_uri</i> e a conta não
-  entra. <b>Não existe rota que pergunte isso à Meta</b>, então a janela de Ligar Conta
-  mostra o endereço por extenso, com botão de copiar, em vez de prometer que está tudo
-  certo.</p>
+  <span class="nota-rot">Token eterno não existe nesta API</span>
+  <p>Os dois caminhos entregam o mesmo tipo de acesso: <b>60 dias</b>. A documentação da
+  Meta é explícita sobre o token gerado no painel deles: <i>"Access tokens from the App
+  Dashboard are long-lived and are valid for 60 days"</i>.</p>
+  <p>O que faz a conta nunca cair não é um token especial, é a <b>troca automática</b>:
+  o publicador renova faltando 10 dias, todo dia às 7h07. Ferramenta que promete "conectado
+  para sempre" está fazendo exatamente isso por baixo.</p>
+  <p>O único acesso que de fato não expira é o de <b>Usuário de Sistema</b>, e ele exige
+  Portfólio Empresarial e uma Página do Facebook ligada a cada conta. É mais trabalho na
+  Meta, não menos.</p>
 </div>
 
 <h3>Onde o acesso mora</h3>
