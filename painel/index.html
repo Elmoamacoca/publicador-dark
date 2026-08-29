@@ -140,7 +140,7 @@ d.setAttribute("data-menu",localStorage.getItem("pub-menu")||"fechado");})();</s
          numero sobe a cada entrega: se ele nao subiu na tela dele, e' cache, e nao ha o
          que discutir sobre o desenho. -->
     <div class="pe-linha">
-      <span class="pp" style="font-weight:700;font-variant-numeric:tabular-nums">v57</span>
+      <span class="pp" style="font-weight:700;font-variant-numeric:tabular-nums">v58</span>
       <span class="pe-rot">29/08 · no ar</span>
     </div>
     <div class="pe-linha">
@@ -886,31 +886,61 @@ serve para conta desse tamanho.</p>
 <article class="doc" id="doc-contas">
   <div class="doc-cab"><h2>Contas</h2><span class="doc-estado viva"><i></i>no ar</span></div>
 
-<p class="abre">A lista das contas ligadas no publicador, com o estado real de cada uma,
-puxado do motor e da API do Instagram.</p>
+<p class="abre">Uma ficha por perfil ligado ao publicador. A tela responde uma pergunta
+só, e responde por três caminhos: <b>esta conta está de pé?</b></p>
 
-<h3>O que cada coluna diz</h3>
+<h3>Por que não tem seguidores nem publicações aqui</h3>
+<p>Porque isso é <b>desempenho</b>, e desempenho mora na aba de Analytics. Aqui o assunto
+é <b>estado</b>: a conexão responde, o acesso vence quando, e o que está travando a
+operação.</p>
+
+<h3>Os três caminhos da mesma pergunta</h3>
 <ol>
-  <li><b>No publicador:</b> se a conta está ativa ou desligada aqui dentro.</li>
-  <li><b>Publicando:</b> se ela tem post saindo agora.</li>
-  <li><b>Conexão:</b> se o acesso ao Instagram está vivo. Isso é testado com uma chamada
-      real na API, não é um selo guardado.</li>
-  <li><b>Publicações:</b> quantos posts a conta tem no Instagram.</li>
-  <li><b>Programadas:</b> quantas saídas estão marcadas no motor.</li>
-  <li><b>Erros 24h:</b> quantas falhas de publicação no último dia.</li>
-  <li><b>Instagram:</b> o botão que abre o perfil numa aba nova.</li>
+  <li><b>A conexão.</b> Medida agora, com uma chamada de verdade à Meta. O tempo de
+      resposta em milissegundos fica ao lado.</li>
+  <li><b>A vigilância dos últimos 30 dias.</b> Um traço por dia: verde quando a Meta
+      respondeu, vermelho quando recusou, apagado no dia sem registro. É ela que conta
+      o que um selo sozinho nunca conta: <b>esteve</b> de pé até agora.</li>
+  <li><b>As três medidas.</b> Teto do dia (quantas publicações a Meta ainda aceita nas
+      próximas 24 horas), acesso (quantos dias faltam) e fila de vídeos.</li>
 </ol>
 
-<h3>O acesso vence</h3>
-<p>O acesso de cada conta tem validade. As duas de hoje valem até <b>14/10/2026</b>. Quando
-chegar perto, a conta precisa ser religada, e a coluna de conexão é quem avisa.</p>
+<h3>O acesso vence em 60 dias, e se renova sozinho</h3>
+<p>O Instagram dá um acesso de <b>60 dias</b>. Faltando <b>10</b>, o publicador pede um
+novo sozinho e guarda quando renovou e quantas vezes. Faltando 14 ou menos, a tela avisa
+no alto.</p>
+<p>Quem faz isso é <code>painel/contas.py</code>, uma vez por dia às 4h07, e sempre que
+você aperta Testar Conexões.</p>
 
 <div class="nota">
-  <span class="nota-rot">O que ainda não tem</span>
-  <p>Filtros, ligar e desligar conta pela tela, e adicionar conta nova. A tela hoje mostra,
-  mas ainda não mexe.</p>
+  <span class="nota-rot">Não existe acesso permanente neste caminho</span>
+  <p>O Instagram com login do Instagram só dá acesso de 60 dias, renovável para sempre
+  enquanto alguém renovar. Acesso que nunca vence existe no outro caminho, o do Facebook
+  com usuário de sistema, e ele exige que cada conta esteja ligada a uma Página do
+  Facebook dentro de um Portfólio Empresarial.</p>
 </div>
 
+<h3>Onde se audita: o diário</h3>
+<p>Cada ficha tem três abas por dentro: <b>Estado</b>, <b>Diário</b> e <b>Identidade</b>.
+O diário guarda a checagem, a renovação e a falha de publicação, <b>com o texto do erro
+da Meta por extenso e o código dela</b>. O botão Só Falhas filtra na hora.</p>
+<p>Ele abre dentro do próprio cartão, de propósito: quem está conferindo uma rede não
+pode perder o lugar a cada pergunta.</p>
+
+<h3>Os botões fazem o que dizem</h3>
+<ol>
+  <li><b>Testar Conexões</b> pergunta à Meta na hora, a rede inteira ou uma conta só.</li>
+  <li><b>Ligar Conta</b> abre a autorização do Instagram. Você autoriza no site deles e
+      volta para cá; o publicador troca o código por um acesso de 60 dias e guarda.</li>
+  <li><b>Renovar</b> troca o acesso agora, sem esperar o prazo.</li>
+  <li><b>Desligar</b> apaga o acesso desta máquina. <b>O diário e o histórico ficam:</b>
+      desligar é dizer "não opere mais por aqui", não "apague o que aconteceu".</li>
+</ol>
+
+<h3>Onde o acesso mora</h3>
+<p>Em <code>dados/contas.json</code>, no servidor, com permissão fechada. <b>Ele nunca
+sai numa resposta desta casa</b>, e o servidor recusa servir esse caminho por http mesmo
+para quem já entrou.</p>
 </article>
       </div>
     </div>
