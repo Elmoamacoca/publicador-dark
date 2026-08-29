@@ -38,9 +38,17 @@ def chamar(url, dados=None, tentativas=3, token=None):
                         return False, json.loads(e.read().decode())
                     except Exception:
                         return False, {"error": {"message": f"HTTP {e.code}", "code": e.code}}
-                # Usa Retry-After se existir, senao backoff exponencial
-                espera = int(e.headers.get("Retry-After", 2 ** tentativa))
-                time.sleep(espera)
+                # Usa Retry-After se existir, senao backoff exponencial.
+                # O cabecalho pode vir como data ("Wed, 21 Oct 2026 07:28:00
+                # GMT"), que e legal pela norma e faz int() estourar. Como esta
+                # funcao promete nunca levantar excecao, valor que nao for
+                # numero cai no backoff. O teto de 60s existe para o provedor
+                # nao segurar a rodada de cinco minutos inteira.
+                try:
+                    espera = int(e.headers.get("Retry-After", 2 ** tentativa))
+                except (TypeError, ValueError):
+                    espera = 2 ** tentativa
+                time.sleep(max(0, min(espera, 60)))
                 continue
             
             try:

@@ -32,9 +32,20 @@ def ler(caminho, padrao):
 
 
 def gravar(caminho, dados):
+    """Grava de forma atomica: escreve ao lado e troca de uma vez so.
+
+    A gravacao mudou de lugar em 29/08/2026, do fim do laco para dentro dele,
+    e isso esta certo: sem ela por item, morrer no meio publica de novo na
+    proxima rodada. Mas a escrita direta passou de uma para ate dez janelas de
+    corrupcao por rodada, e a agenda e o unico registro do que ja foi ao ar.
+    Trocar o arquivo pronto e uma operacao unica do sistema: ou o antigo
+    inteiro, ou o novo inteiro, nunca metade.
+    """
     caminho.parent.mkdir(parents=True, exist_ok=True)
-    caminho.write_text(json.dumps(dados, ensure_ascii=False, indent=2),
-                       encoding="utf-8")
+    provisorio = caminho.with_suffix(caminho.suffix + ".novo")
+    provisorio.write_text(json.dumps(dados, ensure_ascii=False, indent=2),
+                          encoding="utf-8")
+    os.replace(provisorio, caminho)
 
 
 def main():
@@ -43,6 +54,7 @@ def main():
     contas = {c["id"]: c for c in ler(CONTAS, {"contas": []})["contas"]}
 
     vencidos = []
+    marcou_erro_de_data = False
     for item in agenda["itens"]:
         if item.get("status") != "agendado":
             continue
@@ -51,9 +63,18 @@ def main():
         except Exception:
             item["status"] = "erro"
             item["erro"] = "data invalida"
+            marcou_erro_de_data = True
             continue
         if quando <= agora:
             vencidos.append(item)
+
+    # Item com data invalida vira erro AQUI, antes de qualquer publicacao, e
+    # nao entra em `vencidos`. Quando a rodada nao tem nada vencido, o laco de
+    # baixo nao roda e a gravacao dele tambem nao: sem esta linha o carimbo se
+    # perde e a mesma data quebrada e reprocessada a cada cinco minutos, para
+    # sempre. Foi o que a mudanca de 29/08/2026 deixou passar.
+    if marcou_erro_de_data:
+        gravar(AGENDA, agenda)
 
     vencidos.sort(key=lambda i: i["quando"])
     print(f"agora {agora.isoformat()} | {len(vencidos)} item(ns) vencido(s)")

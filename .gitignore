@@ -4,3 +4,12 @@ painel/analytics.json
 painel/dados/
 painel/midia/
 provas/saida/
+
+# sobras de sessao e credencial solta: nunca versionar
+senha.txt
+*.senha.txt
+lixo*
+dev.log
+npm-debug.log
+*.bak
+*.orig
