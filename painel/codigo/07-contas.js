@@ -12,9 +12,9 @@
    veio do servidor, e nao uma lista escrita na pagina.
 
    O DESENHO E O DA SALA DE CONTROLE DO PORTAL, apontada por ele como regua.
-   Os graficos sao ECharts, a mesma biblioteca de la, servida por esta casa
-   (`vendor/`) e carregada SO quando esta aba abre: sao 500 KB que as outras
-   cinco telas nao precisam pagar.
+   SEM GRAFICO: os dois que existiam foram removidos a pedido dele em 29/08. O
+   historico que a aba mostra e' a tira de 30 dias dentro de cada ficha, que e'
+   onde a pergunta "esta conta esteve de pe?" pertence.
    ===================================================================== */
 (function(){
   'use strict';
@@ -110,217 +110,11 @@
     });
   }
 
-  /* ============================================================ os graficos
-     ECharts, carregado so' quando esta aba abre. `pinta` roda de novo na troca
-     de tema, porque a tinta dele sai de variaveis de CSS: sem isso o grafico
-     ficaria com a cor do tema anterior ate a proxima navegacao. */
-  var ECharts = null, quadros = {};
-  function carregarEcharts(){
-    if (window.echarts) { ECharts = window.echarts; return Promise.resolve(ECharts); }
-    if (carregarEcharts.indo) return carregarEcharts.indo;
-    carregarEcharts.indo = new Promise(function(ok){
-      var s = document.createElement('script');
-      s.src = 'vendor/echarts.simple.min.js';
-      s.onload = function(){ ECharts = window.echarts; ok(ECharts); };
-      s.onerror = function(){ ok(null); };
-      document.head.appendChild(s);
-    });
-    return carregarEcharts.indo;
-  }
-  function tinta(nome){
-    return getComputedStyle(pag).getPropertyValue(nome).trim();
-  }
-  function alfa(cor, a){
-    var h = (cor || '').trim().replace('#','');
-    if (h.length < 6) return cor;
-    return 'rgba(' + parseInt(h.slice(0,2),16) + ',' + parseInt(h.slice(2,4),16) + ',' +
-           parseInt(h.slice(4,6),16) + ',' + a + ')';
-  }
-  function comum(){
-    var surf = tinta('--branco'), linha = tinta('--rule-solid');
-    var reduz = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    return {
-      surf: surf, linha: linha, linha2: tinta('--ct-linha2'),
-      txt: tinta('--ink'), txt2: tinta('--muted'), txt3: tinta('--soft'),
-      animationDuration: reduz ? 0 : 560, animationEasing: 'cubicOut',
-      textStyle: {fontFamily: 'Manrope, system-ui, sans-serif'},
-      dica: {backgroundColor: surf, borderColor: tinta('--ct-linha2'), borderWidth: 1,
-             padding: [9, 12],
-             textStyle: {color: tinta('--ink'), fontSize: 12,
-                         fontFamily: 'Manrope, system-ui, sans-serif'},
-             extraCssText: 'border-radius:12px;box-shadow:' + tinta('--ct-sombra-g') + ';'}
-    };
-  }
-  function linhaDica(cor, nome, valor, barra){
-    return '<div style="display:flex;align-items:center;gap:9px;margin-top:4px">' +
-      '<i style="width:10px;height:10px;border-radius:' + (barra ? '2px' : '3px') +
-      ';flex:none;background:' + cor + '"></i>' +
-      '<span style="font-size:11.5px;font-weight:600;opacity:.75">' + nome + '</span>' +
-      '<b style="margin-left:18px;font-variant-numeric:tabular-nums;font-weight:800">' +
-      valor + '</b></div>';
-  }
-  function tituloDica(t){
-    return '<div style="font-size:12.5px;font-weight:800">' + t + '</div>';
-  }
-
-  function grafico(id, receita){
-    var caixa = document.getElementById(id);
-    if (!caixa || !ECharts || !caixa.clientWidth) return;
-    var g = quadros[id];
-    if (!g || g.isDisposed()) {
-      g = quadros[id] = ECharts.init(caixa, undefined, {renderer: 'canvas'});
-    }
-    receita(g, comum());
-  }
-
-  /* A CONEXAO DA REDE, dia a dia. Linha para quem respondeu, barra para quem
-     recusou. Sao as duas unicas series possiveis aqui, e a barra e' a que
-     importa: dia com barra e' dia em que alguem precisava agir. */
-  function grafConexao(){
-    grafico('ct-graf-rede', function(g, c){
-      var lista = DADOS.contas || [];
-      if (!lista.length) return;
-      var eixo = [], dePe = [], falhou = [], semNada = [];
-      var n = (lista[0].tira || []).length;
-      for (var d = 0; d < n; d++){
-        var dia = (lista[0].tira[d] || {}).dia;
-        eixo.push(dCurta(dia));
-        var ok = 0, mau = 0, sem = 0;
-        lista.forEach(function(cc){
-          var e = ((cc.tira || [])[d] || {}).estado;
-          if (e === 'viva' || e === 'vencendo') ok++;
-          else if (e === 'caiu') mau++;
-          else sem++;
-        });
-        dePe.push(ok); falhou.push(mau); semNada.push(sem);
-      }
-      var a = tinta('--ct-1'), b = tinta('--ct-neg');
-      var passo = Math.max(1, Math.ceil(eixo.length / 8));
-      g.setOption({
-        animationDuration: c.animationDuration, animationEasing: c.animationEasing,
-        textStyle: c.textStyle,
-        grid: {left: 4, right: 12, top: 18, bottom: 4, containLabel: true},
-        tooltip: {trigger: 'axis', backgroundColor: c.dica.backgroundColor,
-          borderColor: c.dica.borderColor, borderWidth: 1, padding: c.dica.padding,
-          textStyle: c.dica.textStyle, extraCssText: c.dica.extraCssText,
-          axisPointer: {type: 'line', lineStyle: {color: c.linha2, width: 1}, z: 1},
-          formatter: function(ps){
-            if (!ps.length) return '';
-            var m = {};
-            ps.forEach(function(p){ m[p.seriesName] = p.value; });
-            var semReg = semNada[ps[0].dataIndex];
-            return tituloDica(ps[0].axisValue) +
-              linhaDica(a, 'Responderam', num(m['Responderam'] || 0)) +
-              linhaDica(b, 'Recusaram', num(m['Recusaram'] || 0), true) +
-              (semReg ? '<div style="margin-top:7px;padding-top:6px;border-top:1px solid ' +
-                c.linha + ';font-size:11px;opacity:.7">' + semReg +
-                ' sem registro nesse dia</div>' : '');
-          }},
-        xAxis: {type: 'category', boundaryGap: ['3%','3%'], data: eixo,
-          axisLine: {lineStyle: {color: c.linha}}, axisTick: {show: false},
-          axisLabel: {color: c.txt3, fontSize: 10.5, fontWeight: 700,
-                      interval: passo - 1, margin: 12}},
-        yAxis: {type: 'value', minInterval: 1, splitLine: {lineStyle: {color: c.linha}},
-          axisLine: {show: false}, axisTick: {show: false},
-          axisLabel: {color: c.txt3, fontSize: 10.5, fontWeight: 600, margin: 10}},
-        series: [
-          {name: 'Responderam', type: 'line', data: dePe, smooth: 0, showSymbol: false,
-           z: 3, lineStyle: {color: a, width: 2.6}, symbol: 'circle', symbolSize: 7,
-           itemStyle: {color: a, borderColor: c.surf, borderWidth: 2},
-           emphasis: {focus: 'series', scale: 1.6},
-           areaStyle: {color: new ECharts.graphic.LinearGradient(0, 0, 0, 1, [
-             {offset: 0, color: alfa(a, .30)}, {offset: 1, color: alfa(a, 0)}])}},
-          /* ZERO NAO VIRA BARRA. Com `barMinHeight` o ECharts desenha um traco
-             mesmo onde o valor e zero, e o grafico ficava com uma linha vermelha
-             rente ao eixo em dias sem recusa nenhuma: parecia falha todo dia. */
-          {name: 'Recusaram', type: 'bar', z: 2, barMaxWidth: 18, barMinHeight: 2,
-           data: falhou.map(function(v){ return v > 0 ? v : null; }),
-           itemStyle: {borderRadius: [3,3,0,0],
-             color: new ECharts.graphic.LinearGradient(0, 0, 0, 1, [
-               {offset: 0, color: alfa(b, .92)}, {offset: 1, color: alfa(b, .45)}])},
-           emphasis: {itemStyle: {color: b}}}
-        ]
-      }, true);
-    });
-  }
-
-  /* O ACESSO DE CADA CONTA, em barras deitadas e ordenado do mais curto. E' a
-     tela que responde "quem vence primeiro" sem ninguem precisar comparar
-     numero por numero. */
-  function grafAcesso(){
-    grafico('ct-graf-acesso', function(g, c){
-      var lista = (DADOS.contas || []).slice().sort(function(x, y){
-        return (x.dias_para_vencer == null ? 999 : x.dias_para_vencer) -
-               (y.dias_para_vencer == null ? 999 : y.dias_para_vencer);
-      }).slice(0, 10);
-      if (!lista.length) return;
-      var verde = tinta('--ct-1'), ambar = tinta('--ct-alerta'), vermelho = tinta('--ct-neg');
-      g.setOption({
-        animationDuration: c.animationDuration, animationEasing: c.animationEasing,
-        textStyle: c.textStyle,
-        grid: {left: 2, right: 58, top: 6, bottom: 2, containLabel: true},
-        tooltip: {trigger: 'item', backgroundColor: c.dica.backgroundColor,
-          borderColor: c.dica.borderColor, borderWidth: 1, padding: c.dica.padding,
-          textStyle: c.dica.textStyle, extraCssText: c.dica.extraCssText,
-          formatter: function(p){
-            var conta = lista[p.dataIndex];
-            return tituloDica('@' + conta.arroba) +
-              linhaDica(p.color, 'Dias Restantes', num(p.value)) +
-              '<div style="margin-top:7px;padding-top:6px;border-top:1px solid ' +
-              c.linha + ';font-size:11px;opacity:.7">vence em ' +
-              dCurta(conta.vence_em) +
-              (conta.renovacoes ? ' · renovado ' + conta.renovacoes + 'x' : '') +
-              '</div>';
-          }},
-        xAxis: {type: 'value', max: 60, show: false},
-        yAxis: {type: 'category', inverse: true,
-          data: lista.map(function(x){ return '@' + x.arroba; }),
-          axisLine: {show: false}, axisTick: {show: false},
-          axisLabel: {color: c.txt2, fontSize: 12, fontWeight: 700, margin: 10}},
-        series: [{type: 'bar', barWidth: 11,
-          data: lista.map(function(x){
-            var v = x.dias_para_vencer == null ? 0 : x.dias_para_vencer;
-            var cor = v <= 7 ? vermelho : (v <= 14 ? ambar : verde);
-            return {value: v, itemStyle: {borderRadius: 99,
-              color: new ECharts.graphic.LinearGradient(0, 0, 1, 0, [
-                {offset: 0, color: alfa(cor, .62)}, {offset: 1, color: cor}])}};
-          }),
-          showBackground: true,
-          backgroundStyle: {color: tinta('--ct-trilho'), borderRadius: 99},
-          label: {show: true, position: 'right', distance: 9, color: c.txt,
-            fontWeight: 800, fontSize: 12,
-            formatter: function(p){ return p.value + 'd'; }}}]
-      }, true);
-    });
-  }
-
-  function pintarGraficos(){
-    if (!ECharts) return;
-    grafConexao();
-    grafAcesso();
-  }
-
-  /* GRAFICO SEM LARGURA NAO NASCE, e a largura pode chegar depois: a aba abre
-     junto com a animacao de entrada, e a janela pode estar em qualquer tamanho
-     no instante do primeiro desenho. Medido aqui com a janela em zero: o quadro
-     tinha 0 pixel e a biblioteca simplesmente nao instanciava, sem erro nenhum.
-     Por isso quem manda pintar e' o observador de medida, e nao so' o relogio. */
-  var olhoDeMedida = new ResizeObserver(function(entradas){
-    var mudou = entradas.some(function(e){ return e.contentRect.width > 0; });
-    if (mudou) pintarGraficos();
-  });
-  ['ct-graf-rede', 'ct-graf-acesso'].forEach(function(id){
-    var q = document.getElementById(id);
-    if (q) olhoDeMedida.observe(q);
-  });
-
-  window.addEventListener('resize', function(){
-    Object.keys(quadros).forEach(function(k){
-      if (quadros[k] && !quadros[k].isDisposed()) quadros[k].resize();
-    });
-  });
-  new MutationObserver(function(){ pintarGraficos(); })
-    .observe(document.documentElement, {attributes: true, attributeFilter: ['data-theme']});
+  /* OS DOIS GRAFICOS SAIRAM em 29/08, por ordem dele: "esses graficos de conexao
+     da rede e acesso por conta pode remover". Com eles saiu tambem a biblioteca
+     ECharts (500 KB em `vendor/`), que nao tinha mais quem a usasse. O que a aba
+     mostra de historico agora e' a tira de 30 dias dentro de cada ficha, que e'
+     onde a pergunta "esta conta esteve de pe?" pertence. */
 
   /* ============================================================ os quatro numeros */
   function kpis(){
@@ -517,12 +311,17 @@
   }
 
   function corpoEstado(c){
+    /* OS DOIS ROTULOS ABAIXO FORAM CORRIGIDOS na auditoria de 29/08. O primeiro
+       dizia "Última Publicação" e mostrava uma CONTAGEM; o segundo dizia "Pastas
+       De Mídia Ligadas" numa ficha de conta, mas o numero e' do sistema inteiro.
+       Rotulo que nao descreve o proprio numero e' erro, mesmo com o numero certo. */
     return '<div class="ct-par"><span class="rot">' + ico('relogio','xs') +
-        'Última Publicação</span><b>' + (c.publicados
-          ? c.publicados + (c.publicados === 1 ? ' saída pelo publicador'
-            : ' saídas pelo publicador') : 'nenhuma ainda') + '</b></div>' +
+        'Saídas Pelo Publicador</span><b>' + (c.publicados
+          ? c.publicados + (c.publicados === 1 ? ' publicação' : ' publicações')
+          : 'nenhuma ainda') + '</b></div>' +
       '<div class="ct-par"><span class="rot">' + ico('video','xs') +
-        'Pastas De Mídia Ligadas</span><b' + (c.pastas_ligadas ? '' : ' class="alerta"') +
+        'Pastas De Mídia No Sistema</span><b' +
+        (c.pastas_ligadas ? '' : ' class="alerta"') +
         '>' + (c.pastas_ligadas || 'nenhuma') + '</b></div>' +
       '<div class="ct-par"><span class="rot">' + ico('agenda','xs') +
         'Saídas Programadas</span><b' + (c.fila ? '' : ' class="alerta"') + '>' +
@@ -637,7 +436,6 @@
       ? 'vigiada ' + faz(DADOS.em) + ' às ' + hora(DADOS.em) : 'vigiando';
     var selo = document.querySelector('.ct-vivo');
     if (selo) selo.classList.toggle('mau', (DADOS.caidas || 0) > 0);
-    setTimeout(pintarGraficos, 30);
   }
 
   /* ============================================================ carregar */
@@ -862,10 +660,7 @@
   /* ------------------------------------------------------------- a abertura */
   var jaAbriu = false;
   window.abrirContas = function(){
-    carregarEcharts().then(function(){
-      if (!jaAbriu){ jaAbriu = true; carregar(false); }
-      else { setTimeout(pintarGraficos, 30); }
-    });
+    if (!jaAbriu){ jaAbriu = true; carregar(false); }
   };
 
   /* A VOLTA DO INSTAGRAM. O servidor manda de volta com o recado no endereco;

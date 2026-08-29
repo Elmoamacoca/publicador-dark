@@ -177,8 +177,16 @@
 .ct-ec-leg i{width:13px;height:3px;border-radius:2px;display:block}
 .ct-ec-leg i.bl{width:9px;height:11px;border-radius:2px}
 
-/* ------------------------------------------------------- a linha de filtros */
-.ct-filtros{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+/* ------------------------------------------------------- a linha de filtros
+   A FAIXA PRECISA DE `z-index`, e a razao nao e' obvia. Cada filho direto de
+   `.pagina.ativa` recebe a animacao de entrada, que anima `transform` e `filter`;
+   isso faz de CADA UM deles um contexto de empilhamento proprio. Contextos irmaos
+   se empilham pela ordem do documento, entao a grade de fichas, que vem depois,
+   cobria o balao do seletor de mercado por mais alto que fosse o z-index DENTRO
+   dele. Medido: `elementFromPoint` no meio do balao aberto devolvia `.ct-f-cab`.
+   E a mesma armadilha que ja custou a gaveta do Portal. */
+.ct-filtros{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  position:relative;z-index:5}
 .ct-seg{display:flex;background:var(--branco);border:1px solid var(--rule-solid);
   border-radius:12px;padding:3px;gap:2px}
 .ct-seg button{padding:7px 13px;border:0;background:none;border-radius:8px;font:inherit;
@@ -198,6 +206,7 @@
 .ct-dd-bt[aria-expanded="true"] .cv{transform:rotate(180deg)}
 .ct-dd-bt .pt{width:8px;height:8px;border-radius:3px;flex:none}
 .ct-dd-m{position:absolute;top:calc(100% + 7px);left:0;min-width:230px;z-index:30;
+  max-height:320px;overflow-y:auto;
   background:var(--branco);border:1px solid var(--rule-solid);border-radius:14px;
   box-shadow:var(--ct-sombra-g);padding:6px;display:flex;flex-direction:column;gap:2px;
   animation:ct-balao .16s cubic-bezier(.22,1,.36,1)}

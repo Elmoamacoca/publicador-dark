@@ -390,20 +390,16 @@ d.setAttribute("data-menu",localStorage.getItem("pub-menu")||"fechado");})();</s
         <!-- OS DOIS BOTOES SAO DE VERDADE: um pergunta a Meta agora, o outro abre a
              autorizacao do Instagram. Nenhum deles finge. -->
         <button class="ct-bt" type="button" data-acao="testar-tudo">
-          <svg class="seta seta-esq" viewBox="0 0 24 24"><use href="#i-seta"/></svg>
           <span class="txt">
             <svg class="mrc" viewBox="0 0 24 24"><path d="M16.247 7.761a6 6 0 0 1 0 8.478"/><path d="M19.075 4.933a10 10 0 0 1 0 14.134"/><path d="M4.925 19.067a10 10 0 0 1 0-14.134"/><path d="M7.753 16.239a6 6 0 0 1 0-8.478"/><circle cx="12" cy="12" r="2"/></svg>
             Testar Conexões</span>
           <span class="circ"></span>
-          <svg class="seta seta-dir" viewBox="0 0 24 24"><use href="#i-seta"/></svg>
         </button>
         <button class="ct-bt verde" type="button" data-acao="ligar">
-          <svg class="seta seta-esq" viewBox="0 0 24 24"><use href="#i-seta"/></svg>
           <span class="txt">
             <svg class="mrc" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
             Ligar Conta</span>
           <span class="circ"></span>
-          <svg class="seta seta-dir" viewBox="0 0 24 24"><use href="#i-seta"/></svg>
         </button>
       </div>
     </div>
@@ -413,25 +409,6 @@ d.setAttribute("data-menu",localStorage.getItem("pub-menu")||"fechado");})();</s
     <div id="ct-aviso"></div>
 
     <div class="ct-grade ct-g4" id="ct-kpis"></div>
-
-    <div class="ct-grade ct-g21">
-      <div class="ct-cd">
-        <div class="ct-cd-h"><h3>Conexão Da Rede</h3>
-          <span class="ct-rot3">os últimos 30 dias</span></div>
-        <div class="ct-cd-b">
-          <div class="ct-ec" id="ct-graf-rede"></div>
-          <div class="ct-ec-leg">
-            <span><i style="background:var(--ct-1)"></i>Responderam</span>
-            <span><i class="bl" style="background:var(--ct-neg)"></i>Recusaram</span>
-          </div>
-        </div>
-      </div>
-      <div class="ct-cd">
-        <div class="ct-cd-h"><h3>Acesso Por Conta</h3>
-          <span class="ct-rot3">dias até vencer</span></div>
-        <div class="ct-cd-b"><div class="ct-ec" id="ct-graf-acesso"></div></div>
-      </div>
-    </div>
 
     <div class="ct-filtros">
       <div class="ct-seg" id="ct-seg"></div>
@@ -994,9 +971,11 @@ para quem já entrou.</p>
 <script src="codigo/06-programar.js"></script>
 
 <!-- ================================================================== CONTAS
-     Uma ficha por conta, no desenho da sala de controle do Portal. Os graficos
-     sao ECharts, servido por esta casa em `vendor/` e carregado SO quando esta
-     aba abre: sao 500 KB que as outras cinco telas nao precisam pagar. -->
+     Uma ficha por conta, no desenho da sala de controle do Portal.
+
+     SEM GRAFICO, por ordem dele em 29/08: "esses graficos de conexao da rede e
+     acesso por conta pode remover". O que sobrou responde melhor a pergunta da
+     aba: os quatro numeros no alto e a tira de 30 dias dentro de cada ficha. -->
 <script src="codigo/07-contas.js"></script>
 </body>
 </html>
