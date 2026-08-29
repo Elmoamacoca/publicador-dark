@@ -265,6 +265,14 @@ def main():
               and "instagram.com/oauth" not in pag.url, pag.url[:60])
         passos = pag.eval_on_selector_all("#ct-jan-corpo .ct-pss", "e => e.length")
         anota("a janela tem os quatro passos", passos == 4, f"{passos} passo(s)")
+        # NEGRITO NO MEIO DA FRASE TEM QUE CONTINUAR NO MEIO DA FRASE. A regra do
+        # titulo do passo (`b` em bloco) pegava tambem os negritos do texto, e o
+        # passo saia picado em cinco pedacos, um por palavra grifada.
+        picado = pag.evaluate("""() => [...document.querySelectorAll(
+                '#ct-jan-corpo p b, #ct-jan-corpo li b')]
+            .filter(b => getComputedStyle(b).display !== 'inline')
+            .map(b => b.textContent.trim().slice(0, 24))""")
+        anota("negrito no meio da frase nao quebra linha", not picado, str(picado))
         d = pag.evaluate("""async () => {
             const r = await fetch('/contas/ligar', {cache: 'no-store'});
             return {codigo: r.status, corpo: await r.json()};

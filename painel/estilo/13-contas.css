@@ -443,8 +443,8 @@
 /* OS SELETORES DE DENTRO SAO QUALIFICADOS PELO `.c`: `.ct-vered span` pegaria
    tambem a bolha e o tempo de resposta, que sao spans irmaos. */
 .ct-vered .c{flex:1;min-width:0}
-.ct-vered .c b{display:block;font-size:15px;font-weight:800;letter-spacing:-.2px}
-.ct-vered .c span{display:block;font-size:12.5px;color:var(--muted);margin-top:3px}
+.ct-vered .c > b{display:block;font-size:15px;font-weight:800;letter-spacing:-.2px}
+.ct-vered .c > span{display:block;font-size:12.5px;color:var(--muted);margin-top:3px}
 .ct-vered .ms{font-size:var(--ct-n3);font-weight:800;letter-spacing:-.03em;flex:none;
   font-variant-numeric:tabular-nums}
 .ct-vered .ms small{font-size:11px;font-weight:700;color:var(--soft);margin-left:2px}
@@ -463,8 +463,8 @@
 .ct-pas .ic svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;
   stroke-linecap:round;stroke-linejoin:round}
 .ct-pas .c{flex:1;min-width:0}
-.ct-pas .c b{display:block;font-size:13px;font-weight:700}
-.ct-pas .c span{display:block;font-size:12px;color:var(--muted);margin-top:2px;
+.ct-pas .c > b{display:block;font-size:13px;font-weight:700}
+.ct-pas .c > span{display:block;font-size:12px;color:var(--muted);margin-top:2px;
   line-height:1.45}
 .ct-pas .v{flex:none;font-size:12.5px;font-weight:800;text-align:right;
   font-variant-numeric:tabular-nums;padding-top:1px}
@@ -498,7 +498,11 @@
 .ct-pss .n svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.4;
   stroke-linecap:round;stroke-linejoin:round}
 .ct-pss .c{flex:1;min-width:0}
-.ct-pss .c b{display:block;font-size:13.5px;font-weight:800;margin-bottom:5px}
+/* FILHO DIRETO, e o `>` nao e' capricho: o titulo do passo e' um `b`, mas o texto
+   do passo tambem tem `b` dentro (o endereco, o "letra por letra", o caminho no
+   painel da Meta). Sem o `>`, cada negrito do meio da frase virava linha propria
+   e o passo saia picado em cinco pedacos. */
+.ct-pss .c > b{display:block;font-size:13.5px;font-weight:800;margin-bottom:5px}
 .ct-pss .c p{font-size:12.5px;color:var(--muted);line-height:1.55}
 .ct-pss .c p + p{margin-top:7px}
 .ct-pss .c a{color:var(--link);font-weight:700;text-decoration:none}
