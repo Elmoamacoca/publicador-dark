@@ -286,7 +286,7 @@
         (tetoTotal ? '<small>de ' + tetoTotal + '</small>' : '') + '</div>' +
         '<div class="ct-barra"><i' + tomTeto + ' style="width:' +
           Math.max(pctTeto, 2) + '%"></i></div>' +
-        '<div class="pe">' + (tetoTotal ? (tetoTotal - tetoUsado) + ' saídas ainda cabem'
+        '<div class="pe">' + (tetoTotal ? (tetoTotal - tetoUsado) + ' ainda cabem'
           : 'a Meta não respondeu') + '</div></div>' +
       '<div class="ct-m"><div class="cab">' + ico('escudo','xs') +
         '<span>Acesso Vence</span></div>' +
@@ -295,8 +295,9 @@
           '</small>') + '</div>' +
         '<div class="ct-barra"><i' + tomAcesso + ' style="width:' + pctAcesso +
           '%"></i></div>' +
-        '<div class="pe">' + (c.renovacoes ? 'renovado ' + c.renovacoes + 'x · ' : '') +
-          (c.vence_em ? 'até ' + dCurta(c.vence_em) : 'sem validade anotada') +
+        '<div class="pe">' + (c.renovacoes
+          ? 'renovado ' + c.renovacoes + 'x · ' + dCurta(c.vence_em)
+          : (c.vence_em ? 'até ' + dCurta(c.vence_em) : 'sem validade anotada')) +
           '</div></div>' +
       '<div class="ct-m"><div class="cab">' + ico('camadas','xs') +
         '<span>Fila De Vídeos</span></div>' +
