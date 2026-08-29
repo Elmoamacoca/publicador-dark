@@ -16,6 +16,7 @@ import argparse
 import json
 import os
 import sys
+import urllib.error
 import urllib.parse
 import urllib.request
 
@@ -30,6 +31,29 @@ def entrar(base, usuario, senha):
     with urllib.request.urlopen(req, timeout=20) as r:
         biscoito = r.headers.get("Set-Cookie", "")
     return biscoito.split(";")[0] if biscoito else ""
+
+
+def fora(url, cookie, corpo=None):
+    """Um pedido POR FORA DO NAVEGADOR. Serve para conferir uma rota sem deixar o
+    erro dela no console da pagina, que aqui e' criterio de aprovacao."""
+    cab = {"User-Agent": "auditoria"}
+    if cookie:
+        cab["Cookie"] = cookie
+    dados = None
+    if corpo is not None:
+        dados = json.dumps(corpo).encode()
+        cab["Content-Type"] = "application/json"
+    req = urllib.request.Request(url, headers=cab, data=dados)
+    try:
+        with urllib.request.urlopen(req, timeout=25) as r:
+            return r.status, json.loads(r.read() or b"{}")
+    except urllib.error.HTTPError as e:
+        try:
+            return e.code, json.loads(e.read() or b"{}")
+        except Exception:
+            return e.code, {}
+    except Exception as e:
+        return "erro", {"erro": type(e).__name__}
 
 
 def main():
@@ -305,18 +329,18 @@ def main():
               "Gere O Token Na Meta" in pag.eval_on_selector("#ct-jan-corpo",
                                                              "e => e.textContent"))
 
-        # a rota que a etapa 2 usa e' de verdade: token inventado leva recusa da META,
+        # A rota que a etapa 2 usa e' de verdade: token inventado leva recusa da META,
         # e a recusa chega escrita. Rota que engole erro de token grava conta pela
         # metade, com o cofre mexido e nada funcionando.
-        d = pag.evaluate("""async () => {
-            const r = await fetch('/contas/colar', {method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({token: 'IG' + 'Q'.repeat(70)})});
-            return {codigo: r.status, corpo: await r.json()};
-        }""")
+        #
+        # ELA E CHAMADA POR FORA DO NAVEGADOR, de proposito. Um `fetch` daqui de
+        # dentro deixaria o 400 no console, e o console limpo e' criterio de aprovacao
+        # nesta casa: prova que suja a propria medida nao serve.
+        codigo, resposta = fora(base + "/contas/colar", cookie,
+                                {"token": "IG" + "Q" * 70})
         anota("colar token inventado leva recusa escrita da Meta",
-              d.get("codigo") == 400 and bool((d.get("corpo") or {}).get("erro")),
-              str((d.get("corpo") or {}).get("erro", ""))[:70])
+              codigo == 400 and bool(resposta.get("erro")),
+              str(resposta.get("erro", ""))[:70])
 
         pag.mouse.click(20, 20)
         pag.wait_for_timeout(500)

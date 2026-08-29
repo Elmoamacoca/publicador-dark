@@ -39,7 +39,10 @@
     agenda:'<rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/>',
     mais:'<path d="M5 12h14"/><path d="M12 5v14"/>',
     marco:'<path d="M4 22V4a2 2 0 0 1 2-2h9l-1.5 4L15 10H6"/><path d="M4 15h11"/>',
-    colar:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2h-2"/><path d="M4 12V6a2 2 0 0 1 2-2h2"/><path d="M4 16h.01"/>'
+    colar:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2h-2"/><path d="M4 12V6a2 2 0 0 1 2-2h2"/><path d="M4 16h.01"/>',
+    /* A SETA DE VOLTAR E UM ICONE, e nao a seta animada do botao: aquela aponta
+       sempre para a frente, e "Voltar" com seta para a frente e' contradicao. */
+    voltar:'<path d="M19 12H5"/><path d="m12 19-7-7 7-7"/>'
   };
   function ico(nome, cls){
     return '<svg class="ct-i ' + (cls || '') + '" viewBox="0 0 24 24" aria-hidden="true">' +
@@ -793,7 +796,7 @@
         '<p class="ct-et-pe">O token fica no cofre do servidor e nunca volta para ' +
         'a tela.</p>');
       pe = '<span class="dir" style="margin-left:0">' +
-        botao('Voltar', 'etapa-voltar', 'mini') + '</span>' +
+        botao('Voltar', 'etapa-voltar', 'mini', 'voltar') + '</span>' +
         '<span class="dir">' + botao('Ligar Conta', 'colar', 'verde', 'mais') +
         '</span>';
     } else {
