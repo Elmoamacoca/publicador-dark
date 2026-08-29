@@ -14,14 +14,14 @@
    E o menu segue o molde do proprio Postiz: regua estreita colada na borda, icone em
    cima e rotulo miudo embaixo, com os ajustes presos no rodape. */
 :root{
-  --paper:#FAFAFA; --paper-2:#F2F2F2; --branco:#FFFFFF;
+  --paper:#F4F4F5; --paper-2:#F2F2F2; --branco:#FFFFFF;
   --ink:#0E0E0E; --muted:#6D6D6D; --soft:#9A9A9A;
-  --rule-solid:#EAEAEA;
+  --rule-solid:#E4E4E7;
   --accent:#3F7D53; --accent-tint:#E7F0EA; --link:#2F6440;
   --verde:#3F7D53; --vermelho:#B23A3A; --ambar:#B07D22;
   --chart-1:#3F7D53; --chart-2:#2F6FA8; --chart-3:#B07D22;
   --chart-4:#7A4FA3; --chart-5:#B23A3A;
-  --r-md:10px; --h-filtro:44px; --r-filtro:12px; --l-filtro:240px;
+  --r-md:12px; --r-card:12px; --h-filtro:44px; --r-filtro:12px; --l-filtro:240px;
   /* O balão que os filtros abrem, e o item dentro dele. Vêm do Social Tracker,
      onde três bibliotecas diferentes davam sete arredondamentos numa seção só. */
   --r-balao:14px; --r-item:10px;
