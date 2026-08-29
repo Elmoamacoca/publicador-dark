@@ -141,26 +141,26 @@ def main():
         pag.click('[data-abas] [data-aba="identidade"]')
         pag.wait_for_timeout(400)
         anota("a aba Identidade abre",
-              pag.eval_on_selector_all("[data-mercado]", "e => e.length") > 0)
+              pag.eval_on_selector_all(".ct-campo[data-mercado]", "e => e.length") > 0)
 
         # --------------------------------------------- editar mercado, ida e volta
-        antes = pag.eval_on_selector("[data-mercado]", "e => e.textContent.trim()")
-        pag.click("[data-mercado]")
+        antes = pag.eval_on_selector(".ct-campo[data-mercado]", "e => e.textContent.trim()")
+        pag.click(".ct-campo[data-mercado]")
         pag.wait_for_timeout(300)
-        tem_campo = pag.eval_on_selector_all("[data-mercado] input", "e => e.length") == 1
+        tem_campo = pag.eval_on_selector_all(".ct-campo[data-mercado] input", "e => e.length") == 1
         anota("clicar no mercado vira campo", tem_campo)
         if tem_campo:
-            pag.fill("[data-mercado] input", "zz auditoria")
+            pag.fill(".ct-campo[data-mercado] input", "zz auditoria")
             pag.keyboard.press("Enter")
             pag.wait_for_timeout(900)
-            agora = pag.eval_on_selector("[data-mercado]", "e => e.textContent.trim()")
+            agora = pag.eval_on_selector(".ct-campo[data-mercado]", "e => e.textContent.trim()")
             anota("o mercado grava", agora == "zz auditoria", f"ficou: {agora}")
-            pag.click("[data-mercado]")
+            pag.click(".ct-campo[data-mercado]")
             pag.wait_for_timeout(300)
-            pag.fill("[data-mercado] input", "" if antes == "definir" else antes)
+            pag.fill(".ct-campo[data-mercado] input", "" if antes == "definir" else antes)
             pag.keyboard.press("Enter")
             pag.wait_for_timeout(900)
-            voltou = pag.eval_on_selector("[data-mercado]", "e => e.textContent.trim()")
+            voltou = pag.eval_on_selector(".ct-campo[data-mercado]", "e => e.textContent.trim()")
             anota("o mercado volta ao que era", voltou == antes, f"ficou: {voltou}")
         pag.click('[data-abas] [data-aba="estado"]')
         pag.wait_for_timeout(300)

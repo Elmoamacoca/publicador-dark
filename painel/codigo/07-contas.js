@@ -238,7 +238,7 @@
     var balao = document.getElementById('ct-dd-m');
     balao.innerHTML = [{v:'', r:'Todos Os Mercados'}].concat(
       mercados.sort().map(function(m){ return {v:m, r:m}; })).map(function(o, k){
-      return '<button class="ct-dd-o" role="option" data-mercado="' + seguro(o.v) +
+      return '<button class="ct-dd-o" role="option" data-op-mercado="' + seguro(o.v) +
         '" aria-selected="' + (mercado === o.v) + '">' +
         '<span class="pt" style="background:' + (o.v ? cores[k % 5] : 'var(--soft)') +
         '"></span>' + seguro(o.r) +
@@ -496,9 +496,9 @@
       gatilho.setAttribute('aria-expanded', String(abre));
       return;
     }
-    var op = e.target.closest('[data-mercado][role="option"]');
+    var op = e.target.closest('[data-op-mercado]');
     if (op){
-      mercado = op.dataset.mercado;
+      mercado = op.dataset.opMercado;
       document.getElementById('ct-dd-m').hidden = true;
       document.getElementById('ct-dd-bt').setAttribute('aria-expanded', 'false');
       return desenhar();
@@ -605,7 +605,7 @@
      A edicao acontece na propria celula: clicou, virou campo; Enter ou sair,
      gravou. Quem grava e o `01-nucleo.js`, que e' o dono desse dado. */
   pag.addEventListener('click', function(e){
-    var alvo = e.target.closest('[data-mercado]:not([role="option"])');
+    var alvo = e.target.closest('.ct-campo[data-mercado]');
     if (alvo && !alvo.querySelector('input')){
       var quem = alvo.dataset.mercado, atual = metaDe(quem).mercado;
       alvo.classList.remove('vazio');
