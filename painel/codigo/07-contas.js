@@ -733,8 +733,13 @@
                     : numero) + '</span>' +
       '<div class="c"><b>' + titulo + '</b>' + corpo + '</div></div>';
   }
+  /* O TEXTO VAI DENTRO DE UM `span` porque o `li` e' uma caixa flexivel (o risco
+     verde do lado precisa ficar alinhado no alto). Numa caixa dessas, cada filho
+     vira um bloco proprio, e o negrito do meio da frase pulava para a linha de
+     baixo. Com o span, a frase inteira e' um filho so'. */
   function item(t){
-    return '<li><svg viewBox="0 0 24 24"><path d="m5 12 5 5L20 7"/></svg>' + t + '</li>';
+    return '<li><svg viewBox="0 0 24 24"><path d="m5 12 5 5L20 7"/></svg>' +
+           '<span>' + t + '</span></li>';
   }
   function corpoLigar(p, sonda){
     p = p || {};
