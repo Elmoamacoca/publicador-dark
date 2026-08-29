@@ -100,8 +100,9 @@ def main():
             item["status"] = "agendado" if item["tentativas"] < 3 else "erro"
             falhas += 1
             print(f"    FALHOU: {erro}")
+        
+        gravar(AGENDA, agenda)
 
-    gravar(AGENDA, agenda)
     print(f"\nresumo: {publicados} publicado(s), {falhas} falha(s)")
 
 

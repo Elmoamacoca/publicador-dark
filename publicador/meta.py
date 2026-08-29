@@ -18,15 +18,31 @@ PISTAS = {
 }
 
 
-def chamar(url, dados=None, tentativas=3):
-    """Devolve (ok, corpo). Repete em falha de rede, nunca levanta excecao."""
+def chamar(url, dados=None, tentativas=3, token=None):
+    """Devolve (ok, corpo). Repete em falha de rede ou provedor (429, 5xx)."""
     corpo = urllib.parse.urlencode(dados).encode() if dados else None
+    
+    headers = {}
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+        
     for tentativa in range(tentativas):
         try:
-            req = urllib.request.Request(url, data=corpo)
+            req = urllib.request.Request(url, data=corpo, headers=headers)
             with urllib.request.urlopen(req, timeout=60) as r:
                 return True, json.loads(r.read().decode())
         except urllib.error.HTTPError as e:
+            if e.code == 429 or e.code >= 500:
+                if tentativa == tentativas - 1:
+                    try:
+                        return False, json.loads(e.read().decode())
+                    except Exception:
+                        return False, {"error": {"message": f"HTTP {e.code}", "code": e.code}}
+                # Usa Retry-After se existir, senao backoff exponencial
+                espera = int(e.headers.get("Retry-After", 2 ** tentativa))
+                time.sleep(espera)
+                continue
+            
             try:
                 return False, json.loads(e.read().decode())
             except Exception:
@@ -49,14 +65,14 @@ def descrever_erro(payload):
 def identidade(token):
     """Confirma que o token vive e devolve arroba e seguidores."""
     ok, p = chamar(
-        f"{BASE}/me?fields=user_id,username,followers_count,media_count"
-        f"&access_token={token}")
+        f"{BASE}/me?fields=user_id,username,followers_count,media_count",
+        token=token)
     return (p if ok else None), (None if ok else descrever_erro(p))
 
 
 def consumo_do_teto(ig_id, token):
     ok, p = chamar(f"{BASE}/{ig_id}/content_publishing_limit"
-                   f"?fields=config,quota_usage&access_token={token}")
+                   f"?fields=config,quota_usage", token=token)
     if not ok:
         return None
     d = (p.get("data") or [{}])[0]
@@ -72,15 +88,14 @@ def publicar_reels(ig_id, token, video_url, legenda,
         "media_type": "REELS",
         "video_url": video_url,
         "caption": legenda,
-        "access_token": token,
-    })
+    }, token=token)
     if not ok:
         return None, descrever_erro(p)
     container = p.get("id")
 
     for i in range(1, tentativas_max + 1):
-        ok, p = chamar(f"{BASE}/{container}?fields=status_code,status"
-                       f"&access_token={token}")
+        ok, p = chamar(f"{BASE}/{container}?fields=status_code,status",
+                       token=token)
         if not ok:
             return None, descrever_erro(p)
         estado = p.get("status_code")
@@ -95,8 +110,7 @@ def publicar_reels(ig_id, token, video_url, legenda,
 
     ok, p = chamar(f"{BASE}/{ig_id}/media_publish", {
         "creation_id": container,
-        "access_token": token,
-    })
+    }, token=token)
     if not ok:
         return None, descrever_erro(p)
     return p.get("id"), None

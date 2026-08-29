@@ -29,7 +29,7 @@ jobs:
   agendar:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608
 
       - uses: actions/setup-python@v5
         with:
@@ -37,18 +37,29 @@ jobs:
 
       - name: montar a grade
         working-directory: publicador
+        env:
+          INPUT_INICIO: ${{ inputs.inicio }}
+          INPUT_HORARIOS: ${{ inputs.horarios }}
+          INPUT_DIAS: ${{ inputs.dias }}
+          INPUT_SIMULAR: ${{ inputs.simular }}
         run: |
+          if [ "$INPUT_SIMULAR" = "true" ]; then
+            SIM_FLAG="--simular"
+          else
+            SIM_FLAG=""
+          fi
           python agendar.py \
-            --inicio  "${{ inputs.inicio }}" \
-            --horarios "${{ inputs.horarios }}" \
-            --dias     "${{ inputs.dias }}" \
-            ${{ inputs.simular && '--simular' || '' }}
+            --inicio  "$INPUT_INICIO" \
+            --horarios "$INPUT_HORARIOS" \
+            --dias     "$INPUT_DIAS" \
+            $SIM_FLAG
 
       - name: gravar a agenda
         if: ${{ !inputs.simular }}
+        env:
+          INPUT_INICIO: ${{ inputs.inicio }}
         run: |
           git config user.name  "agendador"
           git config user.email "agendador@users.noreply.github.com"
           git add dados/
-          git diff --staged --quiet || git commit -m "lote a partir de ${{ inputs.inicio }}"
-          git push
+          git diff --staged --quiet || (git commit -m "lote a partir de $INPUT_INICIO" && git pull --rebase && git push)
