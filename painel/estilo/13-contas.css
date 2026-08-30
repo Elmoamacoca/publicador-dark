@@ -391,16 +391,34 @@
   width:min(560px,100%);max-height:min(86vh,760px);background:var(--branco);
   border:1px solid var(--rule-solid);border-radius:var(--ct-rg);
   box-shadow:var(--ct-sombra-g);overflow:hidden;
-  animation:ct-jan-entra .26s cubic-bezier(.22,1,.36,1) both}
+  animation:ct-jan-entra .34s cubic-bezier(.2,.9,.25,1) both}
 .ct-jan.larga .ct-jan-cx{width:min(680px,100%)}
 @keyframes ct-jan-fundo{from{opacity:0}}
-@keyframes ct-jan-entra{from{opacity:0;transform:translateY(14px) scale(.975)}}
+@keyframes ct-jan-entra{from{opacity:0;transform:translateY(20px) scale(.955)}}
 /* a saida existe para a janela nao sumir de estalo: e' a entrada ao contrario */
 .ct-jan.saindo .ct-jan-fundo{animation:ct-jan-fundo .16s ease reverse both}
 .ct-jan.saindo .ct-jan-cx{animation:ct-jan-entra .16s ease reverse both}
+
+/* O RECHEIO ENTRA DEPOIS DA CAIXA, numa cascata curta. Sem isso a janela chegava
+   "seca", como ele disse: a caixa deslizava, mas o conteudo ja' estava inteiro no
+   primeiro quadro, entao nada acontecia DENTRO dela. A cascata tambem serve na
+   troca de etapa e na troca do "consultando" pelo resultado, que sao os momentos
+   em que a tela muda sem sair do lugar. */
+.ct-jan-cab,.ct-jan-rolo > *,.ct-jan-pe{
+  animation:ct-jan-sobe .34s cubic-bezier(.2,.9,.25,1) both}
+@keyframes ct-jan-sobe{from{opacity:0;transform:translateY(9px)}}
+.ct-jan-cab{animation-delay:.06s}
+.ct-jan-rolo > *:nth-child(1){animation-delay:.10s}
+.ct-jan-rolo > *:nth-child(2){animation-delay:.14s}
+.ct-jan-rolo > *:nth-child(3){animation-delay:.18s}
+.ct-jan-rolo > *:nth-child(4){animation-delay:.21s}
+.ct-jan-rolo > *:nth-child(5){animation-delay:.24s}
+.ct-jan-rolo > *:nth-child(n+6){animation-delay:.27s}
+.ct-jan-pe{animation-delay:.22s}
+
 @media(prefers-reduced-motion:reduce){
-  .ct-jan-fundo,.ct-jan-cx,.ct-jan.saindo .ct-jan-fundo,.ct-jan.saindo .ct-jan-cx{
-    animation:none}
+  .ct-jan-fundo,.ct-jan-cx,.ct-jan.saindo .ct-jan-fundo,.ct-jan.saindo .ct-jan-cx,
+  .ct-jan-cab,.ct-jan-rolo > *,.ct-jan-pe{animation:none}
 }
 
 .ct-jan-cab{display:flex;align-items:center;gap:13px;padding:16px 17px;flex:none;

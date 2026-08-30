@@ -78,6 +78,23 @@
     var n = dias(d, agora());
     return n <= 0 ? hora(d) : (n === 1 ? 'ontem' : dCurta(d));
   }
+  /* AS DUAS RECEITAS DE TEMPO DA TELA. Ele reprovou o vaivem entre "hoje" e "há 12
+     dias" na mesma coluna: duas fichas lado a lado falavam idiomas diferentes.
+     Agora e' sempre a data, e o "faz quanto tempo" vem depois dela, como apoio. */
+  function desde(d){
+    if (!d) return 'Não anotado';
+    var n = dias(d, agora());
+    if (n <= 0) return 'Hoje';
+    if (n === 1) return 'Ontem';
+    return dCurta(d) + ' · ' + n + ' dias';
+  }
+  function vigiadaEm(d){
+    if (!d) return 'Vigiando';
+    var n = dias(d, agora());
+    if (n <= 0) return 'Vigiada às ' + hora(d);
+    if (n === 1) return 'Vigiada ontem, ' + hora(d);
+    return 'Vigiada em ' + dCurta(d);
+  }
   function num(n){ return (n == null ? 0 : n).toLocaleString('pt-BR'); }
   var cores = ['var(--ct-1)','var(--ct-2)','var(--ct-3)','var(--ct-4)','var(--ct-5)'];
   var ROTULO = {viva:'Conectada', vencendo:'Vencendo', caiu:'Sem Conexão'};
@@ -143,21 +160,30 @@
           (selo ? '<span class="ct-selo-n ' + (tomSelo || '') + '">' + selo + '</span>' : '') +
         '</div></div>';
     }
+    /* OS TEXTOS DE APOIO SEGUEM UMA RECEITA SO': frase curta, comeca com maiuscula,
+       sem ponto final, e diz de onde o numero veio ou o que ele obriga a fazer.
+       O que havia antes ("todas de pé", "a Meta respondeu agora") era anotacao de
+       rascunho, e ele reprovou por escrito. */
+    var quandoMedido = DADOS.em ? ' às ' + hora(DADOS.em) : '';
     document.getElementById('ct-kpis').innerHTML =
       card('radio', 'Contas Conectadas', conectadas, 'de ' + lista.length,
-           caidas ? caidas + (caidas === 1 ? ' sem conexão' : ' sem conexão') : 'todas de pé',
+           caidas ? caidas + (caidas === 1 ? ' fora' : ' fora') : 'Rede completa',
            caidas ? 'mau' : 'bom',
-           lista.length ? 'a Meta respondeu agora' : 'nenhuma conta ligada') +
+           lista.length ? 'Verificado na Meta' + quandoMedido
+                        : 'Nenhuma conta ligada até agora') +
       card('escudo', 'Acesso Mais Curto', maisCurto == null ? '–' : maisCurto,
            maisCurto == null ? '' : (maisCurto === 1 ? 'dia' : 'dias'),
-           vencendo ? vencendo + ' vencendo' : null, 'aviso',
-           renovacoes ? renovacoes + (renovacoes === 1 ? ' renovação automática'
-             : ' renovações automáticas') : 'a renovação entra faltando 10 dias') +
+           vencendo ? vencendo + (vencendo === 1 ? ' vencendo' : ' vencendo') : null,
+           'aviso',
+           renovacoes ? 'Já renovado ' + renovacoes + (renovacoes === 1 ? ' vez'
+             : ' vezes') + ' sem intervenção'
+             : 'Renovação automática faltando 10 dias') +
       card('gauge', 'Teto Usado Hoje', num(usado), teto ? 'de ' + num(teto) : '',
-           null, '', 'a Meta zera a cada 24 horas') +
+           null, '', 'A Meta zera a contagem a cada 24 horas') +
       card('alerta', 'Falhas Em 24 Horas', num(falhas), '',
-           falhas ? 'abra o diário' : null, 'mau',
-           falhas ? 'publicações recusadas pela Meta' : 'nenhuma publicação recusada');
+           falhas ? 'ver diário' : null, 'mau',
+           falhas ? 'Publicações recusadas pela Meta'
+                  : 'Nenhuma publicação recusada no período');
   }
 
   /* ============================================================ o aviso do topo */
@@ -172,17 +198,18 @@
     var vencendo = lista.filter(function(c){ return c.estado === 'vencendo'; });
     if (caidas.length){
       alvo.innerHTML = faixa('grave', (caidas.length === 1
-        ? '<b>@' + seguro(caidas[0].arroba) + ' está sem conexão.</b> ' +
+        ? '<b>@' + seguro(caidas[0].arroba) + ' perdeu a conexão.</b> ' +
           seguro(caidas[0].detalhe || 'A Meta recusou o acesso.')
-        : '<b>' + caidas.length + ' contas estão sem conexão</b> e precisam ser religadas.'),
+        : '<b>' + caidas.length + ' contas perderam a conexão</b> e precisam ser ' +
+          'ligadas de novo.'),
         'Ligar De Novo', 'ligar');
     } else if (vencendo.length){
       alvo.innerHTML = faixa('', (vencendo.length === 1
-        ? '<b>@' + seguro(vencendo[0].arroba) + ' vence em ' +
-          vencendo[0].dias_para_vencer + ' dias.</b> A renovação automática entra' +
-          ' faltando 10.'
+        ? '<b>O acesso de @' + seguro(vencendo[0].arroba) + ' vence em ' +
+          vencendo[0].dias_para_vencer + ' dias.</b> A renovação automática age ' +
+          'faltando 10.'
         : '<b>' + vencendo.length + ' contas vencem em menos de duas semanas.</b>' +
-          ' A renovação automática entra faltando 10 dias.'),
+          ' A renovação automática age faltando 10 dias.'),
         'Renovar Agora', 'renovar-tudo');
     } else {
       alvo.innerHTML = '';
@@ -275,10 +302,11 @@
         '<span class="ct-ms">' + (c.ms != null ? c.ms + ' ms' : '') + '</span></div>' +
       '<div class="ct-tira">' + marcas + '</div>' +
       '<div class="ct-tira-pe"><span>' +
-        (registrados === 0 ? 'sem registro ainda'
-          : (registrados === 1 ? 'primeiro registro hoje'
+        (registrados === 0 ? 'Sem registro ainda'
+          : (registrados === 1 ? 'Primeiro registro hoje'
              : registrados + ' dias registrados')) + '</span>' +
-        '<span>' + (c.checada_em ? 'testada ' + faz(c.checada_em) : '') + '</span></div>' +
+        '<span>' + (c.checada_em ? 'Testada às ' + hora(c.checada_em) : '') +
+        '</span></div>' +
     '</div>';
   }
 
@@ -300,8 +328,9 @@
         (tetoTotal ? '<small>de ' + tetoTotal + '</small>' : '') + '</div>' +
         '<div class="ct-barra"><i' + tomTeto + ' style="width:' +
           Math.max(pctTeto, 2) + '%"></i></div>' +
-        '<div class="pe">' + (tetoTotal ? (tetoTotal - tetoUsado) + ' ainda cabem'
-          : 'a Meta não respondeu') + '</div></div>' +
+        '<div class="pe">' + (tetoTotal
+          ? 'Restam ' + (tetoTotal - tetoUsado) + ' para hoje'
+          : 'A Meta não respondeu o teto') + '</div></div>' +
       '<div class="ct-m"><div class="cab">' + ico('escudo','xs') +
         '<span>Acesso Vence</span></div>' +
         '<div class="val"><b>' + (faltam == null ? '–' : faltam) + '</b>' +
@@ -309,10 +338,10 @@
           '</small>') + '</div>' +
         '<div class="ct-barra"><i' + tomAcesso + ' style="width:' + pctAcesso +
           '%"></i></div>' +
-        '<div class="pe">' + (c.renovacoes
-          ? 'renovado ' + c.renovacoes + 'x · ' + dCurta(c.vence_em)
-          : (c.vence_em ? 'até ' + dCurta(c.vence_em) : 'sem validade anotada')) +
-          '</div></div>' +
+        '<div class="pe">' + (c.vence_em
+          ? 'Até ' + dCurta(c.vence_em) +
+            (c.renovacoes ? ' · renovado ' + c.renovacoes + 'x' : '')
+          : 'Sem validade anotada') + '</div></div>' +
       '<div class="ct-m"><div class="cab">' + ico('camadas','xs') +
         '<span>Fila De Vídeos</span></div>' +
         '<div class="val"><b' + (c.falhas24h ? ' class="mau"' : '') + '>' +
@@ -320,29 +349,28 @@
         '<div class="ct-barra"><i style="width:' +
           Math.max(2, Math.min(100, (c.fila || 0) * 3)) + '%"></i></div>' +
         '<div class="pe">' + (c.falhas24h
-          ? c.falhas24h + (c.falhas24h === 1 ? ' falha em 24h' : ' falhas em 24h')
-          : (c.fila ? 'marcadas no livro' : 'nada marcado')) + '</div></div>' +
+          ? c.falhas24h + (c.falhas24h === 1 ? ' falha em 24 horas'
+                                             : ' falhas em 24 horas')
+          : (c.fila ? 'Aguardando publicação' : 'Nada na fila')) + '</div></div>' +
     '</div>';
   }
 
   function corpoEstado(c){
-    /* OS DOIS ROTULOS ABAIXO FORAM CORRIGIDOS na auditoria de 29/08. O primeiro
-       dizia "Última Publicação" e mostrava uma CONTAGEM; o segundo dizia "Pastas
-       De Mídia Ligadas" numa ficha de conta, mas o numero e' do sistema inteiro.
-       Rotulo que nao descreve o proprio numero e' erro, mesmo com o numero certo. */
+    /* DUAS LINHAS SAIRAM em 29/08, por ordem dele, e cada uma por um motivo:
+
+       "Pastas De Mídia No Sistema" nunca deveria ter estado numa ficha de CONTA: o
+       numero e' do sistema inteiro e se repetia igual nas tres fichas, o que faz
+       qualquer leitor achar que aquilo e' da conta que ele esta' olhando.
+
+       "Saídas Programadas" repetia a medida "Fila De Vídeos", que fica a dois dedos
+       de distancia na mesma ficha. Mesmo numero dito duas vezes com nomes parecidos
+       nao informa mais: so' faz duvidar de qual dos dois esta' certo. */
     return '<div class="ct-par"><span class="rot">' + ico('relogio','xs') +
         'Saídas Pelo Publicador</span><b>' + (c.publicados
           ? c.publicados + (c.publicados === 1 ? ' publicação' : ' publicações')
-          : 'nenhuma ainda') + '</b></div>' +
-      '<div class="ct-par"><span class="rot">' + ico('video','xs') +
-        'Pastas De Mídia No Sistema</span><b' +
-        (c.pastas_ligadas ? '' : ' class="alerta"') +
-        '>' + (c.pastas_ligadas || 'nenhuma') + '</b></div>' +
-      '<div class="ct-par"><span class="rot">' + ico('agenda','xs') +
-        'Saídas Programadas</span><b' + (c.fila ? '' : ' class="alerta"') + '>' +
-        (c.fila || 'nenhuma') + '</b></div>' +
+          : 'Nenhuma ainda') + '</b></div>' +
       '<div class="ct-par"><span class="rot">' + ico('chave','xs') +
-        'Ligada Ao Publicador</span><b>' + faz(c.ligada_em) + '</b></div>' +
+        'No Publicador Desde</span><b>' + desde(c.ligada_em) + '</b></div>' +
       '<div class="ct-par"><span class="rot">' + ico('ig','xs') +
         'Tipo Da Conta</span><b>' + seguro(tipoDe(c.tipo)) + '</b></div>';
   }
@@ -390,10 +418,16 @@
      dois lugares diferentes vira dois retratos diferentes na primeira mudanca. */
   function rosto(c, i){
     var retrato = c.avatar || RETRATOS[String(c.arroba).toLowerCase()];
+    var iniciais = seguro(String(c.arroba).slice(0, 2).toUpperCase());
+    var fundo = cores[(i || 0) % 5];
+    /* O RETRATO DA META VEM COM PRAZO: o endereco e' assinado e um dia caduca.
+       Quando isso acontecer, a ficha troca a foto pelas iniciais em vez de mostrar
+       o quadrado quebrado do navegador. */
     return retrato
-      ? '<img class="ct-av" src="' + retrato + '" alt="">'
-      : '<span class="ct-av" style="background:' + cores[(i || 0) % 5] + '">' +
-        seguro(String(c.arroba).slice(0, 2).toUpperCase()) + '</span>';
+      ? '<img class="ct-av" src="' + seguro(retrato) + '" alt="" ' +
+        'onerror="this.outerHTML=\'&lt;span class=&quot;ct-av&quot; style=&quot;' +
+        'background:' + fundo + '&quot;&gt;' + iniciais + '&lt;/span&gt;\'">'
+      : '<span class="ct-av" style="background:' + fundo + '">' + iniciais + '</span>';
   }
   /* a cor do rosto vem da posicao na lista, entao ela precisa ser a mesma posicao
      na ficha e na janela, senao a mesma conta muda de cor ao abrir */
@@ -454,15 +488,14 @@
       ? lista.map(ficha).join('')
       : '<div class="ct-cd"><div class="ct-vazio">' +
         ((DADOS.contas || []).length
-          ? 'Nenhuma conta com esse filtro.'
-          : 'Nenhuma conta ligada ao publicador. Use o botão Ligar Conta.') +
+          ? 'Nenhuma conta corresponde a este filtro.'
+          : 'Nenhuma conta ligada ainda. Use o botão Ligar Conta para começar.') +
         '</div></div>';
     document.getElementById('ct-quantas').textContent =
       lista.length + (lista.length === 1 ? ' conta na tela' : ' contas na tela');
     kpis(); aviso(); filtros();
     var quando = document.getElementById('ct-relogio');
-    if (quando) quando.textContent = DADOS.em
-      ? 'vigiada ' + faz(DADOS.em) + ' às ' + hora(DADOS.em) : 'vigiando';
+    if (quando) quando.textContent = vigiadaEm(DADOS.em);
     var selo = document.querySelector('.ct-vivo');
     if (selo) selo.classList.toggle('mau', (DADOS.caidas || 0) > 0);
   }
@@ -591,9 +624,9 @@
       return veredito('neutro', 'girar', 'Perguntando à Meta…',
         'Três perguntas seguidas: renovar se for a hora, quem é a conta e quanto ' +
         'ainda cabe hoje.', '', true) +
-        passo('', 'ig', 'Identidade Da Conta', 'esperando a resposta', '') +
-        passo('', 'escudo', 'Validade Do Acesso', 'esperando a resposta', '') +
-        passo('', 'gauge', 'Teto De Publicação', 'esperando a resposta', '');
+        passo('', 'ig', 'Identidade Da Conta', 'Aguardando resposta', '') +
+        passo('', 'escudo', 'Validade Do Acesso', 'Aguardando resposta', '') +
+        passo('', 'gauge', 'Teto De Publicação', 'Aguardando resposta', '');
     }
     var caiu = c.estado === 'caiu';
     var faltam = c.dias_para_vencer;
@@ -638,13 +671,13 @@
       caiu ? 'alerta' : 'check',
       caiu ? 'A Meta recusou o acesso' : 'A Meta respondeu',
       caiu ? seguro(c.detalhe || 'O acesso desta conta não vale mais.')
-           : 'A conta está de pé e pode publicar pelo publicador.',
+           : 'A conta está ativa e pronta para publicar.',
       (c.ms != null ? '<span class="ms">' + c.ms + '<small>ms</small></span>' : '')) +
       linhas;
   }
   function peTeste(c, esperando){
-    return '<span class="nota">' + (esperando ? 'perguntando agora'
-        : (c.checada_em ? 'testada às ' + hora(c.checada_em) : '')) + '</span>' +
+    return '<span class="nota">' + (esperando ? 'Consultando a Meta'
+        : (c.checada_em ? 'Verificado às ' + hora(c.checada_em) : '')) + '</span>' +
       '<span class="dir">' +
         (!esperando && c.dias_para_vencer != null && c.dias_para_vencer <= 30
           ? botao('Renovar Acesso', 'renovar-um', 'mini', 'escudo', c.arroba) : '') +
@@ -675,11 +708,11 @@
     return '<button class="ct-lin" type="button" data-abrir-conta="' +
       seguro(c.arroba) + '">' + rosto(c, indiceDe(c.arroba)) +
       '<span class="c"><b>@' + seguro(c.arroba) + '</b><span>' +
-        (esperando ? 'perguntando…'
-          : (c.estado === 'caiu' ? seguro(c.detalhe || 'a Meta recusou o acesso')
+        (esperando ? 'Consultando…'
+          : (c.estado === 'caiu' ? seguro(c.detalhe || 'A Meta recusou o acesso')
             : (c.dias_para_vencer != null
-              ? 'acesso vence em ' + c.dias_para_vencer + ' dias'
-              : 'acesso sem validade anotada'))) + '</span></span>' +
+              ? 'Acesso válido por mais ' + c.dias_para_vencer + ' dias'
+              : 'Acesso sem validade anotada'))) + '</span></span>' +
       (esperando ? '' : '<span class="ct-estado ' + c.estado + '"><i></i>' +
         ROTULO[c.estado] + '</span>') +
       '<span class="ms">' + (esperando || c.ms == null ? '' : c.ms + ' ms') +
@@ -697,13 +730,13 @@
       esperando ? 'Perguntando à Meta…'
         : deram + ' de ' + lista.length +
           (lista.length === 1 ? ' conta respondeu' : ' contas responderam'),
-      esperando ? 'Uma pergunta por conta, uma de cada vez.'
-        : (medio != null ? 'tempo médio de resposta ' + medio + ' ms'
-                         : 'a Meta não devolveu tempo de resposta'),
+      esperando ? 'Uma consulta por conta, uma de cada vez.'
+        : (medio != null ? 'Tempo médio de resposta: ' + medio + ' ms'
+                         : 'A Meta não devolveu tempo de resposta'),
       '', esperando) +
       '<div style="margin-top:8px">' +
         (lista.length ? lista.map(function(c){ return linhaConta(c, esperando); }).join('')
-          : '<div class="ct-sem">Nenhuma conta ligada ao publicador.</div>') +
+          : '<div class="ct-sem">Nenhuma conta ligada ainda.</div>') +
       '</div>';
   }
   function janelaRede(){
@@ -711,7 +744,7 @@
     abrirJanela(cabSimples('radio', 'Teste De Conexão Da Rede',
         lista.length + (lista.length === 1 ? ' conta ligada' : ' contas ligadas')),
       corpoRede(lista, true),
-      '<span class="nota">clique numa conta para ver o teste dela</span>' +
+      '<span class="nota">Clique numa conta para ver o detalhe</span>' +
       '<span class="dir">' + botao('Fechar', 'fechar', 'mini') + '</span>');
     return pedir('/contas/testar', {}).then(function(d){
       DADOS = d || DADOS;
@@ -783,7 +816,7 @@
         '</div>' +
         '<p class="ct-et-pe">A conta precisa ser profissional, Empresa ou Criador. ' +
         'A Meta mostra o token uma vez só.</p>');
-      pe = '<span class="nota">gerou? siga para colar</span><span class="dir">' +
+      pe = '<span class="nota">Gerou? siga para colar</span><span class="dir">' +
         botao('Avançar', 'etapa-avancar', 'verde') + '</span>';
     } else if (etapa === 2){
       cab = cabSimples('chave', 'Ligar Conta', 'passo 2 de 3');
@@ -818,7 +851,7 @@
           '7h07 e toda vez que esta aba é aberta. Token que não expira não existe ' +
           'nesta API: o que existe é essa troca.</span>' +
         '</div>';
-      pe = '<span class="nota">ligada agora</span><span class="dir">' +
+      pe = '<span class="nota">Ligada agora</span><span class="dir">' +
         botao('Concluir', 'fechar', 'verde') + '</span>';
     }
     trocarCorpo(corpo, pe, cab);
@@ -827,7 +860,7 @@
   function janelaLigar(){
     etapa = 1; ligada = null;
     abrirJanela(cabSimples('chave', 'Ligar Conta', 'passo 1 de 3'),
-      '<div class="ct-sem">Um instante…</div>', '');
+      '<div class="ct-sem">Carregando…</div>', '');
     return pedir('/contas/prontidao').then(function(p){
       PRONTIDAO = p;
       desenharEtapa();

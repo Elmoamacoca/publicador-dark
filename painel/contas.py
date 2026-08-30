@@ -347,9 +347,24 @@ def pastas_por_conta() -> int:
 
 
 # ============================================================== a Meta
+CAMPOS = "user_id,username,followers_count,media_count,account_type"
+
+
 def identidade(token: str):
-    ok, p = _chamar(f"{BASE}/me?fields=user_id,username,followers_count,"
-                    f"media_count,account_type", token=token)
+    """Quem e' a conta, na voz da Meta.
+
+    O RETRATO VEM JUNTO, numa tentativa so'. Antes ele vinha do `analytics.json`, e
+    conta recem-ligada nascia sem rosto porque aquele arquivo ainda nao a conhecia.
+
+    A SEGUNDA TENTATIVA SEM O CAMPO NAO E ZELO EXCESSIVO: se um dia a Meta parar de
+    aceitar `profile_picture_url` neste caminho, a chamada inteira falharia e TODAS
+    as contas apareceriam caidas por causa de uma foto. Rosto e' enfeite; estar de
+    pe' nao e'.
+    """
+    ok, p = _chamar(f"{BASE}/me?fields={CAMPOS},profile_picture_url", token=token)
+    if ok:
+        return p, None
+    ok, p = _chamar(f"{BASE}/me?fields={CAMPOS}", token=token)
     return (p if ok else None), (None if ok else _erro(p))
 
 
@@ -436,6 +451,9 @@ def checar(conta: dict, renovar_se_preciso: bool = True) -> dict:
         "arroba": perfil.get("username") or ficha["arroba"],
         "nome": ficha["nome"] or perfil.get("username") or "",
         "tipo": perfil.get("account_type"),
+        # O ENDERECO DA FOTO ENVELHECE (a Meta assina e expira), entao ele fica na
+        # ficha do dia, e nao no cofre: cofre e' para o que precisa durar.
+        "avatar": perfil.get("profile_picture_url") or None,
     })
     if perfil.get("user_id"):
         ficha["ig_user_id"] = str(perfil["user_id"])

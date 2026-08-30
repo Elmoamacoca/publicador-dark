@@ -104,6 +104,32 @@ def main():
               pag.eval_on_selector_all(".ct-ec, #ct-graf-rede, #ct-graf-acesso",
                                        "e => e.length") == 0)
 
+        # ------------------------------------------------------------ a escrita
+        # DUAS LINHAS SAIRAM DA FICHA por ordem dele em 29/08, cada uma por um
+        # motivo: "Pastas De Mídia" mostrava um numero do sistema inteiro dentro da
+        # ficha de UMA conta, e "Saídas Programadas" repetia a medida "Fila De
+        # Vídeos" a dois dedos de distancia. A auditoria guarda o lugar das duas:
+        # linha removida costuma voltar sozinha na proxima mexida.
+        corpo_ficha = pag.eval_on_selector("#pag-contas .ct-corpo", "e => e.textContent")
+        anota("a ficha nao fala mais de pastas de midia",
+              "Pastas De Mídia" not in corpo_ficha)
+        anota("a ficha nao repete a fila em outra linha",
+              "Saídas Programadas" not in corpo_ficha)
+        anota("a ficha diz desde quando a conta esta no publicador",
+              "No Publicador Desde" in corpo_ficha)
+        kpi = pag.eval_on_selector("#ct-kpis", "e => e.textContent")
+        anota("os textos de apoio dos numeros nao sao mais rascunho",
+              "todas de pé" not in kpi and "a Meta respondeu agora" not in kpi)
+        relogio = pag.eval_on_selector("#ct-relogio", "e => e.textContent.trim()")
+        anota("o relogio do topo esta escrito por extenso",
+              relogio.startswith("Vigiada") or relogio == "Vigiando", relogio)
+        # texto de apoio comecando em minuscula era a marca do rascunho anterior
+        minusculos = pag.evaluate("""() => [...document.querySelectorAll(
+                '#ct-kpis .pe, #pag-contas .ct-m .pe, #pag-contas .ct-tira-pe span')]
+            .map(e => e.textContent.trim()).filter(t => t && /^[a-zà-ú]/.test(t))""")
+        anota("nenhum texto de apoio comeca em minuscula", not minusculos,
+              str(minusculos)[:90])
+
         # ---------------------------------------------- o balao do mercado abre POR CIMA
         pag.click("#ct-dd-bt")
         pag.wait_for_timeout(400)
@@ -205,6 +231,18 @@ def main():
               pag.eval_on_selector("#ct-jan", "e => !e.hidden"))
         anima = pag.eval_on_selector(".ct-jan-cx", "e => getComputedStyle(e).animationName")
         anota("a janela entra com animacao", anima == "ct-jan-entra", str(anima))
+        # ELE RECLAMOU QUE ELA ENTRAVA SECA: a caixa deslizava, mas o conteudo ja'
+        # estava inteiro no primeiro quadro. Agora o recheio sobe em cascata.
+        casc = pag.evaluate("""() => {
+            const c = document.querySelector('.ct-jan-cab');
+            const r = document.querySelector('.ct-jan-rolo > *');
+            return {cab: c ? getComputedStyle(c).animationName : 'nada',
+                    corpo: r ? getComputedStyle(r).animationName : 'nada',
+                    atraso: r ? getComputedStyle(r).animationDelay : '0s'};
+        }""")
+        anota("o recheio da janela entra em cascata, e nao seco",
+              casc.get("cab") == "ct-jan-sobe" and casc.get("corpo") == "ct-jan-sobe",
+              str(casc))
         em_cima = pag.evaluate("""() => {
             const cx = document.querySelector('.ct-jan-cx');
             const r = cx.getBoundingClientRect();
@@ -234,6 +272,15 @@ def main():
         anota("o tempo de resposta se atualiza na ficha tambem",
               bool(ms_depois) and ms_depois.endswith("ms"),
               f"antes {ms_antes}, depois {ms_depois}")
+
+        # O RETRATO AGORA VEM DA META, e nao mais do `analytics.json`: conta
+        # recem-ligada nascia sem rosto porque aquele arquivo nao a conhecia ainda.
+        _, estado_cru = fora(base + "/contas/estado", cookie)
+        com_rosto = [c.get("arroba") for c in estado_cru.get("contas", [])
+                     if c.get("avatar")]
+        anota("a Meta devolve o retrato das contas",
+              len(com_rosto) == len(estado_cru.get("contas", [])),
+              f"{len(com_rosto)} de {len(estado_cru.get('contas', []))}: {com_rosto}")
 
         # A REGRA DO BOTAO, valendo para a tela inteira: icone OU seta, nunca os
         # dois. Foi ele quem escreveu, em 29/08, olhando o Ligar Conta.
