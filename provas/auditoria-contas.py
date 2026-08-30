@@ -129,6 +129,15 @@ def main():
             .map(e => e.textContent.trim()).filter(t => t && /^[a-zà-ú]/.test(t))""")
         anota("nenhum texto de apoio comeca em minuscula", not minusculos,
               str(minusculos)[:90])
+        # TEXTO CORTADO NAO E TEXTO: ou cabe, ou vai para onde ha espaco. Ja' foram
+        # tres correcoes manuais por reticencia nesta aba, entao a regra virou medida.
+        cortados = pag.evaluate("""() => [...document.querySelectorAll(
+                '#pag-contas .ct-f .pe, #pag-contas .ct-par b, ' +
+                '#pag-contas .ct-tira-pe span, #ct-kpis .pe, #ct-kpis .num')]
+            .filter(e => e.scrollWidth > e.clientWidth + 1)
+            .map(e => e.textContent.trim().slice(0, 30))""")
+        anota("nenhum texto aparece cortado na ficha", not cortados,
+              str(cortados)[:110])
 
         # ---------------------------------------------- o balao do mercado abre POR CIMA
         pag.click("#ct-dd-bt")

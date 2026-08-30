@@ -338,10 +338,12 @@
           '</small>') + '</div>' +
         '<div class="ct-barra"><i' + tomAcesso + ' style="width:' + pctAcesso +
           '%"></i></div>' +
-        '<div class="pe">' + (c.vence_em
-          ? 'Até ' + dCurta(c.vence_em) +
-            (c.renovacoes ? ' · renovado ' + c.renovacoes + 'x' : '')
-          : 'Sem validade anotada') + '</div></div>' +
+        /* SO' A DATA. A contagem de renovacoes cabia aqui em ingles, mas em
+           portugues ela estourava a coluna e virava "Até 28/10 · renovad…". Texto
+           cortado nao e' texto: ou cabe, ou vai para onde ha espaco. Ela vive no
+           numero do topo e na janela de teste. */
+        '<div class="pe">' + (c.vence_em ? 'Até ' + dCurta(c.vence_em)
+                                         : 'Sem validade anotada') + '</div></div>' +
       '<div class="ct-m"><div class="cab">' + ico('camadas','xs') +
         '<span>Fila De Vídeos</span></div>' +
         '<div class="val"><b' + (c.falhas24h ? ' class="mau"' : '') + '>' +
