@@ -218,6 +218,28 @@ def provar_contas(base, cookie, falhas):
         except Exception as e:
             falhas.append(f"contas/colar ({rotulo}): {type(e).__name__}: {e}")
 
+    # ATUALIZAR CADASTRO. O portao prova a RECUSA, e nao a atualizacao: atualizar de
+    # verdade mexeria no cofre e no historico de uma conta de producao, e prova que
+    # muda o que ela mede nao e' prova. O que se cobra aqui e' que conta inventada
+    # leve 400 com motivo escrito, e nunca um "ok" educado.
+    for rotulo, quem in (("vazia", ""), ("inventada", "conta-que-nao-existe-9x")):
+        try:
+            codigo, corpo, _ = pedir(base + "/contas/atualizar", cookie,
+                                     corpo={"arroba": quem})
+            d = json.loads(corpo)
+            if codigo != 400 or not d.get("erro"):
+                falhas.append(f"contas/atualizar ({rotulo}): devia recusar e nao "
+                              f"recusou ({codigo}) {corpo[:100]}")
+            elif "publicador" not in d["erro"]:
+                falhas.append(f"contas/atualizar ({rotulo}): recusou pelo motivo "
+                              f"errado: {d['erro'][:80]}")
+            else:
+                print(f"  contas/atualizar: recusa conta {rotulo} | {d['erro'][:60]}")
+            if "access_token" in corpo.decode("utf-8", "replace"):
+                falhas.append(f"contas/atualizar ({rotulo}): A RESPOSTA CARREGA TOKEN")
+        except Exception as e:
+            falhas.append(f"contas/atualizar ({rotulo}): {type(e).__name__}: {e}")
+
     # A SONDA DA VOLTA. Ela e' o unico pedaco do caminho de retorno que da' para
     # provar sem a Meta: que o endereco existe neste painel e responde.
     try:

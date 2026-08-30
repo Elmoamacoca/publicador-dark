@@ -34,6 +34,7 @@ moram em `dados/app_meta.json`, junto do cofre.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import pathlib
@@ -99,22 +100,30 @@ def _ler(caminho: pathlib.Path, padrao):
         return padrao
 
 
-def _gravar(caminho: pathlib.Path, dados) -> None:
+def _gravar(caminho: pathlib.Path, dados, indentado: bool = True,
+            segredo: bool = True) -> None:
     """Grava de forma atomica: escreve ao lado e troca de uma vez so'.
 
     Mesma regra do resto da casa. Aqui ela pesa mais que em qualquer outro lugar:
     este arquivo guarda o token renovado, e um arquivo pela metade seria uma conta
     fora do ar sem ninguem ter mexido em nada.
+
+    OS DOIS INTERRUPTORES SAO PARA ARQUIVO DE FORA. O `analytics.json` nao e' desta
+    casa: quem o escreve e' o montador, ele carrega retrato em base64 e pesa. Ali
+    identar so' engorda, e trancar em 0600 seria esta funcao decidindo a permissao
+    de um arquivo que nao e' dela.
     """
     caminho.parent.mkdir(parents=True, exist_ok=True)
     provisorio = caminho.with_suffix(caminho.suffix + ".novo")
-    provisorio.write_text(json.dumps(dados, ensure_ascii=False, indent=2),
-                          encoding="utf-8")
+    provisorio.write_text(
+        json.dumps(dados, ensure_ascii=False, indent=2 if indentado else None),
+        encoding="utf-8")
     os.replace(provisorio, caminho)
-    try:
-        os.chmod(caminho, 0o600)
-    except Exception:
-        pass
+    if segredo:
+        try:
+            os.chmod(caminho, 0o600)
+        except Exception:
+            pass
 
 
 def _chamar(url: str, token: str | None = None, dados: dict | None = None,
@@ -197,7 +206,7 @@ def _nome_de_arquivo(arroba: str) -> str:
                    if ch.isalnum() or ch in "._-")[:64]
 
 
-def guardar_retrato(arroba: str, url: str) -> bool:
+def guardar_retrato(arroba: str, url: str, forcar: bool = False) -> bool:
     """Baixa a foto do perfil e guarda em disco.
 
     QUEM BUSCA E O SERVIDOR, e nao a tela. O CDN da Meta recusa a imagem quando o
@@ -207,13 +216,16 @@ def guardar_retrato(arroba: str, url: str) -> bool:
 
     A FOTO E BAIXADA UMA VEZ POR DIA. O endereco da Meta muda toda hora, mas a foto
     nao, e a vigilancia roda a cada quinze minutos quando a aba esta' aberta.
+
+    `forcar` E O BOTAO DE ATUALIZAR. Quem aperta esta' dizendo que trocou a foto
+    agora; esperar a espera de um dia seria o botao respondendo com a foto velha.
     """
     nome = _nome_de_arquivo(arroba)
     if not nome:
         return False
     alvo = RETRATOS / (nome + ".jpg")
     try:
-        if alvo.exists() and time.time() - alvo.stat().st_mtime < 86400:
+        if not forcar and alvo.exists() and time.time() - alvo.stat().st_mtime < 86400:
             return True
     except OSError:
         pass
@@ -238,6 +250,33 @@ def guardar_retrato(arroba: str, url: str) -> bool:
 def retrato_em_disco(arroba: str):
     alvo = RETRATOS / (_nome_de_arquivo(arroba) + ".jpg")
     return alvo if alvo.exists() else None
+
+
+def endereco_do_retrato(arroba: str) -> str:
+    """O endereco de casa para a foto, com um carimbo no fim.
+
+    O CARIMBO NAO E ENFEITE: a rota manda o navegador guardar a foto por um dia,
+    senao cada abertura da aba baixaria tudo de novo. So' que trocar a foto no
+    Instagram tem que aparecer NA HORA, e endereco igual com foto diferente e'
+    exatamente o caso que o navegador se recusa a buscar. Arquivo novo, hora nova,
+    endereco novo.
+    """
+    alvo = retrato_em_disco(arroba)
+    try:
+        marca = int(alvo.stat().st_mtime) if alvo else 0
+    except OSError:
+        marca = 0
+    return f"contas/retrato?u={urllib.parse.quote(arroba)}&v={marca}"
+
+
+def _impressao_do_retrato(arroba: str) -> str:
+    """A digital da foto em disco. E' com ela que o botao de atualizar sabe dizer
+    'a foto mudou' em vez de 'a foto foi buscada de novo'."""
+    alvo = retrato_em_disco(arroba)
+    try:
+        return hashlib.sha1(alvo.read_bytes()).hexdigest() if alvo else ""
+    except OSError:
+        return ""
 
 
 # ============================================================== o cofre
@@ -512,7 +551,7 @@ def checar(conta: dict, renovar_se_preciso: bool = True) -> dict:
     # O RETRATO NAO VAI PARA A TELA COMO ENDERECO DA META: o CDN deles recusa o
     # pedido feito de outra pagina. O servidor baixa, guarda e serve pelo endereco
     # de casa.
-    ficha["avatar"] = ("contas/retrato?u=" + urllib.parse.quote(ficha["arroba"])
+    ficha["avatar"] = (endereco_do_retrato(ficha["arroba"])
                        if guardar_retrato(ficha["arroba"],
                                           perfil.get("profile_picture_url"))
                        else None)
@@ -816,6 +855,212 @@ def colar_token(token: str) -> dict:
     return {"ok": True, "arroba": arroba, "renovou": renovou}
 
 
+# ====================================================== atualizar o cadastro
+#
+# POR QUE ESTE BOTAO EXISTE. Dentro do publicador a conta e' guardada PELO ARROBA:
+# a tira de 30 dias, o diario, o mercado, as etiquetas, a fila de video, o rascunho
+# do lote e o arquivo do retrato, todos tem o arroba como chave. So' que o arroba e'
+# o unico dado da conta que a pessoa pode trocar no Instagram a qualquer hora, sem
+# avisar ninguem.
+#
+# O QUE ACONTECERIA SEM ELE, e foi medido lendo o codigo em 30/08: a checagem ja'
+# le' o nome novo da Meta e ja' o mostra na tela, mas nunca o grava. A conta
+# amanheceria com nome novo na ficha e passado nenhum, porque o passado continuaria
+# arquivado no nome velho. Nada quebraria em voz alta. E' o tipo de perda que so'
+# aparece meses depois, quando alguem procura a falha de uma terca-feira.
+#
+# O CERTO SERIA CHAVEAR TUDO PELO `ig_user_id`, que a Meta nunca troca. Isso e'
+# reforma de banco inteiro, e nao cabe num botao. Enquanto ela nao vem, quem carrega
+# o nome de um lugar para o outro, de uma vez so' e numa transacao so', e' aqui.
+
+
+def _levar_arroba(velho: str, novo: str):
+    """Troca o arroba em cada tabela do livro-caixa. Devolve (levado, avisos).
+
+    TUDO NUMA TRANSACAO SO'. Parar no meio deixaria metade do passado num nome e
+    metade no outro, que e' pior do que nao ter mexido.
+    """
+    levado, avisos = [], []
+    con = _banco()
+    _tabelas(con)
+    try:
+        with con:
+            # O HISTORICO TEM CHAVE (dia, arroba). Se o nome novo ja' tiver linha do
+            # mesmo dia, ela e' a leitura mais recente e fica; a do nome velho sai.
+            con.execute("DELETE FROM vigia_dia WHERE arroba=? AND dia IN "
+                        "(SELECT dia FROM vigia_dia WHERE arroba=?)", (velho, novo))
+            levado.append(("Histórico de 30 dias",
+                           con.execute("UPDATE vigia_dia SET arroba=? WHERE arroba=?",
+                                       (novo, velho)).rowcount))
+            levado.append(("Diário da conta",
+                           con.execute("UPDATE conta_evento SET arroba=? WHERE arroba=?",
+                                       (novo, velho)).rowcount))
+
+            # MERCADO E ETIQUETAS. O arroba e' chave primaria aqui tambem. Se ja'
+            # houver linha no nome novo, foi ele que alguem digitou depois da troca.
+            if con.execute("SELECT 1 FROM conta_meta WHERE arroba=?",
+                           (novo,)).fetchone():
+                con.execute("DELETE FROM conta_meta WHERE arroba=?", (velho,))
+                avisos.append(f"já havia mercado e etiquetas gravados em @{novo}, "
+                              f"e foram eles que ficaram")
+                levado.append(("Mercado e etiquetas", 0))
+            else:
+                levado.append(("Mercado e etiquetas",
+                               con.execute("UPDATE conta_meta SET arroba=? "
+                                           "WHERE arroba=?", (novo, velho)).rowcount))
+
+            levado.append(("Fila e histórico de vídeos",
+                           con.execute("UPDATE video SET conta=? WHERE LOWER(conta)=?",
+                                       (novo, velho)).rowcount))
+
+            # O RASCUNHO E UM POR CONTA, por indice unico. Dois lotes abertos com os
+            # dois nomes so' existem se um lote foi comecado depois da troca: e' esse
+            # que fica, e a tela diz que o outro saiu.
+            if con.execute("SELECT 1 FROM rascunho WHERE LOWER(conta)=?",
+                           (novo,)).fetchone():
+                sobrando = con.execute("DELETE FROM rascunho WHERE LOWER(conta)=?",
+                                       (velho,)).rowcount
+                if sobrando:
+                    avisos.append(f"havia um lote pela metade em @{velho} e outro em "
+                                  f"@{novo}; ficou o mais novo")
+                levado.append(("Rascunho de programação", 0))
+            else:
+                # o arroba tambem mora DENTRO do rascunho, no que ja' foi escolhido
+                for l in con.execute("SELECT id, dados FROM rascunho "
+                                     "WHERE LOWER(conta)=?", (velho,)).fetchall():
+                    try:
+                        d = json.loads(l["dados"])
+                        if (d.get("escolha") or {}).get("conta"):
+                            d["escolha"]["conta"] = novo
+                            con.execute("UPDATE rascunho SET dados=? WHERE id=?",
+                                        (json.dumps(d, ensure_ascii=False), l["id"]))
+                    except Exception:
+                        pass
+                levado.append(("Rascunho de programação",
+                               con.execute("UPDATE rascunho SET conta=? "
+                                           "WHERE LOWER(conta)=?",
+                                           (novo, velho)).rowcount))
+    finally:
+        con.close()
+    return levado, avisos
+
+
+def _levar_no_analytics(velho: str, novo: str) -> int:
+    """O arroba tambem e' chave dentro do `analytics.json`.
+
+    ESSE ARQUIVO E DE FORA: quem o escreve e' o montador, e a proxima geracao dele
+    ja' traria o nome novo sozinha. So' que ate' la' a Home leria o nome velho ao
+    lado do novo, e duas verdades na mesma tela e' o que este botao existe para
+    evitar.
+    """
+    caminho = pathlib.Path(os.environ.get("PAINEL_ANALYTICS",
+                                          str(PASTA / "analytics.json")))
+    d = _ler(caminho, None)
+    if not isinstance(d, dict):
+        return 0
+    n = 0
+    for p in d.get("perfis") or []:
+        if isinstance(p, dict) and limpo(p.get("u")) == velho:
+            p["u"] = novo
+            n += 1
+    fundo = d.get("fundo")
+    if isinstance(fundo, dict):
+        for chave in list(fundo):
+            if limpo(chave) == velho:
+                fundo[novo] = fundo.pop(chave)
+                n += 1
+    if n:
+        _gravar(caminho, d, indentado=False, segredo=False)
+    return n
+
+
+def sincronizar(arroba: str) -> dict:
+    """O BOTAO DE ATUALIZAR, um por conta.
+
+    Pergunta a Meta quem esta conta e' HOJE e carrega a resposta para todo o
+    sistema. Tres coisas mudam no Instagram sem avisar ninguem: o arroba, a foto e
+    o tipo da conta. A quarta, o identificador, nao muda nunca, e por isso ele e'
+    quem confirma que ainda se trata da mesma conta.
+    """
+    dados = cofre()
+    conta = None
+    for c in dados.get("contas") or []:
+        if limpo(c.get("arroba")) == limpo(arroba):
+            conta = c
+            break
+    if conta is None:
+        return {"erro": "essa conta não está no publicador"}
+
+    perfil, erro = identidade(conta.get("token", ""))
+    if erro:
+        return {"erro": erro}
+
+    velho = limpo(conta.get("arroba"))
+    novo = limpo(perfil.get("username") or velho)
+    guardado = _ler(VIGIA, {"contas": []})
+    ficha_velha = next((f for f in guardado.get("contas", [])
+                        if limpo(f.get("arroba")) == velho), {})
+
+    # A FOTO PRIMEIRO, e sem esperar o cache de um dia. Ela ainda esta' guardada com
+    # o nome velho; a troca de nome, se houver, leva o arquivo junto logo abaixo.
+    antes = _impressao_do_retrato(velho)
+    guardar_retrato(velho, perfil.get("profile_picture_url"), forcar=True)
+    depois = _impressao_do_retrato(velho)
+    trocou_foto = bool(depois) and depois != antes
+
+    mudou, levado, avisos = [], [], []
+
+    if novo != velho:
+        atual = retrato_em_disco(velho)
+        if atual:
+            try:
+                RETRATOS.mkdir(parents=True, exist_ok=True)
+                os.replace(atual, RETRATOS / (_nome_de_arquivo(novo) + ".jpg"))
+            except OSError:
+                pass
+        levado, avisos = _levar_arroba(velho, novo)
+        levado.append(("Retrato guardado", 1 if retrato_em_disco(novo) else 0))
+        levado.append(("Painel de Analytics", _levar_no_analytics(velho, novo)))
+        conta["arroba"] = novo
+        if limpo(conta.get("nome")) == velho:
+            conta["nome"] = novo
+        mudou.append({"o_que": "arroba", "de": velho, "para": novo})
+        # o retrato antigo sai do guardado, senao a mesma conta apareceria duas
+        # vezes na tela ate' a proxima rodada da vigilancia
+        guardado["contas"] = [f for f in guardado.get("contas", [])
+                              if limpo(f.get("arroba")) != velho]
+        _gravar(VIGIA, guardado)
+
+    ig_novo = str(perfil.get("user_id") or "")
+    if ig_novo and ig_novo != str(conta.get("ig_user_id") or ""):
+        mudou.append({"o_que": "identificador",
+                      "de": str(conta.get("ig_user_id") or "—"), "para": ig_novo})
+        conta["ig_user_id"] = ig_novo
+
+    if trocou_foto:
+        mudou.append({"o_que": "foto", "de": "", "para": ""})
+
+    tipo_velho = ficha_velha.get("tipo") or ""
+    tipo_novo = perfil.get("account_type") or ""
+    if tipo_novo and tipo_velho and tipo_novo != tipo_velho:
+        mudou.append({"o_que": "tipo", "de": tipo_velho, "para": tipo_novo})
+
+    if mudou:
+        gravar_cofre(dados)
+        anotar(novo, "marco", "Cadastro atualizado pela Meta",
+               "; ".join(m["o_que"] + (f": @{m['de']} virou @{m['para']}"
+                                       if m["o_que"] == "arroba" else "")
+                         for m in mudou))
+
+    # A ULTIMA PALAVRA E DA META, de novo: a ficha da tela sai de uma checagem
+    # nova, e nao do que esta funcao acabou de escrever. Renovar aqui seria fora de
+    # hora, entao a checagem vai sem renovacao.
+    estado_novo = vestir(vigiar(renovar_se_preciso=False, so=novo))
+    return {"ok": True, "arroba": novo, "antes": velho, "mudou": mudou,
+            "levado": [{"onde": o, "n": n} for o, n in levado],
+            "avisos": avisos, "em": agora(), "estado": estado_novo}
+
+
 def desligar(arroba: str) -> dict:
     """Tira a conta do publicador. O DIARIO E O HISTORICO FICAM: desligar e' dizer
     'nao opere mais por aqui', e nao 'apague o que aconteceu'."""
@@ -861,6 +1106,9 @@ def responder(rota: str, consulta: dict, corpo: dict | None, base: str = ""):
                 return ({"ok": deu, "detalhe": detalhe,
                          "vence_em": c.get("vence_em")}, 200 if deu else 400)
         return {"erro": "essa conta nao esta no cofre"}, 404
+    if rota == "contas/atualizar" and corpo is not None:
+        d = sincronizar(corpo.get("arroba", ""))
+        return d, (400 if "erro" in d else 200)
     if rota == "contas/prontidao":
         return prontidao(base), 200
     if rota == "contas/colar" and corpo is not None:

@@ -488,6 +488,29 @@
   font-variant-numeric:tabular-nums;padding-top:1px}
 .ct-pas .v.mau{color:var(--ct-neg)} .ct-pas .v.aviso{color:var(--ct-alerta)}
 
+/* ------------------------------------------------- para onde a mudanca foi levada
+   ELA SO' APARECE QUANDO ALGO MUDOU. Uma lista de "0 registros" a cada clique
+   seria a janela ocupando meia tela para dizer que nao fez nada. */
+.ct-lev{margin-top:14px;padding:12px 13px;border-radius:var(--ct-r);
+  background:var(--paper-2)}
+.ct-lev > b{display:flex;align-items:center;gap:6px;font-size:10.5px;font-weight:800;
+  letter-spacing:.09em;text-transform:uppercase;color:var(--soft);margin-bottom:9px}
+.ct-lev > span{display:flex;align-items:baseline;gap:9px;padding:4px 0;font-size:12px}
+/* A LINHA PONTILHADA LIGA O NOME AO NUMERO. Sem ela, com o numero encostado na
+   direita, a vista perde a linha no meio do caminho em item de nome curto. */
+.ct-lev > span > i{font-style:normal;color:var(--muted);flex:none}
+.ct-lev > span::after{content:"";flex:1;order:1;height:0;align-self:center;
+  border-bottom:1px dotted color-mix(in srgb,var(--rule-solid) 90%,transparent)}
+.ct-lev > span > em{order:2;font-style:normal;font-weight:800;flex:none;
+  font-variant-numeric:tabular-nums}
+
+/* O RECADO DE CANTO. Serve ao caso raro em que a troca de nome esbarrou em algo
+   que ja' existia com o nome novo, e a janela precisa dizer o que ficou. */
+.ct-nota-jan{display:flex;gap:8px;margin-top:12px;padding:10px 12px;
+  border-radius:var(--ct-r);background:var(--ct-alerta-t);color:var(--ct-alerta);
+  font-size:11.5px;line-height:1.5}
+.ct-nota-jan svg{flex:none;margin-top:2px}
+
 /* ------------------------------------------------------- a rede, conta a conta */
 .ct-lin{display:flex;align-items:center;gap:11px;padding:9px 8px;border-radius:11px;
   width:100%;border:0;background:none;font:inherit;text-align:left;cursor:pointer;

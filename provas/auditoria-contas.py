@@ -302,6 +302,69 @@ def main():
         pag.wait_for_timeout(500)
         anota("Escape fecha a janela", pag.eval_on_selector("#ct-jan", "e => e.hidden"))
 
+        # -------------------------------------------- atualizar o cadastro da conta
+        # POR QUE ESTA PROVA IMPORTA MAIS QUE AS OUTRAS: dentro do publicador a conta
+        # e' guardada PELO ARROBA, e o arroba e' o unico dado que a pessoa troca no
+        # Instagram quando quiser. Sem este botao, trocar o arroba deixaria a tira de
+        # 30 dias, o diario, o mercado, as etiquetas e a fila arquivados no nome
+        # velho. Nada quebraria em voz alta: a conta so' amanheceria sem passado.
+        anota("cada ficha tem o botao de atualizar",
+              pag.eval_on_selector_all("[data-atualizar]", "e => e.length") == n,
+              f"{pag.eval_on_selector_all('[data-atualizar]', 'e => e.length')} de {n}")
+        # ELE NAO PODE USAR O MESMO DESENHO DO TESTAR. Dois circulos girando no mesmo
+        # rodape seriam dois botoes que so' se distinguem clicando.
+        desenhos = pag.evaluate("""() => {
+            const d = e => e && e.querySelector('svg path') ?
+                e.querySelector('svg path').getAttribute('d') : '';
+            return {at: d(document.querySelector('[data-atualizar]')),
+                    te: d(document.querySelector('[data-testar]')),
+                    dica: (document.querySelector('[data-atualizar]') || {}).title || ''};
+        }""")
+        anota("atualizar e testar nao usam o mesmo icone",
+              bool(desenhos.get("at")) and desenhos.get("at") != desenhos.get("te"))
+        anota("o botao de atualizar diz o que faz ao passar o mouse",
+              desenhos.get("dica", "").startswith("Atualizar"), desenhos.get("dica"))
+
+        rede_at = []
+        pag.on("request", lambda r: rede_at.append(r.url)
+               if "/contas/atualizar" in r.url else None)
+        pag.click("[data-atualizar]")
+        pag.wait_for_timeout(500)
+        anota("atualizar abre a janela na hora, sem esperar a Meta",
+              pag.eval_on_selector("#ct-jan", "e => !e.hidden"))
+        anota("a janela de atualizar se apresenta pelo nome",
+              "Atualizar Cadastro" in pag.eval_on_selector("#ct-jan-cab",
+                                                           "e => e.textContent"))
+        pag.wait_for_timeout(7000)
+        anota("o botao de atualizar fala com a Meta pelo servidor", bool(rede_at))
+        corpo_at = pag.eval_on_selector("#ct-jan-corpo", "e => e.textContent")
+        for parte in ("Arroba", "Foto Do Perfil", "Tipo Da Conta",
+                      "Identificador Na Meta"):
+            anota(f"a janela de atualizar responde por: {parte}", parte in corpo_at)
+        anota("a janela de atualizar nao ficou no 'perguntando'",
+              "Perguntando à Meta" not in corpo_at, corpo_at[:60].strip())
+        anota("a janela de atualizar da o veredito",
+              bool(pag.eval_on_selector_all("#ct-jan-corpo .ct-vered", "e => e.length")))
+        # nenhum valor da janela pode sair cortado com reticencia: foram tres
+        # correcoes na mao nesta aba antes de isso virar medida
+        cortado = pag.evaluate("""() => [...document.querySelectorAll(
+                '#ct-jan-corpo .ct-pas .v, #ct-jan .ct-lev em')]
+            .filter(e => e.scrollWidth > e.clientWidth + 1)
+            .map(e => e.textContent.trim())""")
+        anota("nada aparece cortado na janela de atualizar", not cortado, str(cortado))
+        pag.screenshot(path=os.path.join(SAIDA, "contas-janela-atualizar.png"))
+        pag.keyboard.press("Escape")
+        pag.wait_for_timeout(500)
+
+        # O ENDERECO DO RETRATO LEVA CARIMBO. A rota manda o navegador guardar a foto
+        # por um dia; sem o carimbo, trocar a foto no Instagram nao apareceria aqui
+        # ate' o dia seguinte, e o botao de atualizar pareceria quebrado justamente
+        # no caso que ele existe para resolver.
+        _, dep_estado = fora(base + "/contas/estado", cookie)
+        avatares = [c.get("avatar") or "" for c in dep_estado.get("contas", [])]
+        anota("o endereco do retrato leva carimbo de versao",
+              bool(avatares) and all("&v=" in u for u in avatares), str(avatares[:2]))
+
         # ------------------------------------------------- os botoes do cabecalho
         for acao, rotulo in (("testar-tudo", "Testar Conexões"), ("ligar", "Ligar Conta")):
             existe = pag.eval_on_selector_all(f'[data-acao="{acao}"]', "e => e.length") == 1

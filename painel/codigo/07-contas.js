@@ -42,7 +42,12 @@
     colar:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2h-2"/><path d="M4 12V6a2 2 0 0 1 2-2h2"/><path d="M4 16h.01"/>',
     /* A SETA DE VOLTAR E UM ICONE, e nao a seta animada do botao: aquela aponta
        sempre para a frente, e "Voltar" com seta para a frente e' contradicao. */
-    voltar:'<path d="M19 12H5"/><path d="m12 19-7-7 7-7"/>'
+    voltar:'<path d="M19 12H5"/><path d="m12 19-7-7 7-7"/>',
+    /* NUVEM COM SETA PARA BAIXO, e nao mais um circulo girando. O circulo ja' e' o
+       de testar a conexao, e dois desenhos iguais no mesmo rodape seriam dois
+       botoes que a pessoa precisa clicar para descobrir a diferenca. */
+    nuvem:'<path d="M12 13v8l-4-4"/><path d="m12 21 4-4"/><path d="M4.393 15.269A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.436 8.284"/>',
+    retrato:'<rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>'
   };
   function ico(nome, cls){
     return '<svg class="ct-i ' + (cls || '') + '" viewBox="0 0 24 24" aria-hidden="true">' +
@@ -469,6 +474,8 @@
       '<div class="ct-f-pe">' +
         botao('Programar', 'programar', 'mini verde') +
         '<div class="dir">' +
+          '<button class="ct-ic" data-atualizar="' + seguro(c.arroba) +
+            '" title="Atualizar o cadastro pela Meta">' + ico('nuvem') + '</button>' +
           '<button class="ct-ic" data-testar="' + seguro(c.arroba) +
             '" title="Testar a conexão agora">' + ico('girar') + '</button>' +
           (c.dias_para_vencer != null && c.dias_para_vencer <= 30
@@ -758,6 +765,116 @@
     });
   }
 
+  /* -------------------------------------------- atualizar o cadastro da conta
+     O QUE ESTE BOTAO RESOLVE. Dentro do publicador a conta e' guardada pelo
+     arroba: a tira de 30 dias, o diario, o mercado, as etiquetas, a fila e o
+     arquivo do retrato, todos tem o arroba como chave. E o arroba e' justamente o
+     unico dado que a pessoa troca no Instagram quando quiser.
+
+     A JANELA NAO DIZ SO' "PRONTO". Ela diz o que a Meta respondeu, o que mudou e
+     para onde a mudanca foi levada. Botao que atualiza em silencio e' botao que
+     ninguem sabe se funcionou. */
+  function rotuloTroca(m){
+    if (m.o_que === 'arroba') return '@' + seguro(m.de) + ' virou @' + seguro(m.para);
+    if (m.o_que === 'foto') return 'Foto do perfil trocada';
+    if (m.o_que === 'tipo') return 'Tipo da conta: ' + seguro(tipoDe(m.de)) +
+      ' virou ' + seguro(tipoDe(m.para));
+    return 'Identificador na Meta: ' + seguro(m.de) + ' virou ' + seguro(m.para);
+  }
+  function achou(res, oque){
+    return (res.mudou || []).filter(function(m){ return m.o_que === oque; })[0];
+  }
+  function levados(res){
+    var linhas = (res.levado || []).filter(function(l){ return l.n > 0; });
+    if (!linhas.length) return '';
+    return '<div class="ct-lev"><b>' + ico('marco', 'xs') + 'Levado Para</b>' +
+      linhas.map(function(l){
+        return '<span><i>' + seguro(l.onde) + '</i><em>' + l.n +
+          (l.n === 1 ? ' registro' : ' registros') + '</em></span>'; }).join('') +
+      '</div>';
+  }
+
+  function corpoAtualizar(c, res){
+    if (!res){
+      return veredito('neutro', 'nuvem', 'Perguntando à Meta…',
+        'Quem é esta conta hoje: o arroba, a foto, o tipo e o identificador.',
+        '', true) +
+        passo('', 'ig', 'Arroba', 'Aguardando resposta', '') +
+        passo('', 'retrato', 'Foto Do Perfil', 'Aguardando resposta', '') +
+        passo('', 'camadas', 'Tipo Da Conta', 'Aguardando resposta', '');
+    }
+    if (res.erro){
+      return veredito('mau', 'alerta', 'A Meta não respondeu por esta conta',
+        seguro(res.erro));
+    }
+    var novo = achar(res.arroba) || c;
+    var tArroba = achou(res, 'arroba');
+    var tFoto = achou(res, 'foto');
+    var tTipo = achou(res, 'tipo');
+    var tId = achou(res, 'identificador');
+    var quantas = (res.mudou || []).length;
+
+    var linhas =
+      passo(tArroba ? 'ok' : '', 'ig', 'Arroba',
+        tArroba ? '@' + seguro(tArroba.de) + ' virou @' + seguro(tArroba.para) +
+                  ' em todo o sistema'
+                : 'Continua o mesmo que o publicador já guardava',
+        '@' + seguro(res.arroba), tArroba ? 'ok' : '') +
+      passo(tFoto ? 'ok' : '', 'retrato', 'Foto Do Perfil',
+        tFoto ? 'A foto mudou no Instagram e a nova já está guardada aqui'
+              : 'Buscada agora na Meta, e é a mesma que já estava guardada',
+        tFoto ? 'trocada' : 'sem mudança', tFoto ? 'ok' : '') +
+      passo(tTipo ? 'ok' : '', 'camadas', 'Tipo Da Conta',
+        tTipo ? seguro(tipoDe(tTipo.de)) + ' virou ' + seguro(tipoDe(tTipo.para))
+              : 'A Meta devolveu o mesmo tipo de antes',
+        seguro(tipoDe(novo.tipo)), tTipo ? 'ok' : '') +
+      passo(tId ? 'aviso' : '', 'chave', 'Identificador Na Meta',
+        tId ? 'Ele mudou, e isso é raro: confira se ainda é a conta certa'
+            : 'Não muda nunca, e é ele que confirma que é a mesma conta',
+        seguro(novo.ig_user_id || '–'), tId ? 'aviso' : '');
+
+    var recado = (res.avisos || []).length
+      ? '<div class="ct-nota-jan">' + ico('alerta', 'xs') +
+        '<span>' + (res.avisos || []).map(seguro).join(' · ') + '</span></div>'
+      : '';
+
+    return veredito(quantas ? '' : '', 'check',
+      quantas ? (quantas === 1 ? 'Uma mudança levada para o sistema'
+                               : quantas + ' mudanças levadas para o sistema')
+              : 'O cadastro já estava em dia',
+      quantas ? (res.mudou || []).map(rotuloTroca).join(' · ')
+              : 'A Meta devolveu o mesmo arroba, a mesma foto e o mesmo tipo.') +
+      linhas + levados(res) + recado;
+  }
+  function peAtualizar(c, res){
+    var quando = res && res.em ? hora(res.em) : '';
+    return '<span class="nota">' +
+      (res ? (quando ? 'Lido na Meta às ' + quando : '') : 'Consultando a Meta') +
+      '</span><span class="dir">' + botao('Fechar', 'fechar', 'mini') + '</span>';
+  }
+
+  function janelaAtualizar(arroba){
+    var c = achar(arroba) || {arroba: arroba};
+    abrirJanela(cabConta(c, 'Atualizar Cadastro'), corpoAtualizar(c, null),
+                peAtualizar(c, null));
+    return pedir('/contas/atualizar', {arroba: arroba}).then(function(res){
+      if (res && res.estado) DADOS = res.estado;
+      /* O MERCADO E AS ETIQUETAS SAO LIDOS A PARTE, e viajaram junto com o arroba
+         novo. Sem reler, a ficha voltaria com o campo de mercado vazio. */
+      return Promise.all([res, window.lerMeta ? window.lerMeta() : null]);
+    }).then(function(par){
+      var res = par[0];
+      desenhar();
+      var novo = (res && achar(res.arroba)) || c;
+      trocarCorpo(corpoAtualizar(novo, res), peAtualizar(novo, res),
+                  cabConta(novo, 'Atualizar Cadastro'));
+    }).catch(function(){
+      trocarCorpo(veredito('mau', 'alerta', 'Não consegui falar com o painel',
+        'O pedido não chegou ao servidor. Recarregue a página e tente de novo.'),
+        peAtualizar(c, {}));
+    });
+  }
+
   /* ------------------------------------------------------------ LIGAR CONTA
      UM METODO SO', UMA ETAPA POR VEZ. As duas regras sao dele, em 29/08, depois
      de reprovar a versao anterior: "tem que ser um metodo unico, nao pode ter mais
@@ -991,6 +1108,10 @@
        a Meta respondeu. Pedido dele em 29/08. */
     var testar = e.target.closest('[data-testar]');
     if (testar) return janelaTeste(testar.dataset.testar);
+    /* ATUALIZAR NAO E TESTAR. Testar pergunta "esta conta esta de pe?"; atualizar
+       pergunta "quem ela e' hoje?" e leva a resposta para o sistema inteiro. */
+    var atualizar = e.target.closest('[data-atualizar]');
+    if (atualizar) return janelaAtualizar(atualizar.dataset.atualizar);
     var renovar = e.target.closest('[data-renovar]');
     if (renovar){
       renovar.classList.add('girando');
