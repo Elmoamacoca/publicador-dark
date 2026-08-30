@@ -183,6 +183,63 @@ def limpo(a: str) -> str:
     return (a or "").lstrip("@").strip().lower()
 
 
+# ============================================================== o retrato
+RETRATOS = DADOS / "retratos"
+
+
+def _nome_de_arquivo(arroba: str) -> str:
+    """So' o que pode virar nome de arquivo sem surpresa.
+
+    NAO E' PARANOIA: o arroba vem da Meta, mas ele acaba num caminho de disco, e
+    caminho montado com texto de fora e' como se abre a porta para `../../`.
+    """
+    return "".join(ch for ch in limpo(arroba)
+                   if ch.isalnum() or ch in "._-")[:64]
+
+
+def guardar_retrato(arroba: str, url: str) -> bool:
+    """Baixa a foto do perfil e guarda em disco.
+
+    QUEM BUSCA E O SERVIDOR, e nao a tela. O CDN da Meta recusa a imagem quando o
+    pedido vem de outra pagina, entao apontar a tag `img` direto para la' rende
+    quadrado quebrado e o console cheio de erro. Medido em 29/08, com as tres
+    contas: todas recusadas no navegador, todas servidas aqui.
+
+    A FOTO E BAIXADA UMA VEZ POR DIA. O endereco da Meta muda toda hora, mas a foto
+    nao, e a vigilancia roda a cada quinze minutos quando a aba esta' aberta.
+    """
+    nome = _nome_de_arquivo(arroba)
+    if not nome:
+        return False
+    alvo = RETRATOS / (nome + ".jpg")
+    try:
+        if alvo.exists() and time.time() - alvo.stat().st_mtime < 86400:
+            return True
+    except OSError:
+        pass
+    if not url:
+        return alvo.exists()
+    try:
+        pedido = urllib.request.Request(url, headers={"User-Agent": "publicador"})
+        with urllib.request.urlopen(pedido, timeout=15) as r:
+            bytes_ = r.read(3 * 1024 * 1024)
+        if not bytes_:
+            return alvo.exists()
+        RETRATOS.mkdir(parents=True, exist_ok=True)
+        novo = alvo.with_suffix(".novo")
+        novo.write_bytes(bytes_)
+        os.replace(novo, alvo)
+        return True
+    except Exception:
+        # foto e' enfeite: se ela falhar, a conta continua de pe'
+        return alvo.exists()
+
+
+def retrato_em_disco(arroba: str):
+    alvo = RETRATOS / (_nome_de_arquivo(arroba) + ".jpg")
+    return alvo if alvo.exists() else None
+
+
 # ============================================================== o cofre
 def cofre() -> dict:
     return _ler(COFRE, {"contas": []})
@@ -451,10 +508,14 @@ def checar(conta: dict, renovar_se_preciso: bool = True) -> dict:
         "arroba": perfil.get("username") or ficha["arroba"],
         "nome": ficha["nome"] or perfil.get("username") or "",
         "tipo": perfil.get("account_type"),
-        # O ENDERECO DA FOTO ENVELHECE (a Meta assina e expira), entao ele fica na
-        # ficha do dia, e nao no cofre: cofre e' para o que precisa durar.
-        "avatar": perfil.get("profile_picture_url") or None,
     })
+    # O RETRATO NAO VAI PARA A TELA COMO ENDERECO DA META: o CDN deles recusa o
+    # pedido feito de outra pagina. O servidor baixa, guarda e serve pelo endereco
+    # de casa.
+    ficha["avatar"] = ("contas/retrato?u=" + urllib.parse.quote(ficha["arroba"])
+                       if guardar_retrato(ficha["arroba"],
+                                          perfil.get("profile_picture_url"))
+                       else None)
     if perfil.get("user_id"):
         ficha["ig_user_id"] = str(perfil["user_id"])
 

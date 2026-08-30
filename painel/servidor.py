@@ -412,6 +412,26 @@ class SemCache(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
             return
 
+        # O RETRATO DA CONTA. Ele mora em `dados/retratos/`, que o servidor recusa
+        # servir como caminho de arquivo (e faz bem: o resto de `dados/` e' segredo).
+        # Entao a foto sai por esta rota, que so' alcanca essa pasta e so' devolve o
+        # que o modulo de contas ja' baixou da Meta.
+        if rota == "contas/retrato":
+            quem = urllib.parse.parse_qs(p.query).get("u", [""])[0]
+            caminho = contas.retrato_em_disco(quem)
+            if not caminho:
+                self.send_error(404)
+                return
+            corpo = caminho.read_bytes()
+            self.send_response(200)
+            self.send_header("Content-Type", "image/jpeg")
+            self.send_header("Content-Length", str(len(corpo)))
+            # um dia de cache: a foto do perfil muda devagar, e a tela redesenha muito
+            self.send_header("Cache-Control", "private, max-age=86400")
+            self.end_headers()
+            self.wfile.write(corpo)
+            return
+
         if self.rota_de_midia(p):
             return
         if rota == "painel/rede":
