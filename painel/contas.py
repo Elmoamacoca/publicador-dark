@@ -100,30 +100,25 @@ def _ler(caminho: pathlib.Path, padrao):
         return padrao
 
 
-def _gravar(caminho: pathlib.Path, dados, indentado: bool = True,
-            segredo: bool = True) -> None:
+def _gravar(caminho: pathlib.Path, dados) -> None:
     """Grava de forma atomica: escreve ao lado e troca de uma vez so'.
 
     Mesma regra do resto da casa. Aqui ela pesa mais que em qualquer outro lugar:
     este arquivo guarda o token renovado, e um arquivo pela metade seria uma conta
     fora do ar sem ninguem ter mexido em nada.
 
-    OS DOIS INTERRUPTORES SAO PARA ARQUIVO DE FORA. O `analytics.json` nao e' desta
-    casa: quem o escreve e' o montador, ele carrega retrato em base64 e pesa. Ali
-    identar so' engorda, e trancar em 0600 seria esta funcao decidindo a permissao
-    de um arquivo que nao e' dela.
+    SO' VALE PARA ARQUIVO DESTA CASA. Arquivo preso num bind do Docker recusa a
+    troca de inode; para esses existe `_gravar_preso`.
     """
     caminho.parent.mkdir(parents=True, exist_ok=True)
     provisorio = caminho.with_suffix(caminho.suffix + ".novo")
-    provisorio.write_text(
-        json.dumps(dados, ensure_ascii=False, indent=2 if indentado else None),
-        encoding="utf-8")
+    provisorio.write_text(json.dumps(dados, ensure_ascii=False, indent=2),
+                          encoding="utf-8")
     os.replace(provisorio, caminho)
-    if segredo:
-        try:
-            os.chmod(caminho, 0o600)
-        except Exception:
-            pass
+    try:
+        os.chmod(caminho, 0o600)
+    except Exception:
+        pass
 
 
 def _chamar(url: str, token: str | None = None, dados: dict | None = None,
@@ -945,6 +940,37 @@ def _levar_arroba(velho: str, novo: str):
     return levado, avisos
 
 
+def _gravar_preso(caminho: pathlib.Path, dados) -> None:
+    """Grava um arquivo que pode estar PRESO NUM BIND DO DOCKER.
+
+    O `analytics.json` entra no container como bind de ARQUIVO UNICO. Bind de
+    arquivo prende o inode, e trocar o inode e' exatamente o que a escrita atomica
+    faz: `os.replace` devolve "Device or resource busy" e a operacao inteira morre
+    no meio. Medido em 01/09, na primeira conta renomeada de verdade, com o banco
+    ja' trocado e o cofre ainda por trocar.
+
+    DUAS TENTATIVAS, NESSA ORDEM. A troca atomica primeiro, que e' a regra da casa
+    e vale onde o arquivo e' livre; a escrita por cima so' quando o sistema de
+    arquivos recusa a troca. Perder a atomicidade aqui e' aceitavel: este arquivo
+    e' gerado por fora e o montador o reescreve inteiro na proxima rodada.
+    """
+    texto = json.dumps(dados, ensure_ascii=False)
+    provisorio = caminho.with_suffix(caminho.suffix + ".novo")
+    try:
+        provisorio.write_text(texto, encoding="utf-8")
+        os.replace(provisorio, caminho)
+        return
+    except OSError:
+        try:
+            provisorio.unlink()
+        except OSError:
+            pass
+    with open(caminho, "w", encoding="utf-8") as f:
+        f.write(texto)
+        f.flush()
+        os.fsync(f.fileno())
+
+
 def _levar_no_analytics(velho: str, novo: str) -> int:
     """O arroba tambem e' chave dentro do `analytics.json`.
 
@@ -952,26 +978,34 @@ def _levar_no_analytics(velho: str, novo: str) -> int:
     ja' traria o nome novo sozinha. So' que ate' la' a Home leria o nome velho ao
     lado do novo, e duas verdades na mesma tela e' o que este botao existe para
     evitar.
+
+    E POR SER DE FORA, ELE NAO PODE DERRUBAR A OPERACAO. Quando esta funcao falhou,
+    em 01/09, o banco ja' tinha sido trocado e o cofre ainda nao: a conta ficou com
+    o passado num nome e o acesso no outro, que e' o estado que este botao existe
+    para impedir. Falha aqui devolve zero e a janela mostra zero.
     """
-    caminho = pathlib.Path(os.environ.get("PAINEL_ANALYTICS",
-                                          str(PASTA / "analytics.json")))
-    d = _ler(caminho, None)
-    if not isinstance(d, dict):
-        return 0
-    n = 0
-    for p in d.get("perfis") or []:
-        if isinstance(p, dict) and limpo(p.get("u")) == velho:
-            p["u"] = novo
-            n += 1
-    fundo = d.get("fundo")
-    if isinstance(fundo, dict):
-        for chave in list(fundo):
-            if limpo(chave) == velho:
-                fundo[novo] = fundo.pop(chave)
+    try:
+        caminho = pathlib.Path(os.environ.get("PAINEL_ANALYTICS",
+                                              str(PASTA / "analytics.json")))
+        d = _ler(caminho, None)
+        if not isinstance(d, dict):
+            return 0
+        n = 0
+        for p in d.get("perfis") or []:
+            if isinstance(p, dict) and limpo(p.get("u")) == velho:
+                p["u"] = novo
                 n += 1
-    if n:
-        _gravar(caminho, d, indentado=False, segredo=False)
-    return n
+        fundo = d.get("fundo")
+        if isinstance(fundo, dict):
+            for chave in list(fundo):
+                if limpo(chave) == velho:
+                    fundo[novo] = fundo.pop(chave)
+                    n += 1
+        if n:
+            _gravar_preso(caminho, d)
+        return n
+    except Exception:
+        return 0
 
 
 def sincronizar(arroba: str, ig_user_id: str = "") -> dict:
@@ -1024,17 +1058,15 @@ def sincronizar(arroba: str, ig_user_id: str = "") -> dict:
 
     mudou, levado, avisos = [], [], []
 
+    # A ORDEM AQUI E' A LICAO DE 01/09. Primeiro o banco, que se move numa
+    # transacao so'; depois o cofre, que se grava de uma vez so'. Sao essas duas
+    # que precisam concordar. Na primeira tentativa o arquivo do Analytics ficou no
+    # meio das duas e estourou (bind do Docker recusa troca de inode): o banco
+    # tinha mudado de nome e o cofre nao, que e' o estado exato que este botao
+    # existe para impedir. Retrato e Analytics passaram para o fim, onde falhar
+    # custa uma foto ou uma linha de tela, e nao a identidade da conta.
     if novo != velho:
-        atual = retrato_em_disco(velho)
-        if atual:
-            try:
-                RETRATOS.mkdir(parents=True, exist_ok=True)
-                os.replace(atual, RETRATOS / (_nome_de_arquivo(novo) + ".jpg"))
-            except OSError:
-                pass
         levado, avisos = _levar_arroba(velho, novo)
-        levado.append(("Retrato guardado", 1 if retrato_em_disco(novo) else 0))
-        levado.append(("Painel de Analytics", _levar_no_analytics(velho, novo)))
         conta["arroba"] = novo
         if limpo(conta.get("nome")) == velho:
             conta["nome"] = novo
@@ -1065,6 +1097,20 @@ def sincronizar(arroba: str, ig_user_id: str = "") -> dict:
                "; ".join(m["o_que"] + (f": @{m['de']} virou @{m['para']}"
                                        if m["o_que"] == "arroba" else "")
                          for m in mudou))
+
+    # AGORA O QUE PODE FALHAR SEM MACHUCAR. O cofre e o banco ja' concordam; daqui
+    # para baixo o pior caso e' uma foto que volta na proxima rodada e uma linha da
+    # Home com o nome velho ate' o montador rodar de novo.
+    if novo != velho:
+        atual = retrato_em_disco(velho)
+        if atual:
+            try:
+                RETRATOS.mkdir(parents=True, exist_ok=True)
+                os.replace(atual, RETRATOS / (_nome_de_arquivo(novo) + ".jpg"))
+            except OSError:
+                pass
+        levado.append(("Retrato guardado", 1 if retrato_em_disco(novo) else 0))
+        levado.append(("Painel de Analytics", _levar_no_analytics(velho, novo)))
 
     # A ULTIMA PALAVRA E DA META, de novo: a ficha da tela sai de uma checagem
     # nova, e nao do que esta funcao acabou de escrever. Renovar aqui seria fora de
