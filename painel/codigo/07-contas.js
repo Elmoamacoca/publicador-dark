@@ -857,7 +857,13 @@
     var c = achar(arroba) || {arroba: arroba};
     abrirJanela(cabConta(c, 'Atualizar Cadastro'), corpoAtualizar(c, null),
                 peAtualizar(c, null));
-    return pedir('/contas/atualizar', {arroba: arroba}).then(function(res){
+    /* O IDENTIFICADOR VAI JUNTO, e nao e' redundancia. A ficha ja' mostra o arroba
+       que a Meta devolveu na ultima checagem, enquanto o cofre ainda guarda o
+       antigo. Pedir pelo arroba da tela nao acha a conta justamente quando ela
+       acabou de ser renomeada, que e' o caso deste botao. Medido em 01/09, contra
+       uma conta de verdade que tinha trocado de nome. */
+    var envio = {arroba: arroba, ig_user_id: c.ig_user_id || ''};
+    return pedir('/contas/atualizar', envio).then(function(res){
       if (res && res.estado) DADOS = res.estado;
       /* O MERCADO E AS ETIQUETAS SAO LIDOS A PARTE, e viajaram junto com o arroba
          novo. Sem reler, a ficha voltaria com o campo de mercado vazio. */

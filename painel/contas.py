@@ -974,20 +974,34 @@ def _levar_no_analytics(velho: str, novo: str) -> int:
     return n
 
 
-def sincronizar(arroba: str) -> dict:
+def sincronizar(arroba: str, ig_user_id: str = "") -> dict:
     """O BOTAO DE ATUALIZAR, um por conta.
 
     Pergunta a Meta quem esta conta e' HOJE e carrega a resposta para todo o
     sistema. Tres coisas mudam no Instagram sem avisar ninguem: o arroba, a foto e
     o tipo da conta. A quarta, o identificador, nao muda nunca, e por isso ele e'
     quem confirma que ainda se trata da mesma conta.
+
+    A BUSCA COMECA PELO IDENTIFICADOR, E ISSO NAO E DETALHE. Foi assim que este
+    botao se recusou a funcionar na primeira vez que rodou contra uma conta de
+    verdade, em 01/09: a tela ja' mostrava o arroba NOVO (a checagem le' o nome da
+    Meta a cada rodada), o cofre ainda guardava o VELHO, e procurar pelo que a tela
+    mostra nao achava nada. O botao dava "essa conta nao esta no publicador"
+    exatamente no unico caso que ele existe para resolver.
     """
     dados = cofre()
     conta = None
-    for c in dados.get("contas") or []:
-        if limpo(c.get("arroba")) == limpo(arroba):
-            conta = c
-            break
+    alvo = str(ig_user_id or "").strip()
+    if alvo:
+        for c in dados.get("contas") or []:
+            if str(c.get("ig_user_id") or "") == alvo:
+                conta = c
+                break
+    if conta is None:
+        for c in dados.get("contas") or []:
+            if limpo(c.get("arroba")) == limpo(arroba):
+                conta = c
+                break
     if conta is None:
         return {"erro": "essa conta não está no publicador"}
 
@@ -1107,7 +1121,7 @@ def responder(rota: str, consulta: dict, corpo: dict | None, base: str = ""):
                          "vence_em": c.get("vence_em")}, 200 if deu else 400)
         return {"erro": "essa conta nao esta no cofre"}, 404
     if rota == "contas/atualizar" and corpo is not None:
-        d = sincronizar(corpo.get("arroba", ""))
+        d = sincronizar(corpo.get("arroba", ""), corpo.get("ig_user_id", ""))
         return d, (400 if "erro" in d else 200)
     if rota == "contas/prontidao":
         return prontidao(base), 200

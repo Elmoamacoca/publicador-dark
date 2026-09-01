@@ -325,8 +325,15 @@ def main():
         anota("o botao de atualizar diz o que faz ao passar o mouse",
               desenhos.get("dica", "").startswith("Atualizar"), desenhos.get("dica"))
 
-        rede_at = []
-        pag.on("request", lambda r: rede_at.append(r.url)
+        # O PEDIDO TEM QUE LEVAR O IDENTIFICADOR, e nao so' o arroba. Foi assim que
+        # este botao se recusou a funcionar na primeira vez que rodou contra uma
+        # conta de verdade, em 01/09: a ficha mostra o arroba NOVO que a Meta
+        # devolveu, o cofre ainda guarda o VELHO, e procurar pelo que a tela mostra
+        # nao acha nada. O botao respondia "essa conta nao esta no publicador"
+        # exatamente no caso que ele existe para resolver.
+        rede_at, envios = [], []
+        pag.on("request", lambda r: (rede_at.append(r.url),
+                                     envios.append(r.post_data or ""))
                if "/contas/atualizar" in r.url else None)
         pag.click("[data-atualizar]")
         pag.wait_for_timeout(500)
@@ -337,6 +344,9 @@ def main():
                                                            "e => e.textContent"))
         pag.wait_for_timeout(7000)
         anota("o botao de atualizar fala com a Meta pelo servidor", bool(rede_at))
+        anota("o pedido leva o identificador, e nao so' o arroba da tela",
+              bool(envios) and '"ig_user_id":"1' in (envios[0] or "").replace(" ", ""),
+              (envios[0] if envios else "nao pediu")[:90])
         corpo_at = pag.eval_on_selector("#ct-jan-corpo", "e => e.textContent")
         for parte in ("Arroba", "Foto Do Perfil", "Tipo Da Conta",
                       "Identificador Na Meta"):
