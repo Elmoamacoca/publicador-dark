@@ -515,7 +515,10 @@
 .ct-op .c > b{display:block;font-size:13px;font-weight:800}
 .ct-op .c > span{display:block;font-size:12px;color:var(--muted);margin-top:3px;
   line-height:1.5}
-.ct-op .ct-bt{flex:none;align-self:center}
+/* O BOTAO ANCORA NO TITULO, e nao no meio do bloco. Centralizado, ele acompanhava
+   a altura do texto: no bloco de Desligar ficava na linha certa e no de Remover,
+   que tem o campo do arroba, descia e ficava boiando ao lado do campo. */
+.ct-op .ct-bt{flex:none;align-self:flex-start;margin-top:1px}
 .ct-jura{display:block;margin-top:11px;font-size:11.5px;color:var(--muted)}
 .ct-jura b{font-weight:800;color:var(--ink)}
 .ct-token.curto{margin-top:6px;padding:9px 12px;font-size:12.5px;height:auto}
