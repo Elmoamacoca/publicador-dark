@@ -47,7 +47,10 @@
        de testar a conexao, e dois desenhos iguais no mesmo rodape seriam dois
        botoes que a pessoa precisa clicar para descobrir a diferenca. */
     nuvem:'<path d="M12 13v8l-4-4"/><path d="m12 21 4-4"/><path d="M4.393 15.269A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.436 8.284"/>',
-    retrato:'<rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>'
+    retrato:'<rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>',
+    /* LIXEIRA E BOTAO DE FORCA SAO COISAS DIFERENTES, e por isso sao dois desenhos:
+       um interrompe, o outro apaga. */
+    lixo:'<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M10 11v6"/><path d="M14 11v6"/>'
   };
   function ico(nome, cls){
     return '<svg class="ct-i ' + (cls || '') + '" viewBox="0 0 24 24" aria-hidden="true">' +
@@ -881,6 +884,73 @@
     });
   }
 
+  /* ------------------------------------------------- tirar a conta do publicador
+     SAO DUAS SAIDAS, E ELAS NAO SAO A MESMA COISA. Desligar diz "não opere mais
+     por aqui" e guarda o passado; remover diz "essa conta nunca esteve aqui".
+     Antes existia só a primeira, num `confirm` do navegador, que era o único lugar
+     desta aba que não usava a janela da casa.
+
+     REMOVER COBRA O ARROBA DIGITADO. Não é cerimônia: é a única ação da aba que
+     apaga passado, e ela não pode sair de um clique torto. */
+  function corpoSaida(c){
+    return veredito('aviso', 'alerta', 'Como você quer tirar esta conta?',
+      'Uma das duas guarda o que aconteceu. A outra não.') +
+      '<div class="ct-saida">' +
+        '<div class="ct-op"><span class="ic"><svg viewBox="0 0 24 24">' +
+          IC.desligar + '</svg></span>' +
+          '<div class="c"><b>Desligar</b><span>Apaga só o acesso desta máquina. ' +
+          'O diário, o histórico de 30 dias, o mercado e as etiquetas ficam ' +
+          'guardados, e religar a conta traz tudo de volta.</span></div>' +
+          botao('Desligar', 'saida-desligar', 'mini', 'desligar', c.arroba) +
+        '</div>' +
+        '<div class="ct-op mau"><span class="ic"><svg viewBox="0 0 24 24">' +
+          IC.lixo + '</svg></span>' +
+          '<div class="c"><b>Remover</b><span>Apaga tudo: acesso, diário, ' +
+          'histórico, mercado, etiquetas e retrato. <b>Não tem volta.</b> ' +
+          'O que já foi publicado fica, porque é registro do que saiu.</span>' +
+          '<label class="ct-jura">Digite <b>' + seguro(c.arroba) + '</b> para ' +
+          'liberar<input class="ct-token curto" id="ct-jura" autocomplete="off" ' +
+          'placeholder="' + seguro(c.arroba) + '"></label></div>' +
+          botao('Remover', 'saida-remover', 'mini mau', 'lixo', c.arroba) +
+        '</div>' +
+      '</div>';
+  }
+  function janelaSaida(arroba){
+    var c = achar(arroba) || {arroba: arroba};
+    abrirJanela(cabConta(c, 'Tirar Do Publicador'), corpoSaida(c),
+      '<span class="nota">Nenhuma das duas mexe na conta dentro do Instagram</span>' +
+      '<span class="dir">' + botao('Cancelar', 'fechar', 'mini') + '</span>');
+    /* o botão nasce travado e só destrava quando o arroba bate, letra por letra */
+    var bt = JAN.querySelector('[data-acao="saida-remover"]');
+    var campo = document.getElementById('ct-jura');
+    if (bt && campo){
+      bt.disabled = true;
+      campo.addEventListener('input', function(){
+        bt.disabled = campo.value.trim().toLowerCase().replace(/^@/, '') !==
+                      String(c.arroba).toLowerCase();
+      });
+    }
+  }
+  function corpoRemovida(c, res){
+    if (res.erro){
+      return veredito('mau', 'alerta', 'Não consegui remover',
+        seguro(res.erro));
+    }
+    var linhas = (res.apagado || []).filter(function(l){ return l.n > 0; });
+    return veredito('', 'check', '@' + seguro(res.arroba) + ' saiu do publicador',
+      'O acesso e o passado dela foram apagados desta máquina.') +
+      (linhas.length
+        ? '<div class="ct-lev"><b>' + ico('lixo', 'xs') + 'Apagado</b>' +
+          linhas.map(function(l){
+            return '<span><i>' + seguro(l.onde) + '</i><em>' + l.n +
+              (l.n === 1 ? ' registro' : ' registros') + '</em></span>'; }).join('') +
+          '</div>'
+        : '') +
+      '<div class="ct-nota-jan">' + ico('alerta', 'xs') + '<span>O Analytics é ' +
+      'gerado por fora. Se o montador ainda conhecer esta conta, ela reaparece lá ' +
+      'na próxima leitura.</span></div>';
+  }
+
   /* ------------------------------------------------------------ LIGAR CONTA
      UM METODO SO', UMA ETAPA POR VEZ. As duas regras sao dele, em 29/08, depois
      de reprovar a versao anterior: "tem que ser um metodo unico, nao pode ter mais
@@ -1127,23 +1197,46 @@
         .catch(function(){ renovar.classList.remove('girando'); });
       return;
     }
-    var desligar = e.target.closest('[data-desligar]');
-    if (desligar){
-      var quem = desligar.dataset.desligar;
-      if (!confirm('Desligar @' + quem + ' do publicador?\n\nO acesso é apagado desta ' +
-                   'máquina. O diário e o histórico ficam.')) return;
-      desligar.classList.add('girando');
-      pedir('/contas/desligar', {arroba: quem}).then(function(){
-        return pedir('/contas/estado');
-      }).then(function(d){ DADOS = d || DADOS; desenhar(); });
-      return;
-    }
+    /* O BOTAO ABRE A ESCOLHA, e nao a acao. Antes ele desligava direto, atras de um
+       `confirm` do navegador, que era o unico lugar da aba fora da janela da casa.
+       E ele so' oferecia uma das duas saidas. */
+    var saida = e.target.closest('[data-desligar]');
+    if (saida) return janelaSaida(saida.dataset.desligar);
 
     /* ------------------------------------------------------- os do cabecalho */
     var acao = e.target.closest('[data-acao]');
     if (!acao) return;
     var qual = acao.dataset.acao;
 
+    if (qual === 'saida-desligar' || qual === 'saida-remover'){
+      var alvo = acao.dataset.arroba, tirando = ocupado(acao, 'Tirando…');
+      var vai = qual === 'saida-remover'
+        ? pedir('/contas/remover', {arroba: alvo, confirma: alvo,
+                                    ig_user_id: (achar(alvo) || {}).ig_user_id || ''})
+        : pedir('/contas/desligar', {arroba: alvo}).then(function(r){
+            return {ok: r && r.ok, erro: r && r.erro, arroba: alvo, apagado: []}; });
+      vai.then(function(res){
+        return pedir('/contas/estado').then(function(d){
+          DADOS = d || DADOS;
+          desenhar();
+          if (qual === 'saida-remover'){
+            trocarCorpo(corpoRemovida(achar(alvo) || {arroba: alvo}, res || {}),
+              '<span class="dir">' + botao('Fechar', 'fechar', 'mini') + '</span>');
+          } else if (res && res.erro){
+            trocarCorpo(veredito('mau', 'alerta', 'Não consegui desligar',
+              seguro(res.erro)), '<span class="dir">' +
+              botao('Fechar', 'fechar', 'mini') + '</span>');
+          } else {
+            fecharJanela();
+          }
+        });
+      }).catch(function(){
+        tirando();
+        trocarCorpo(veredito('mau', 'alerta', 'Não consegui falar com o painel',
+          'O pedido não chegou ao servidor. Recarregue a página e tente de novo.'));
+      });
+      return;
+    }
     if (qual === 'testar-tudo') return janelaRede();
     if (qual === 'ligar'){
       /* LIGAR CONTA ABRE O PASSO A PASSO, e nao o Instagram direto. Mandar direto

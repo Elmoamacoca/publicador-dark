@@ -1140,6 +1140,121 @@ def desligar(arroba: str) -> dict:
     return {"ok": True}
 
 
+def remover(arroba: str, ig_user_id: str = "") -> dict:
+    """Apaga a conta do publicador POR INTEIRO. Nao tem volta.
+
+    A DIFERENCA PARA `desligar` E' A UNICA RAZAO DE EXISTIREM OS DOIS. Desligar diz
+    "nao opere mais por aqui" e guarda o passado: o diario, a tira de 30 dias, o
+    mercado e as etiquetas ficam, e religar a conta traz tudo de volta. Remover diz
+    "essa conta nunca esteve aqui".
+
+    O QUE JA' SAIU FICA. Video publicado e' registro do que esta maquina fez, e
+    apagar registro de saida para limpar cadastro seria apagar a prova errada. A
+    linha perde o dono, nao some.
+
+    REMOVE ATE' QUEM JA' FOI DESLIGADA. Conta fora do cofre com historico dentro do
+    banco seria um fantasma: a tela nao a mostra e nenhum botao a alcanca.
+    """
+    dados = cofre()
+    conta, alvo = None, str(ig_user_id or "").strip()
+    if alvo:
+        for c in dados.get("contas") or []:
+            if str(c.get("ig_user_id") or "") == alvo:
+                conta = c
+                break
+    if conta is None:
+        for c in dados.get("contas") or []:
+            if limpo(c.get("arroba")) == limpo(arroba):
+                conta = c
+                break
+
+    quem = limpo(conta.get("arroba")) if conta else limpo(arroba)
+    if not quem:
+        return {"erro": "diga qual conta remover"}
+
+    apagado = []
+    if conta is not None:
+        dados["contas"] = [c for c in dados.get("contas", []) if c is not conta]
+        gravar_cofre(dados)
+        apagado.append(("Acesso no cofre", 1))
+    else:
+        apagado.append(("Acesso no cofre", 0))
+
+    guardado = _ler(VIGIA, {"contas": []})
+    antes = len(guardado.get("contas") or [])
+    guardado["contas"] = [f for f in guardado.get("contas", [])
+                          if limpo(f.get("arroba")) != quem]
+    if len(guardado["contas"]) != antes:
+        _gravar(VIGIA, guardado)
+
+    con = _banco()
+    _tabelas(con)
+    try:
+        with con:
+            apagado.append(("Histórico de 30 dias",
+                            con.execute("DELETE FROM vigia_dia WHERE arroba=?",
+                                        (quem,)).rowcount))
+            apagado.append(("Diário da conta",
+                            con.execute("DELETE FROM conta_evento WHERE arroba=?",
+                                        (quem,)).rowcount))
+            apagado.append(("Mercado e etiquetas",
+                            con.execute("DELETE FROM conta_meta WHERE arroba=?",
+                                        (quem,)).rowcount))
+            apagado.append(("Rascunho de programação",
+                            con.execute("DELETE FROM rascunho WHERE LOWER(conta)=?",
+                                        (quem,)).rowcount))
+            apagado.append(("Fila de vídeos liberada",
+                            con.execute("UPDATE video SET conta=NULL WHERE "
+                                        "LOWER(conta)=? AND estado<>'publicado'",
+                                        (quem,)).rowcount))
+    finally:
+        con.close()
+
+    foto = retrato_em_disco(quem)
+    if foto:
+        try:
+            foto.unlink()
+            apagado.append(("Retrato guardado", 1))
+        except OSError:
+            pass
+
+    apagado.append(("Painel de Analytics", _tirar_do_analytics(quem)))
+    return {"ok": True, "arroba": quem, "em": agora(),
+            "apagado": [{"onde": o, "n": n} for o, n in apagado]}
+
+
+def _tirar_do_analytics(quem: str) -> int:
+    """Tira a conta do `analytics.json`, que e' quem a Home le'.
+
+    ELE E' GERADO POR FORA, entao a conta volta se o montador ainda a conhecer. A
+    tela diz isso. Falhar aqui nao pode derrubar a remocao: o cadastro ja' foi.
+    """
+    try:
+        caminho = pathlib.Path(os.environ.get("PAINEL_ANALYTICS",
+                                              str(PASTA / "analytics.json")))
+        d = _ler(caminho, None)
+        if not isinstance(d, dict):
+            return 0
+        n = 0
+        perfis = d.get("perfis")
+        if isinstance(perfis, list):
+            sobra = [p for p in perfis
+                     if not (isinstance(p, dict) and limpo(p.get("u")) == quem)]
+            n += len(perfis) - len(sobra)
+            d["perfis"] = sobra
+        fundo = d.get("fundo")
+        if isinstance(fundo, dict):
+            for chave in list(fundo):
+                if limpo(chave) == quem:
+                    fundo.pop(chave)
+                    n += 1
+        if n:
+            _gravar_preso(caminho, d)
+        return n
+    except Exception:
+        return 0
+
+
 # ============================================================== as rotas
 def responder(rota: str, consulta: dict, corpo: dict | None, base: str = ""):
     """Devolve (objeto, codigo) ou None se a rota nao for daqui.
@@ -1180,6 +1295,14 @@ def responder(rota: str, consulta: dict, corpo: dict | None, base: str = ""):
     if rota == "contas/desligar" and corpo is not None:
         d = desligar(corpo.get("arroba", ""))
         return d, (404 if "erro" in d else 200)
+    # REMOVER COBRA O ARROBA DIGITADO. Nao e' cerimonia: e' a unica acao desta aba
+    # que apaga passado, e a tela nao pode ser capaz de disparar isso por engano.
+    if rota == "contas/remover" and corpo is not None:
+        pedido = limpo(corpo.get("arroba"))
+        if limpo(corpo.get("confirma")) != pedido or not pedido:
+            return {"erro": "para remover, digite o arroba da conta"}, 400
+        d = remover(pedido, corpo.get("ig_user_id", ""))
+        return d, (400 if "erro" in d else 200)
     return None
 
 

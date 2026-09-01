@@ -475,9 +475,48 @@ def main():
         pag.wait_for_timeout(500)
         anota("clicar fora fecha a janela", pag.eval_on_selector("#ct-jan", "e => e.hidden"))
 
-        # --------------------------------------------- desligar: existe e avisa
-        anota("o botao de desligar existe e pede confirmacao",
-              pag.eval_on_selector_all("[data-desligar]", "e => e.length") > 0)
+        # ------------------------------------- as duas saidas: desligar e remover
+        # A AUDITORIA NAO APERTA NENHUM DOS DOIS. Desligar apagaria o acesso de uma
+        # conta viva e remover apagaria o passado dela: prova que estraga o que ela
+        # mede nao e' prova. O que se confere e' a JANELA, e a trava do vermelho.
+        anota("o botao de tirar do publicador existe",
+              pag.eval_on_selector_all("[data-desligar]", "e => e.length") == n)
+        pag.click("[data-desligar]")
+        pag.wait_for_timeout(600)
+        anota("ele abre a janela, e nao um confirm do navegador",
+              pag.eval_on_selector("#ct-jan", "e => !e.hidden"))
+        corpo_saida = pag.eval_on_selector("#ct-jan-corpo", "e => e.textContent")
+        for parte in ("Desligar", "Remover", "Não tem volta"):
+            anota(f"a janela de saida explica: {parte}", parte in corpo_saida)
+        anota("a janela diz que o Instagram nao e' tocado",
+              "Instagram" in pag.eval_on_selector("#ct-jan-pe", "e => e.textContent"))
+        # O VERMELHO NASCE TRAVADO. E' a unica acao da aba que apaga passado, e ela
+        # nao pode sair de um clique torto.
+        travado = pag.evaluate("""() => {
+            const b = document.querySelector('[data-acao="saida-remover"]');
+            const d = document.querySelector('[data-acao="saida-desligar"]');
+            return {remover: b ? b.disabled : null, desligar: d ? d.disabled : null};
+        }""")
+        anota("Remover nasce travado", travado.get("remover") is True, str(travado))
+        anota("Desligar nao nasce travado", travado.get("desligar") is False)
+        # digitar errado nao destrava; digitar o arroba destrava
+        pag.fill("#ct-jura", "conta-errada")
+        pag.wait_for_timeout(250)
+        anota("arroba errado NAO destrava o Remover",
+              pag.eval_on_selector('[data-acao="saida-remover"]', "e => e.disabled"))
+        pag.fill("#ct-jura", arroba)
+        pag.wait_for_timeout(250)
+        anota("o arroba certo destrava o Remover",
+              pag.eval_on_selector('[data-acao="saida-remover"]',
+                                   "e => !e.disabled"), "@" + arroba)
+        pag.keyboard.press("Escape")
+        pag.wait_for_timeout(500)
+        anota("Escape fecha a janela de saida sem tirar nada",
+              pag.eval_on_selector("#ct-jan", "e => e.hidden"))
+        _, dep_saida = fora(base + "/contas/estado", cookie)
+        anota("nenhuma conta saiu durante a auditoria",
+              len(dep_saida.get("contas", [])) == n,
+              f"{len(dep_saida.get('contas', []))} de {n}")
 
         # ------------------------------------------------ o que sobra na tela
         sobra = pag.evaluate("""() => {

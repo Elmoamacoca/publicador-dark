@@ -240,6 +240,28 @@ def provar_contas(base, cookie, falhas):
         except Exception as e:
             falhas.append(f"contas/atualizar ({rotulo}): {type(e).__name__}: {e}")
 
+    # REMOVER APAGA PASSADO, entao o portao prova a TRAVA, e nunca a remocao: rodar
+    # a remocao de verdade contra producao apagaria o historico de uma conta viva
+    # para dizer que o botao funciona. O que se cobra e' que sem o arroba digitado,
+    # ou com o arroba errado, a rota recuse com motivo escrito.
+    for rotulo, envio in (
+            ("sem confirmacao", {"arroba": "borusaof"}),
+            ("confirmacao errada", {"arroba": "borusaof", "confirma": "outra"}),
+            ("tudo vazio", {"arroba": "", "confirma": ""})):
+        try:
+            codigo, corpo, _ = pedir(base + "/contas/remover", cookie, corpo=envio)
+            d = json.loads(corpo)
+            if codigo != 400 or not d.get("erro"):
+                falhas.append(f"contas/remover ({rotulo}): DEVIA RECUSAR e nao "
+                              f"recusou ({codigo}) {corpo[:100]}")
+            elif "digite" not in d["erro"]:
+                falhas.append(f"contas/remover ({rotulo}): recusou pelo motivo "
+                              f"errado: {d['erro'][:80]}")
+            else:
+                print(f"  contas/remover: trava segura, {rotulo}")
+        except Exception as e:
+            falhas.append(f"contas/remover ({rotulo}): {type(e).__name__}: {e}")
+
     # A SONDA DA VOLTA. Ela e' o unico pedaco do caminho de retorno que da' para
     # provar sem a Meta: que o endereco existe neste painel e responde.
     try:
